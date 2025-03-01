@@ -94,18 +94,11 @@ RuoYi-Vue3-FastAPI是一套全部开源的快速开发平台，毫无保留给�
 
 ### 开发
 
-```bash
-# 克隆项目
-git clone https://gitee.com/insistence2022/RuoYi-Vue3-FastAPI.git
-
-# 进入项目根目录
-cd RuoYi-Vue3-FastAPI
-```
 
 #### 前端
 ```bash
 # 进入前端目录
-cd ruoyi-fastapi-frontend
+cd ruoyi-ele-admin
 
 # 安装依赖
 npm install 或 yarn --registry=https://registry.npmmirror.com
