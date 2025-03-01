@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from pydantic_validation_decorator import ValidateFields
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
@@ -30,7 +30,7 @@ async def get_system_dept_tree_for_edit_option(
     query_db: AsyncSession = Depends(get_db),
     data_scope_sql: str = Depends(GetDataScope('SysDept')),
 ):
-    dept_query = DeptModel(deptId=dept_id)
+    dept_query = DeptModel(dept_id=dept_id)
     dept_query_result = await DeptService.get_dept_for_edit_option_services(query_db, dept_query, data_scope_sql)
     logger.info('获取成功')
 
@@ -42,7 +42,7 @@ async def get_system_dept_tree_for_edit_option(
 )
 async def get_system_dept_list(
     request: Request,
-    dept_query: DeptQueryModel = Depends(DeptQueryModel.as_query),
+    dept_query: DeptQueryModel = Query(),
     query_db: AsyncSession = Depends(get_db),
     data_scope_sql: str = Depends(GetDataScope('SysDept')),
 ):
@@ -105,7 +105,7 @@ async def delete_system_dept(
         for dept_id in dept_id_list:
             if not current_user.user.admin:
                 await DeptService.check_dept_data_scope_services(query_db, int(dept_id), data_scope_sql)
-    delete_dept = DeleteDeptModel(deptIds=dept_ids)
+    delete_dept = DeleteDeptModel(dept_ids=dept_ids)
     delete_dept.update_by = current_user.user.user_name
     delete_dept.update_time = datetime.now()
     delete_dept_result = await DeptService.delete_dept_services(query_db, delete_dept)

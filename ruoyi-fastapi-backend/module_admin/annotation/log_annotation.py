@@ -7,15 +7,14 @@ from datetime import datetime
 from fastapi import Request
 from fastapi.responses import JSONResponse, ORJSONResponse, UJSONResponse
 from functools import lru_cache, wraps
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Any, Callable, Literal, Optional
+from typing import Literal, Optional
 from user_agents import parse
-from config.enums import BusinessType
-from config.env import AppConfig
-from exceptions.exception import LoginException, ServiceException, ServiceWarning
 from module_admin.entity.vo.log_vo import LogininforModel, OperLogModel
 from module_admin.service.log_service import LoginLogService, OperationLogService
 from module_admin.service.login_service import LoginService
+from config.enums import BusinessType
+from config.env import AppConfig
+from exceptions.exception import LoginException, ServiceException, ServiceWarning
 from utils.log_util import logger
 from utils.response_util import ResponseUtil
 
@@ -52,15 +51,13 @@ class Log:
             # 获取项目根路径
             project_root = os.getcwd()
             # 处理文件路径，去除项目根路径部分
-            relative_path = os.path.relpath(file_path, start=project_root)[0:-2].replace('\\', '.').replace('/', '.')
+            relative_path = os.path.relpath(file_path, start=project_root)[0:-2].replace('\\', '.')
             # 获取当前被装饰函数所在路径
             func_path = f'{relative_path}{func.__name__}()'
             # 获取上下文信息
-            request_name_list = get_function_parameters_name_by_type(func, Request)
-            request = get_function_parameters_value_by_name(func, request_name_list[0], *args, **kwargs)
+            request: Request = kwargs.get('request')
             token = request.headers.get('Authorization')
-            session_name_list = get_function_parameters_name_by_type(func, AsyncSession)
-            query_db = get_function_parameters_value_by_name(func, session_name_list[0], *args, **kwargs)
+            query_db = kwargs.get('query_db')
             request_method = request.method
             operator_type = 0
             user_agent = request.headers.get('User-Agent')
@@ -71,7 +68,11 @@ class Log:
             # 获取请求的url
             oper_url = request.url.path
             # 获取请求的ip及ip归属区域
-            oper_ip = request.headers.get('X-Forwarded-For')
+            oper_ip = (
+                request.headers.get('remote_addr')
+                if request.headers.get('is_browser') == 'no'
+                else request.headers.get('X-Forwarded-For')
+            )
             oper_location = '内网IP'
             if AppConfig.app_ip_location_query:
                 oper_location = get_ip_location(oper_ip)
@@ -110,10 +111,10 @@ class Log:
                     system_os += f' {user_agent_info.os.version[0]}'
                 login_log = dict(
                     ipaddr=oper_ip,
-                    loginLocation=oper_location,
+                    login_location=oper_location,
                     browser=browser,
                     os=system_os,
-                    loginTime=oper_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    login_time=oper_time.strftime('%Y-%m-%d %H:%M:%S'),
                 )
                 kwargs['form_data'].login_info = login_log
             try:
@@ -168,8 +169,8 @@ class Log:
                 else:
                     user = kwargs.get('form_data')
                     user_name = user.username
-                    login_log['loginTime'] = oper_time
-                    login_log['userName'] = user_name
+                    login_log['login_time'] = oper_time
+                    login_log['user_name'] = user_name
                     login_log['status'] = str(status)
                     login_log['msg'] = result_dict.get('msg')
 
@@ -180,21 +181,21 @@ class Log:
                 dept_name = current_user.user.dept.dept_name if current_user.user.dept else None
                 operation_log = OperLogModel(
                     title=self.title,
-                    businessType=self.business_type,
+                    business_type=self.business_type,
                     method=func_path,
-                    requestMethod=request_method,
-                    operatorType=operator_type,
-                    operName=oper_name,
-                    deptName=dept_name,
-                    operUrl=oper_url,
-                    operIp=oper_ip,
-                    operLocation=oper_location,
-                    operParam=oper_param,
-                    jsonResult=json_result,
+                    request_method=request_method,
+                    operator_type=operator_type,
+                    oper_name=oper_name,
+                    dept_name=dept_name,
+                    oper_url=oper_url,
+                    oper_ip=oper_ip,
+                    oper_location=oper_location,
+                    oper_param=oper_param,
+                    json_result=json_result,
                     status=status,
-                    errorMsg=error_msg,
-                    operTime=oper_time,
-                    costTime=int(cost_time),
+                    error_msg=error_msg,
+                    oper_time=oper_time,
+                    cost_time=int(cost_time),
                 )
                 await OperationLogService.add_operation_log_services(query_db, operation_log)
 
@@ -225,37 +226,3 @@ def get_ip_location(oper_ip: str):
         oper_location = '未知'
         print(e)
     return oper_location
-
-
-def get_function_parameters_name_by_type(func: Callable, param_type: Any):
-    """
-    获取函数指定类型的参数名称
-
-    :param func: 函数
-    :param arg_type: 参数类型
-    :return: 函数指定类型的参数名称
-    """
-    # 获取函数的参数信息
-    parameters = inspect.signature(func).parameters
-    # 找到指定类型的参数名称
-    parameters_name_list = []
-    for name, param in parameters.items():
-        if param.annotation == param_type:
-            parameters_name_list.append(name)
-    return parameters_name_list
-
-
-def get_function_parameters_value_by_name(func: Callable, name: str, *args, **kwargs):
-    """
-    获取函数指定参数的值
-
-    :param func: 函数
-    :param name: 参数名
-    :return: 参数值
-    """
-    # 获取参数值
-    bound_parameters = inspect.signature(func).bind(*args, **kwargs)
-    bound_parameters.apply_defaults()
-    parameters_value = bound_parameters.arguments.get(name)
-
-    return parameters_value

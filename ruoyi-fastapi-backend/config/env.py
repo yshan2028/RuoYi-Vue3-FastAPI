@@ -3,7 +3,6 @@ import os
 import sys
 from dotenv import load_dotenv
 from functools import lru_cache
-from pydantic import computed_field
 from pydantic_settings import BaseSettings
 from typing import Literal
 
@@ -14,11 +13,11 @@ class AppSettings(BaseSettings):
     """
 
     app_env: str = 'dev'
-    app_name: str = 'RuoYi-FasAPI'
+    app_name: str = 'Dash-FasAPI-Admin'
     app_root_path: str = '/dev-api'
     app_host: str = '0.0.0.0'
     app_port: int = 9099
-    app_version: str = '1.0.0'
+    app_version: str = '2.0.0'
     app_reload: bool = True
     app_ip_location_query: bool = True
     app_same_time_login: bool = True
@@ -52,13 +51,6 @@ class DataBaseSettings(BaseSettings):
     db_pool_recycle: int = 3600
     db_pool_timeout: int = 30
 
-    @computed_field
-    @property
-    def sqlglot_parse_dialect(self) -> str:
-        if self.db_type == 'postgresql':
-            return 'postgres'
-        return self.db_type
-
 
 class RedisSettings(BaseSettings):
     """
@@ -72,31 +64,13 @@ class RedisSettings(BaseSettings):
     redis_database: int = 2
 
 
-class GenSettings:
-    """
-    代码生成配置
-    """
-
-    author = 'insistence'
-    package_name = 'module_admin.system'
-    auto_remove_pre = False
-    table_prefix = 'sys_'
-    allow_overwrite = False
-
-    GEN_PATH = 'vf_admin/gen_path'
-
-    def __init__(self):
-        if not os.path.exists(self.GEN_PATH):
-            os.makedirs(self.GEN_PATH)
-
-
 class UploadSettings:
     """
     上传配置
     """
 
     UPLOAD_PREFIX = '/profile'
-    UPLOAD_PATH = 'vf_admin/upload_path'
+    UPLOAD_PATH = 'df_admin/upload_path'
     UPLOAD_MACHINE = 'A'
     DEFAULT_ALLOWED_EXTENSION = [
         # 图片
@@ -127,7 +101,7 @@ class UploadSettings:
         # pdf
         'pdf',
     ]
-    DOWNLOAD_PATH = 'vf_admin/download_path'
+    DOWNLOAD_PATH = 'df_admin/download_path'
 
     def __init__(self):
         if not os.path.exists(self.UPLOAD_PATH):
@@ -186,14 +160,6 @@ class GetConfig:
         return RedisSettings()
 
     @lru_cache()
-    def get_gen_config(self):
-        """
-        获取代码生成配置
-        """
-        # 实例化代码生成配置
-        return GenSettings()
-
-    @lru_cache()
     def get_upload_config(self):
         """
         获取数据库配置
@@ -238,7 +204,5 @@ JwtConfig = get_config.get_jwt_config()
 DataBaseConfig = get_config.get_database_config()
 # Redis配置
 RedisConfig = get_config.get_redis_config()
-# 代码生成配置
-GenConfig = get_config.get_gen_config()
 # 上传配置
 UploadConfig = get_config.get_upload_config()

@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from pydantic_validation_decorator import ValidateFields
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
@@ -48,7 +48,7 @@ async def get_system_role_menu_tree(
 )
 async def get_system_menu_list(
     request: Request,
-    menu_query: MenuQueryModel = Depends(MenuQueryModel.as_query),
+    menu_query: MenuQueryModel = Query(),
     query_db: AsyncSession = Depends(get_db),
     current_user: CurrentUserModel = Depends(LoginService.get_current_user),
 ):
@@ -97,7 +97,7 @@ async def edit_system_menu(
 @menuController.delete('/{menu_ids}', dependencies=[Depends(CheckUserInterfaceAuth('system:menu:remove'))])
 @Log(title='菜单管理', business_type=BusinessType.DELETE)
 async def delete_system_menu(request: Request, menu_ids: str, query_db: AsyncSession = Depends(get_db)):
-    delete_menu = DeleteMenuModel(menuIds=menu_ids)
+    delete_menu = DeleteMenuModel(menu_ids=menu_ids)
     delete_menu_result = await MenuService.delete_menu_services(query_db, delete_menu)
     logger.info(delete_menu_result.message)
 

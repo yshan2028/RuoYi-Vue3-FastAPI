@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, Query, Request
 from pydantic_validation_decorator import ValidateFields
 from sqlalchemy.ext.asyncio import AsyncSession
 from config.enums import BusinessType
@@ -24,7 +24,7 @@ configController = APIRouter(prefix='/system/config', dependencies=[Depends(Logi
 )
 async def get_system_config_list(
     request: Request,
-    config_page_query: ConfigPageQueryModel = Depends(ConfigPageQueryModel.as_query),
+    config_page_query: ConfigPageQueryModel = Query(),
     query_db: AsyncSession = Depends(get_db),
 ):
     # 获取分页数据
@@ -82,7 +82,7 @@ async def refresh_system_config(request: Request, query_db: AsyncSession = Depen
 @configController.delete('/{config_ids}', dependencies=[Depends(CheckUserInterfaceAuth('system:config:remove'))])
 @Log(title='参数管理', business_type=BusinessType.DELETE)
 async def delete_system_config(request: Request, config_ids: str, query_db: AsyncSession = Depends(get_db)):
-    delete_config = DeleteConfigModel(configIds=config_ids)
+    delete_config = DeleteConfigModel(config_ids=config_ids)
     delete_config_result = await ConfigService.delete_config_services(request, query_db, delete_config)
     logger.info(delete_config_result.message)
 

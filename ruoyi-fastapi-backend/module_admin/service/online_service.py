@@ -5,7 +5,6 @@ from config.env import JwtConfig
 from exceptions.exception import ServiceException
 from module_admin.entity.vo.common_vo import CrudResponseModel
 from module_admin.entity.vo.online_vo import DeleteOnlineModel, OnlineQueryModel
-from utils.common_util import CamelCaseUtil
 
 
 class OnlineService:
@@ -34,17 +33,17 @@ class OnlineService:
                 user_name=payload.get('user_name'),
                 dept_name=payload.get('dept_name'),
                 ipaddr=payload.get('login_info').get('ipaddr'),
-                login_location=payload.get('login_info').get('loginLocation'),
+                login_location=payload.get('login_info').get('login_location'),
                 browser=payload.get('login_info').get('browser'),
                 os=payload.get('login_info').get('os'),
-                login_time=payload.get('login_info').get('loginTime'),
+                login_time=payload.get('login_info').get('login_time'),
             )
             if query_object.user_name and not query_object.ipaddr:
-                if query_object.user_name == payload.get('user_name'):
+                if query_object.user_name == payload.get('login_info').get('ipaddr'):
                     online_info_list = [online_dict]
                     break
             elif not query_object.user_name and query_object.ipaddr:
-                if query_object.ipaddr == payload.get('login_info').get('ipaddr'):
+                if query_object.ipaddr == payload.get('ipaddr'):
                     online_info_list = [online_dict]
                     break
             elif query_object.user_name and query_object.ipaddr:
@@ -56,7 +55,7 @@ class OnlineService:
             else:
                 online_info_list.append(online_dict)
 
-        return CamelCaseUtil.transform_result(online_info_list)
+        return online_info_list
 
     @classmethod
     async def delete_online_services(cls, request: Request, page_object: DeleteOnlineModel):
