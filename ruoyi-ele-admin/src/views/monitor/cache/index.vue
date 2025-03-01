@@ -44,7 +44,7 @@
             <div>{{ data.info?.rdb_last_bgsave_status }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="Key数量">
-            <div>{{ data.dbSize }}</div>
+            <div>{{ data.db_size }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="网络入口/出口">
             <div>{{ data.info?.instantaneous_input_kbps }}</div>

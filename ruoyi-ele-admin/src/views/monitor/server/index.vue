@@ -24,7 +24,7 @@
               <tbody>
                 <tr>
                   <td>核心数</td>
-                  <td style="text-align: center">{{ data.cpu?.cpuNum }}</td>
+                  <td style="text-align: center">{{ data.cpu?.cpu_num }}</td>
                 </tr>
                 <tr>
                   <td>用户使用率</td>
@@ -43,6 +43,7 @@
           </ele-loading>
         </ele-card>
       </el-col>
+      <!-- 内存 & Python 内存 -->
       <el-col :md="12" :sm="24" :xs="24">
         <ele-card>
           <template #header>
@@ -61,25 +62,25 @@
               <thead>
                 <tr>
                   <th>属性</th>
-                  <th style="text-align: center">内存</th>
-                  <th style="text-align: center">JVM</th>
+                  <th style="text-align: center">系统内存</th>
+                  <th style="text-align: center">Python 内存</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td>总内存</td>
-                  <td style="text-align: center">{{ data.mem?.total }}G</td>
-                  <td style="text-align: center">{{ data.jvm?.total }}M</td>
+                  <td style="text-align: center">{{ data.mem?.total }}</td>
+                  <td style="text-align: center">{{ data.py?.total }}</td>
                 </tr>
                 <tr>
                   <td>已用内存</td>
-                  <td style="text-align: center">{{ data.mem?.used }}G</td>
-                  <td style="text-align: center">{{ data.jvm?.used }}M</td>
+                  <td style="text-align: center">{{ data.mem?.used }}</td>
+                  <td style="text-align: center">{{ data.py?.used }}</td>
                 </tr>
                 <tr>
                   <td>剩余内存</td>
-                  <td style="text-align: center">{{ data.mem?.free }}G</td>
-                  <td style="text-align: center">{{ data.jvm?.free }}M</td>
+                  <td style="text-align: center">{{ data.mem?.free }}</td>
+                  <td style="text-align: center">{{ data.py?.free }}</td>
                 </tr>
                 <tr>
                   <td>使用率</td>
@@ -89,8 +90,8 @@
                     </ele-text>
                   </td>
                   <td style="text-align: center">
-                    <ele-text :type="data.jvm?.usage > 80 ? 'danger' : void 0">
-                      {{ data.jvm?.usage }}%
+                    <ele-text :type="data.py?.usage > 80 ? 'danger' : void 0">
+                      {{ data.py?.usage }}%
                     </ele-text>
                   </td>
                 </tr>
@@ -135,7 +136,7 @@
         <el-icon :size="17" style="vertical-align: -2.5px; margin-right: 8px">
           <CoffeeCup />
         </el-icon>
-        <span>Java虚拟机信息</span>
+        <span>Python 解释器信息</span>
       </template>
       <ele-loading :loading="loading">
         <el-descriptions
@@ -143,30 +144,28 @@
           :column="mobile ? 1 : 2"
           class="detail-table"
         >
-          <el-descriptions-item label="Java名称">
-            <div style="word-break: break-all">{{ data.jvm?.name }}</div>
+          <el-descriptions-item label="Python 名称">
+            <div>{{ data.py?.name }}</div>
           </el-descriptions-item>
-          <el-descriptions-item label="Java版本">
-            <div style="word-break: break-all">{{ data.jvm?.version }}</div>
+          <el-descriptions-item label="Python 版本">
+            <div>{{ data.py?.version }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="启动时间">
-            <div style="word-break: break-all">{{ data.jvm?.start_time }}</div>
+            <div>{{ data.py?.start_time }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="运行时长">
-            <div style="word-break: break-all">{{ data.jvm?.run_time }}</div>
+            <div>{{ data.py?.run_time }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="安装路径" :span="2">
-            <div style="word-break: break-all">{{ data.jvm?.home }}</div>
+            <div>{{ data.py?.home }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="项目路径" :span="2">
-            <div style="word-break: break-all">{{ data.sys?.user_dir }}</div>
-          </el-descriptions-item>
-          <el-descriptions-item label="运行参数" :span="2">
-            <div style="word-break: break-all">{{ data.jvm?.inputArgs }}</div>
+            <div>{{ data.sys?.user_dir }}</div>
           </el-descriptions-item>
         </el-descriptions>
       </ele-loading>
     </ele-card>
+
     <ele-card>
       <template #header>
         <el-icon :size="17" style="vertical-align: -3px; margin-right: 8px">
@@ -178,7 +177,7 @@
         <ele-pro-table
           row-key="dir_name"
           :columns="columns"
-          :datasource="data.sysFiles || []"
+          :datasource="data.sys_files || []"
           :show-overflow-tooltip="true"
           :pagination="false"
           :toolbar="false"
@@ -190,13 +189,7 @@
 
 <script setup>
   import { ref } from 'vue';
-  import {
-    Cpu,
-    Odometer,
-    Monitor,
-    CoffeeCup,
-    PieChart
-  } from '@element-plus/icons-vue';
+  import { Cpu, Odometer, CoffeeCup, PieChart } from '@element-plus/icons-vue';
   import { EleMessage } from 'ele-admin-plus/es';
   import { useMobile } from '@/utils/use-mobile';
   import { getServer } from '@/api/monitor/server';
