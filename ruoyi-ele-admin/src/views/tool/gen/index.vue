@@ -6,7 +6,7 @@
       <!-- 表格 -->
       <ele-pro-table
         ref="tableRef"
-        row-key="tableId"
+        row-key="table_id"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
@@ -63,7 +63,7 @@
     <!-- 导入弹窗 -->
     <gen-import v-model="showImport" @done="reload" />
     <!-- 预览弹窗 -->
-    <gen-preview :id="current?.tableId" v-model="showPreview" />
+    <gen-preview :id="current?.table_id" v-model="showPreview" />
   </ele-page>
 </template>
 
@@ -104,19 +104,19 @@
       fixed: 'left'
     },
     {
-      prop: 'tableName',
+      prop: 'table_name',
       label: '表名称',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'tableComment',
+      prop: 'table_comment',
       label: '表描述',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'className',
+      prop: 'class_name',
       label: '实体',
       align: 'center',
       minWidth: 110
@@ -192,13 +192,13 @@
       return;
     }
     ElMessageBox.confirm(
-      `是否确认删除表名称为"${rows.map((d) => d.tableName).join()}"的数据项?`,
+      `是否确认删除表名称为"${rows.map((d) => d.table_name).join()}"的数据项?`,
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
         const loading = EleMessage.loading('请求中..');
-        removeGens(rows.map((d) => d.tableId))
+        removeGens(rows.map((d) => d.table_id))
           .then(() => {
             loading.close();
             EleMessage.success('删除成功');
@@ -215,13 +215,13 @@
   /** 同步 */
   const sync = (row) => {
     ElMessageBox.confirm(
-      '确认要强制同步“' + row.tableName + '”的表结构吗？',
+      '确认要强制同步“' + row.table_name + '”的表结构吗？',
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
         const loading = EleMessage.loading('请求中..');
-        synchDb(row.tableName)
+        synchDb(row.table_name)
           .then(() => {
             loading.close();
             EleMessage.success('同步成功');
@@ -242,19 +242,19 @@
       return;
     }
     const loading = EleMessage.loading('请求中..');
-    if (row && row.genType == '1') {
-      genCode(row.tableName)
+    if (row && row.gen_type == '1') {
+      genCode(row.table_name)
         .then(() => {
           loading.close();
-          EleMessage.success('成功生成到自定义路径:' + row.genPath);
+          EleMessage.success('成功生成到自定义路径:' + row.gen_path);
         })
         .catch((e) => {
           loading.close();
           EleMessage.error(e.message);
         });
     } else {
-      const names = selections.value.map((d) => d.tableName).join();
-      genCodeZip({ tables: row ? row.tableName : names })
+      const names = selections.value.map((d) => d.table_name).join();
+      genCodeZip({ tables: row ? row.table_name : names })
         .then(() => {
           loading.close();
         })

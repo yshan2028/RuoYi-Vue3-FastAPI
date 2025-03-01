@@ -7,7 +7,7 @@
           <el-form-item label="表名称">
             <el-input
               clearable
-              v-model.trim="form.tableName"
+              v-model.trim="form.table_name"
               placeholder="请输入"
             />
           </el-form-item>
@@ -16,7 +16,7 @@
           <el-form-item label="表描述">
             <el-input
               clearable
-              v-model.trim="form.tableComment"
+              v-model.trim="form.table_comment"
               placeholder="请输入"
             />
           </el-form-item>
@@ -54,8 +54,8 @@
 
   /** 表单数据 */
   const { form, resetFields } = useFormData({
-    tableName: '',
-    tableComment: ''
+    table_name: '',
+    table_comment: ''
   });
 
   /** 日期范围 */

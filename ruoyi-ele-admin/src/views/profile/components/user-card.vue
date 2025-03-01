@@ -51,7 +51,7 @@
         </el-icon>
         <div class="info-item-text">
           <span>所属角色:</span>
-          <span>{{ data.roleGroup }}</span>
+          <span>{{ data.role_group }}</span>
         </div>
       </div>
     </div>
