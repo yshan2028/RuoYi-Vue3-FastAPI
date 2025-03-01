@@ -6,7 +6,7 @@
       <!-- 表格 -->
       <ele-pro-table
         ref="tableRef"
-        row-key="postId"
+        row-key="post_id"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
@@ -87,19 +87,19 @@
       fixed: 'left'
     },
     {
-      prop: 'postCode',
+      prop: 'post_code',
       label: '岗位编码',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'postName',
+      prop: 'post_name',
       label: '岗位名称',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'postSort',
+      prop: 'post_sort',
       label: '岗位排序',
       align: 'center',
       minWidth: 110
@@ -113,7 +113,7 @@
       slot: 'status'
     },
     {
-      prop: 'createTime',
+      prop: 'create_time',
       label: '创建时间',
       align: 'center',
       minWidth: 110
@@ -160,13 +160,13 @@
       return;
     }
     ElMessageBox.confirm(
-      `是否确认删除岗位编码为"${rows.map((d) => d.postCode).join()}"的数据项?`,
+      `是否确认删除岗位编码为"${rows.map((d) => d.post_code).join()}"的数据项?`,
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
         const loading = EleMessage.loading('请求中..');
-        removePosts(rows.map((d) => d.postId))
+        removePosts(rows.map((d) => d.post_id))
           .then(() => {
             loading.close();
             EleMessage.success('删除成功');

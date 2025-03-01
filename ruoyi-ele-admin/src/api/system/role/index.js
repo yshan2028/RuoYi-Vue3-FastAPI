@@ -47,9 +47,9 @@ export async function removeRole(id) {
 /**
  * 修改角色状态
  */
-export async function updateRoleStatus(roleId, status) {
+export async function updateRoleStatus(role_id, status) {
   const res = await request.put('/system/role/changeStatus', {
-    roleId,
+    role_id,
     status
   });
   if (res.data.code === 200) {

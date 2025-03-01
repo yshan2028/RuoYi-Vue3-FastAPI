@@ -10,21 +10,21 @@
     <el-form ref="formRef" :model="form" :rules="rules" label-width="92px">
       <el-row :gutter="16">
         <el-col :sm="12" :xs="24">
-          <el-form-item label="上级菜单" prop="parentId">
-            <menu-select v-model="form.parentId" />
+          <el-form-item label="上级菜单" prop="parent_id">
+            <menu-select v-model="form.parent_id" />
           </el-form-item>
-          <el-form-item label="菜单名称" prop="menuName">
+          <el-form-item label="菜单名称" prop="menu_name">
             <el-input
               clearable
               :maxlength="20"
-              v-model="form.menuName"
+              v-model="form.menu_name"
               placeholder="请输入菜单名称"
             />
           </el-form-item>
         </el-col>
         <el-col :sm="12" :xs="24">
-          <el-form-item label="菜单类型" prop="menuType">
-            <el-radio-group v-model="form.menuType" @change="onMenuTypeChange">
+          <el-form-item label="菜单类型" prop="menu_type">
+            <el-radio-group v-model="form.menu_type" @change="onMenuTypeChange">
               <el-radio label="M">目录</el-radio>
               <el-radio label="C">菜单</el-radio>
               <el-radio label="F">按钮</el-radio>
@@ -33,7 +33,7 @@
           <el-form-item label="打开方式">
             <el-radio-group
               v-model="form.openType"
-              :disabled="form.menuType == 'M' || form.menuType == 'F'"
+              :disabled="form.menu_type == 'M' || form.menu_type == 'F'"
               @change="onOpenTypeChange"
             >
               <el-radio :label="0">组件</el-radio>
@@ -47,7 +47,7 @@
       <el-row :gutter="16">
         <el-col :sm="12" :xs="24">
           <el-form-item label="菜单图标" prop="icon">
-            <icon-select v-model="form.icon" :disabled="form.menuType == 'F'" />
+            <icon-select v-model="form.icon" :disabled="form.menu_type == 'F'" />
           </el-form-item>
           <el-form-item prop="path">
             <template #label>
@@ -68,7 +68,7 @@
               clearable
               :maxlength="100"
               v-model="form.path"
-              :disabled="form.menuType == 'F'"
+              :disabled="form.menu_type == 'F'"
               :placeholder="
                 form.openType === 2 ? '请输入外链地址' : '请输入路由地址'
               "
@@ -94,8 +94,8 @@
               :maxlength="100"
               v-model="form.component"
               :disabled="
-                form.menuType == 'M' ||
-                form.menuType == 'F' ||
+                form.menu_type == 'M' ||
+                form.menu_type == 'F' ||
                 form.openType === 2
               "
               :placeholder="
@@ -123,8 +123,8 @@
               :maxlength="200"
               v-model="form.query"
               :disabled="
-                form.menuType == 'M' ||
-                form.menuType == 'F' ||
+                form.menu_type == 'M' ||
+                form.menu_type == 'F' ||
                 form.openType === 2 ||
                 form.openType === 1
               "
@@ -146,16 +146,16 @@
               v-model="form.perms"
               placeholder="请输入权限字符"
               :disabled="
-                form.menuType == 'M' ||
-                (form.menuType == 'C' && form.openType === 2)
+                form.menu_type == 'M' ||
+                (form.menu_type == 'C' && form.openType === 2)
               "
             />
           </el-form-item>
-          <el-form-item label="显示排序" prop="orderNum">
+          <el-form-item label="显示排序" prop="order_num">
             <el-input-number
               :min="0"
               :max="99999"
-              v-model="form.orderNum"
+              v-model="form.order_num"
               placeholder="请输入显示排序"
               controls-position="right"
               class="ele-fluid"
@@ -166,7 +166,7 @@
               code="sys_show_hide"
               type="radio"
               v-model="form.visible"
-              :disabled="form.menuType == 'F'"
+              :disabled="form.menu_type == 'F'"
             />
             <ele-tooltip
               content="选择不展示只注册路由不展示在侧边栏, 比如添加页面应该选择不展示"
@@ -177,12 +177,12 @@
               </el-icon>
             </ele-tooltip>
           </el-form-item>
-          <el-form-item label="是否缓存" prop="isCache">
+          <el-form-item label="是否缓存" prop="is_cache">
             <el-radio-group
-              v-model="form.isCache"
+              v-model="form.is_cache"
               :disabled="
-                form.menuType == 'M' ||
-                form.menuType == 'F' ||
+                form.menu_type == 'M' ||
+                form.menu_type == 'F' ||
                 form.openType === 2
               "
             >
@@ -219,7 +219,7 @@
     /** 修改回显的数据 */
     data: Object,
     /** 上级菜单id */
-    parentId: Number
+    parent_id: Number
   });
 
   /** 是否是修改 */
@@ -233,10 +233,10 @@
 
   /** 表单数据 */
   const { form, resetFields, assignFields } = useFormData({
-    menuId: void 0,
-    parentId: void 0,
-    menuName: '',
-    menuType: 'M',
+    menu_id: void 0,
+    parent_id: void 0,
+    menu_name: '',
+    menu_type: 'M',
     openType: 0,
     icon: '',
     path: '',
@@ -244,14 +244,14 @@
     query: '',
     status: '0',
     perms: '',
-    orderNum: void 0,
+    order_num: void 0,
     visible: '0',
-    isCache: '0'
+    is_cache: '0'
   });
 
   /** 表单验证规则 */
   const rules = reactive({
-    menuName: [
+    menu_name: [
       {
         required: true,
         type: 'string',
@@ -259,7 +259,7 @@
         trigger: 'blur'
       }
     ],
-    orderNum: [
+    order_num: [
       {
         required: true,
         type: 'number',
@@ -297,7 +297,7 @@
       }
       loading.value = true;
       const saveOrUpdate = isUpdate.value ? updateMenu : addMenu;
-      saveOrUpdate({ ...form, isFrame: form.openType == 2 ? '0' : '1' })
+      saveOrUpdate({ ...form, is_frame: form.openType == 2 ? '0' : '1' })
         .then((msg) => {
           loading.value = false;
           EleMessage.success(msg);
@@ -318,20 +318,20 @@
 
   /** 菜单类型选择改变 */
   const onMenuTypeChange = () => {
-    if (form.menuType == 'M') {
+    if (form.menu_type == 'M') {
       form.perms = '';
       form.openType = 0;
       form.component = '';
-      form.isCache = '0';
+      form.is_cache = '0';
       form.query = '';
       formRef.value?.clearValidate?.('query');
-    } else if (form.menuType == 'F') {
+    } else if (form.menu_type == 'F') {
       form.openType = 0;
       form.icon = '';
       form.path = '';
       form.component = '';
       form.visible = '0';
-      form.isCache = '0';
+      form.is_cache = '0';
       form.query = '';
       formRef.value?.clearValidate?.('query');
     }
@@ -342,7 +342,7 @@
     if (form.openType === 2) {
       form.component = '';
       form.perms = '';
-      form.isCache = '0';
+      form.is_cache = '0';
       form.query = '';
       formRef.value?.clearValidate?.('query');
     } else if (form.openType === 1) {
@@ -356,16 +356,16 @@
     (modelValue) => {
       if (modelValue) {
         if (props.data) {
-          const isExternal = props.data.isFrame == '0';
+          const isExternal = props.data.is_frame == '0';
           const isInner = isExternalLink(props.data.component);
           assignFields({
             ...props.data,
-            menuType: isExternal ? 'C' : props.data.menuType,
+            menu_type: isExternal ? 'C' : props.data.menu_type,
             openType: isExternal ? 2 : isInner ? 1 : 0
           });
           isUpdate.value = true;
         } else {
-          form.parentId = props.parentId;
+          form.parent_id = props.parent_id;
           isUpdate.value = false;
         }
       } else {

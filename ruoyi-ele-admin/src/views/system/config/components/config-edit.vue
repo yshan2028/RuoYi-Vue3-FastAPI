@@ -8,32 +8,32 @@
     @update:modelValue="updateModelValue"
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-      <el-form-item label="参数名称" prop="configName">
+      <el-form-item label="参数名称" prop="config_name">
         <el-input
           clearable
           :maxlength="20"
-          v-model="form.configName"
+          v-model="form.config_name"
           placeholder="请输入参数名称"
         />
       </el-form-item>
-      <el-form-item label="参数键名" prop="configKey">
+      <el-form-item label="参数键名" prop="config_key">
         <el-input
           clearable
           :maxlength="20"
-          v-model="form.configKey"
+          v-model="form.config_key"
           placeholder="请输入参数键名"
         />
       </el-form-item>
-      <el-form-item label="参数键值" prop="configValue">
+      <el-form-item label="参数键值" prop="config_value">
         <el-input
           clearable
           :maxlength="20"
-          v-model="form.configValue"
+          v-model="form.config_value"
           placeholder="请输入参数键值"
         />
       </el-form-item>
-      <el-form-item label="系统内置" prop="configType">
-        <dict-data code="sys_yes_no" type="radio" v-model="form.configType" />
+      <el-form-item label="系统内置" prop="config_type">
+        <dict-data code="sys_yes_no" type="radio" v-model="form.config_type" />
       </el-form-item>
       <el-form-item label="备注">
         <el-input
@@ -79,17 +79,17 @@
 
   /** 表单数据 */
   const { form, resetFields, assignFields } = useFormData({
-    configId: void 0,
-    configName: '',
-    configKey: '',
-    configValue: '',
-    configType: 'Y',
+    config_id: void 0,
+    config_name: '',
+    config_key: '',
+    config_value: '',
+    config_type: 'Y',
     remark: ''
   });
 
   /** 表单验证规则 */
   const rules = reactive({
-    configName: [
+    config_name: [
       {
         required: true,
         message: '请输入参数名称',
@@ -97,7 +97,7 @@
         trigger: 'blur'
       }
     ],
-    configKey: [
+    config_key: [
       {
         required: true,
         message: '请输入参数键名',
@@ -105,7 +105,7 @@
         trigger: 'blur'
       }
     ],
-    configValue: [
+    config_value: [
       {
         required: true,
         message: '请输入参数键值',

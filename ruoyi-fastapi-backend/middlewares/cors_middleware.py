@@ -11,8 +11,8 @@ def add_cors_middleware(app: FastAPI):
     """
     # 前端页面url
     origins = [
-        'http://localhost:8088',
-        'http://127.0.0.1:8088',
+        'http://localhost',
+        'http://127.0.0.1',
     ]
 
     # 后台api允许跨域

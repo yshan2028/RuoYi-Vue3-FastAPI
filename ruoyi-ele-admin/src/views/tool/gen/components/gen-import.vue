@@ -76,13 +76,13 @@
       minWidth: 110
     },
     {
-      prop: 'createTime',
+      prop: 'create_time',
       label: '创建时间',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'updateTime',
+      prop: 'update_time',
       label: '更新时间',
       align: 'center',
       minWidth: 110

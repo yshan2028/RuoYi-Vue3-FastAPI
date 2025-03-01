@@ -41,11 +41,11 @@
           导出
         </el-button>
       </template>
-      <template #jobGroup="{ row }">
+      <template #job_group="{ row }">
         <dict-data
           code="sys_job_group"
           type="tag"
-          :model-value="row.jobGroup"
+          :model-value="row.job_group"
         />
       </template>
       <template #status="{ row }">
@@ -114,20 +114,20 @@
         fixed: 'left'
       },
       {
-        prop: 'jobName',
+        prop: 'job_name',
         label: '任务名称',
         align: 'center',
         minWidth: 110
       },
       {
-        prop: 'jobGroup',
+        prop: 'job_group',
         label: '任务组名',
         align: 'center',
         minWidth: 110,
-        slot: 'jobGroup'
+        slot: 'job_group'
       },
       {
-        prop: 'invokeTarget',
+        prop: 'invoke_target',
         label: '调用目标字符串',
         align: 'center',
         minWidth: 140
@@ -145,12 +145,12 @@
         align: 'center',
         slot: 'status',
         filters: statusDicts.value.map((d) => {
-          return { text: d.dictLabel, value: d.dictValue };
+          return { text: d.dict_label, value: d.dict_value };
         }),
         filterMultiple: false
       },
       {
-        prop: 'createTime',
+        prop: 'create_time',
         label: '执行时间',
         align: 'center',
         minWidth: 110
@@ -179,8 +179,8 @@
   const datasource = ({ page, limit, where, filters }) => {
     const params = { ...where, ...filters, pageNum: page, pageSize: limit };
     if (props.data) {
-      params.jobName = props.data?.jobName;
-      params.jobGroup = props.data?.jobGroup;
+      params.job_name = props.data?.job_name;
+      params.job_group = props.data?.job_group;
     }
     return pageJobLogs(params);
   };
@@ -224,8 +224,8 @@
     tableRef.value?.fetch?.(({ where, filters }) => {
       const params = { ...where, ...filters };
       if (props.data) {
-        params.jobName = props.data?.jobName;
-        params.jobGroup = props.data?.jobGroup;
+        params.job_name = props.data?.job_name;
+        params.job_group = props.data?.job_group;
       }
       exportJobLogs(params)
         .then(() => {

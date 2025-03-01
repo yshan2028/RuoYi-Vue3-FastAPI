@@ -32,8 +32,8 @@
             ref="treeRef"
             :data="data"
             highlight-current
-            node-key="deptId"
-            :props="{ label: 'deptName' }"
+            node-key="dept_id"
+            :props="{ label: 'dept_name' }"
             :expand-on-click-node="false"
             :default-expand-all="true"
             :filter-node-method="filterNode"
@@ -41,7 +41,7 @@
           />
         </ele-loading>
         <template #body>
-          <user-list v-if="current" :dept-id="current.deptId" />
+          <user-list v-if="current" :dept-id="current.dept_id" />
         </template>
       </ele-split-panel>
     </ele-card>
@@ -85,8 +85,8 @@
         loading.value = false;
         data.value = toTree({
           data: list,
-          idField: 'deptId',
-          parentIdField: 'parentId'
+          idField: 'dept_id',
+          parentIdField: 'parent_id'
         });
         nextTick(() => {
           onNodeClick(data.value[0]);
@@ -104,9 +104,9 @@
     if (current.value != null && mobile.value) {
       splitRef.value?.toggleCollapse?.(true);
     }
-    if (row && row.deptId) {
+    if (row && row.dept_id) {
       current.value = row;
-      treeRef.value?.setCurrentKey?.(row.deptId);
+      treeRef.value?.setCurrentKey?.(row.dept_id);
     } else {
       current.value = null;
     }
@@ -115,7 +115,7 @@
   /** 树过滤方法 */
   const filterNode = (value, data) => {
     if (value) {
-      return data.deptName && data.deptName.includes(value);
+      return data.dept_name && data.dept_name.includes(value);
     }
     return true;
   };

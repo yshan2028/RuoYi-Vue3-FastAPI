@@ -8,44 +8,44 @@
     @update:modelValue="updateModelValue"
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-      <el-form-item label="数据标签" prop="dictLabel">
+      <el-form-item label="数据标签" prop="dict_label">
         <el-input
           clearable
           :maxlength="20"
-          v-model="form.dictLabel"
+          v-model="form.dict_label"
           placeholder="请输入数据标签"
         />
       </el-form-item>
-      <el-form-item label="数据键值" prop="dictValue">
+      <el-form-item label="数据键值" prop="dict_value">
         <el-input
           clearable
           :maxlength="20"
-          v-model="form.dictValue"
+          v-model="form.dict_value"
           placeholder="请输入数据键值"
         />
       </el-form-item>
-      <el-form-item label="样式属性" prop="cssClass">
+      <el-form-item label="样式属性" prop="css_class">
         <el-input
           clearable
           :maxlength="200"
-          v-model="form.cssClass"
+          v-model="form.css_class"
           placeholder="请输入样式属性"
         />
       </el-form-item>
-      <el-form-item label="显示排序" prop="dictSort">
+      <el-form-item label="显示排序" prop="dict_sort">
         <el-input-number
           :min="0"
           :max="9999"
-          v-model="form.dictSort"
+          v-model="form.dict_sort"
           placeholder="请输入显示排序"
           controls-position="right"
           class="ele-fluid"
         />
       </el-form-item>
-      <el-form-item label="回显样式" prop="listClass">
+      <el-form-item label="回显样式" prop="list_class">
         <el-select
           clearable
-          v-model="form.listClass"
+          v-model="form.list_class"
           placeholder="请选择回显样式"
           class="ele-fluid"
         >
@@ -97,7 +97,7 @@
     /** 修改回显的数据 */
     data: Object,
     /** 字典类型 */
-    dictType: String
+    dict_type: String
   });
 
   /** 是否是修改 */
@@ -111,19 +111,19 @@
 
   /** 表单数据 */
   const { form, resetFields, assignFields } = useFormData({
-    dictCode: void 0,
-    dictLabel: '',
-    dictValue: '',
-    cssClass: '',
-    dictSort: void 0,
-    listClass: '',
+    dict_code: void 0,
+    dict_label: '',
+    dict_value: '',
+    css_class: '',
+    dict_sort: void 0,
+    list_class: '',
     status: '0',
     remark: ''
   });
 
   /** 表单验证规则 */
   const rules = reactive({
-    dictLabel: [
+    dict_label: [
       {
         required: true,
         message: '请输入数据标签',
@@ -131,7 +131,7 @@
         trigger: 'blur'
       }
     ],
-    dictValue: [
+    dict_value: [
       {
         required: true,
         message: '请输入数据键值',
@@ -139,7 +139,7 @@
         trigger: 'blur'
       }
     ],
-    dictSort: [
+    dict_sort: [
       {
         required: true,
         message: '请输入显示排序',
@@ -159,7 +159,7 @@
       const saveOrUpdate = isUpdate.value ? updateDictData : addDictData;
       saveOrUpdate({
         ...form,
-        dictType: props.dictType
+        dict_type: props.dict_type
       })
         .then((msg) => {
           loading.value = false;

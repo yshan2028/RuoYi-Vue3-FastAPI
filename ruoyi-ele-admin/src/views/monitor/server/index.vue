@@ -115,17 +115,17 @@
         >
           <el-descriptions-item label="服务器名称">
             <div style="word-break: break-all">
-              {{ data.sys?.computerName }}
+              {{ data.sys?.computer_name }}
             </div>
           </el-descriptions-item>
           <el-descriptions-item label="操作系统">
-            <div>{{ data.sys?.osName }}</div>
+            <div>{{ data.sys?.os_name }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="服务器IP">
-            <div>{{ data.sys?.computerIp }}</div>
+            <div>{{ data.sys?.computer_ip }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="系统架构">
-            <div>{{ data.sys?.osArch }}</div>
+            <div>{{ data.sys?.os_arch }}</div>
           </el-descriptions-item>
         </el-descriptions>
       </ele-loading>
@@ -150,16 +150,16 @@
             <div style="word-break: break-all">{{ data.jvm?.version }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="启动时间">
-            <div style="word-break: break-all">{{ data.jvm?.startTime }}</div>
+            <div style="word-break: break-all">{{ data.jvm?.start_time }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="运行时长">
-            <div style="word-break: break-all">{{ data.jvm?.runTime }}</div>
+            <div style="word-break: break-all">{{ data.jvm?.run_time }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="安装路径" :span="2">
             <div style="word-break: break-all">{{ data.jvm?.home }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="项目路径" :span="2">
-            <div style="word-break: break-all">{{ data.sys?.userDir }}</div>
+            <div style="word-break: break-all">{{ data.sys?.user_dir }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="运行参数" :span="2">
             <div style="word-break: break-all">{{ data.jvm?.inputArgs }}</div>
@@ -176,7 +176,7 @@
       </template>
       <ele-loading :loading="loading">
         <ele-pro-table
-          row-key="dirName"
+          row-key="dir_name"
           :columns="columns"
           :datasource="data.sysFiles || []"
           :show-overflow-tooltip="true"
@@ -207,17 +207,17 @@
 
   const columns = ref([
     {
-      prop: 'dirName',
+      prop: 'dir_name',
       label: '盘符路径',
       align: 'center'
     },
     {
-      prop: 'sysTypeName',
+      prop: 'sys_type_name',
       label: '文件系统',
       align: 'center'
     },
     {
-      prop: 'typeName',
+      prop: 'type_name',
       label: '盘符类型',
       align: 'center'
     },

@@ -6,7 +6,7 @@
       <!-- 表格 -->
       <ele-pro-table
         ref="tableRef"
-        row-key="operId"
+        row-key="oper_id"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
@@ -43,11 +43,11 @@
             :model-value="row.status"
           />
         </template>
-        <template #businessType="{ row }">
+        <template #business_type="{ row }">
           <dict-data
             code="sys_oper_type"
             type="tag"
-            :model-value="row.businessType"
+            :model-value="row.business_type"
           />
         </template>
         <template #action="{ row }">
@@ -110,31 +110,31 @@
         minWidth: 110
       },
       {
-        prop: 'businessType',
+        prop: 'business_type',
         label: '操作类型',
         width: 110,
-        slot: 'businessType',
+        slot: 'business_type',
         align: 'center',
         filters: operTypeDicts.value.map((d) => {
-          return { text: d.dictLabel, value: d.dictValue };
+          return { text: d.dict_label, value: d.dict_value };
         }),
         filterMultiple: false
       },
       {
-        prop: 'operName',
+        prop: 'oper_name',
         label: '操作人员',
         sortable: 'custom',
         align: 'center',
         minWidth: 110
       },
       {
-        prop: 'operIp',
+        prop: 'oper_ip',
         label: '操作地址',
         align: 'center',
         minWidth: 110
       },
       {
-        prop: 'operLocation',
+        prop: 'oper_location',
         label: '操作地点',
         align: 'center',
         minWidth: 110
@@ -146,23 +146,23 @@
         slot: 'status',
         align: 'center',
         filters: statusDicts.value.map((d) => {
-          return { text: d.dictLabel, value: d.dictValue };
+          return { text: d.dict_label, value: d.dict_value };
         }),
         filterMultiple: false
       },
       {
-        prop: 'operTime',
+        prop: 'oper_time',
         label: '操作日期',
         sortable: 'custom',
         align: 'center',
         minWidth: 110
       },
       {
-        prop: 'costTime',
+        prop: 'cost_time',
         label: '消耗时间',
         sortable: 'custom',
         align: 'center',
-        formatter: (row) => `${row.costTime}毫秒`,
+        formatter: (row) => `${row.cost_time}毫秒`,
         width: 110
       },
       {
@@ -228,7 +228,7 @@
       EleMessage.error('请至少选择一条数据');
       return;
     }
-    const ids = selections.value.map((d) => d.operId);
+    const ids = selections.value.map((d) => d.oper_id);
     ElMessageBox.confirm(
       `是否确认删除日志编号为"${ids.join()}"的数据项?`,
       '系统提示',

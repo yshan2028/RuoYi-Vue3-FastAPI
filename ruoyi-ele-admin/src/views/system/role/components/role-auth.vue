@@ -9,7 +9,7 @@
     <el-form label-width="80px">
       <el-form-item label="权限范围">
         <el-select
-          v-model="dataScope"
+          v-model="data_scope"
           placeholder="请选择权限范围"
           class="ele-fluid"
         >
@@ -20,7 +20,7 @@
           <el-option value="5" label="仅本人数据权限" />
         </el-select>
       </el-form-item>
-      <el-form-item v-if="dataScope == 2" label="数据权限">
+      <el-form-item v-if="data_scope == 2" label="数据权限">
         <ele-loading :loading="treeLoading" class="role-auth-tree">
           <div style="line-height: 1; padding: 0 6px 0 0">
             <el-button
@@ -105,14 +105,14 @@
   const checkedKeys = ref([]);
 
   /** 权限范围 */
-  const dataScope = ref('');
+  const data_scope = ref('');
 
   /** 提交状态 */
   const loading = ref(false);
 
   /** 获取选中节点id */
   const getCheckedIds = () => {
-    if (dataScope.value != 2) {
+    if (data_scope.value != 2) {
       return [];
     }
     const ids = treeRef.value?.getCheckedKeys?.() ?? [];
@@ -124,8 +124,8 @@
   const save = () => {
     loading.value = true;
     setDataScope({
-      roleId: props.data?.roleId,
-      dataScope: dataScope.value,
+      role_id: props.data?.role_id,
+      data_scope: data_scope.value,
       deptIds: getCheckedIds()
     })
       .then(() => {
@@ -180,7 +180,7 @@
     treeData.value = [];
     checkedKeys.value = [];
     treeLoading.value = true;
-    listDataScope(props.data?.roleId)
+    listDataScope(props.data?.role_id)
       .then((result) => {
         treeLoading.value = false;
         treeData.value = result.depts;
@@ -202,10 +202,10 @@
     () => props.modelValue,
     (modelValue) => {
       if (modelValue && props.data) {
-        dataScope.value = props.data.dataScope;
+        data_scope.value = props.data.data_scope;
         query();
       } else {
-        dataScope.value = '';
+        data_scope.value = '';
       }
     }
   );

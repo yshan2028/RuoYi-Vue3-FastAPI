@@ -11,7 +11,7 @@
     <role-user-search style="margin-bottom: -8px" @search="reload" />
     <ele-pro-table
       ref="tableRef"
-      row-key="userId"
+      row-key="user_id"
       :columns="columns"
       :datasource="datasource"
       :show-overflow-tooltip="true"
@@ -51,7 +51,7 @@
     </ele-pro-table>
   </ele-drawer>
   <!-- 选择用户弹窗 -->
-  <role-user-select v-model="showEdit" :role-id="data?.roleId" @done="reload" />
+  <role-user-select v-model="showEdit" :role-id="data?.role_id" @done="reload" />
 </template>
 
 <script setup>
@@ -92,13 +92,13 @@
       fixed: 'left'
     },
     {
-      prop: 'userName',
+      prop: 'user_name',
       label: '用户名称',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'nickName',
+      prop: 'nick_name',
       label: '用户昵称',
       align: 'center',
       minWidth: 110
@@ -123,7 +123,7 @@
       slot: 'status'
     },
     {
-      prop: 'createTime',
+      prop: 'create_time',
       label: '创建时间',
       align: 'center',
       width: 168
@@ -150,7 +150,7 @@
       ...where,
       pageNum: page,
       pageSize: limit,
-      roleId: props.data?.roleId
+      role_id: props.data?.role_id
     });
   };
 
@@ -172,15 +172,15 @@
       return;
     }
     ElMessageBox.confirm(
-      `确认要取消该用户“${rows.map((d) => d.userName).join()}”的角色吗?`,
+      `确认要取消该用户“${rows.map((d) => d.user_name).join()}”的角色吗?`,
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
         const loading = EleMessage.loading('请求中..');
         removeRoleUsers({
-          roleId: props.data?.roleId,
-          userIds: rows.map((d) => d.userId).join()
+          role_id: props.data?.role_id,
+          userIds: rows.map((d) => d.user_id).join()
         })
           .then(() => {
             loading.close();

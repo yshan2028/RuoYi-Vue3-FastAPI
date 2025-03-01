@@ -6,7 +6,7 @@
       <!-- 表格 -->
       <ele-pro-table
         ref="tableRef"
-        row-key="roleId"
+        row-key="role_id"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
@@ -117,19 +117,19 @@
       fixed: 'left'
     },
     {
-      prop: 'roleName',
+      prop: 'role_name',
       label: '角色名称',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'roleKey',
+      prop: 'role_key',
       label: '权限字符',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'roleSort',
+      prop: 'role_sort',
       label: '显示顺序',
       align: 'center',
       minWidth: 110
@@ -142,7 +142,7 @@
       slot: 'status'
     },
     {
-      prop: 'createTime',
+      prop: 'create_time',
       label: '创建时间',
       align: 'center',
       minWidth: 110
@@ -195,13 +195,13 @@
       return;
     }
     ElMessageBox.confirm(
-      `是否确认删除角色名称为"${rows.map((d) => d.roleName).join()}"的数据项?`,
+      `是否确认删除角色名称为"${rows.map((d) => d.role_name).join()}"的数据项?`,
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
         const loading = EleMessage.loading('请求中..');
-        removeRoles(rows.map((d) => d.roleId))
+        removeRoles(rows.map((d) => d.role_id))
           .then(() => {
             loading.close();
             EleMessage.success('删除成功');
@@ -233,7 +233,7 @@
   /** 修改用户状态 */
   const editStatus = (checked, row) => {
     const status = checked ? '0' : '1';
-    updateRoleStatus(row.roleId, status)
+    updateRoleStatus(row.role_id, status)
       .then((msg) => {
         row.status = status;
         EleMessage.success(msg);

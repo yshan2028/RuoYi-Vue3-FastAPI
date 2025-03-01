@@ -6,7 +6,7 @@
         <el-form-item label="用户名称">
           <el-input
             clearable
-            v-model.trim="form.userName"
+            v-model.trim="form.user_name"
             placeholder="请输入"
           />
         </el-form-item>
@@ -37,7 +37,7 @@
 
   /** 表单数据 */
   const { form, resetFields } = useFormData({
-    userName: '',
+    user_name: '',
     phonenumber: ''
   });
 

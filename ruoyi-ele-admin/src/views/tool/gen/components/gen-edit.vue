@@ -404,15 +404,15 @@
                 >
                   <el-select
                     clearable
-                    v-model="row.dictType"
+                    v-model="row.dict_type"
                     placeholder="请选择"
                     class="ele-fluid"
                   >
                     <el-option
                       v-for="item in dictOptions"
-                      :key="item.dictType"
-                      :value="item.dictType"
-                      :label="`${item.dictName}(${item.dictType})`"
+                      :key="item.dict_type"
+                      :value="item.dict_type"
+                      :label="`${item.dict_name}(${item.dict_type})`"
                     />
                   </el-select>
                 </el-form-item>

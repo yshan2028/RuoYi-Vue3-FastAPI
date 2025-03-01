@@ -16,10 +16,10 @@
         <div>{{ data.jobLogId }}</div>
       </el-descriptions-item>
       <el-descriptions-item label="任务分组">
-        <div>{{ data.jobGroup }}</div>
+        <div>{{ data.job_group }}</div>
       </el-descriptions-item>
       <el-descriptions-item label="任务名称">
-        <div>{{ data.jobName }}</div>
+        <div>{{ data.job_name }}</div>
       </el-descriptions-item>
       <el-descriptions-item label="执行状态">
         <dict-data
@@ -29,7 +29,7 @@
         />
       </el-descriptions-item>
       <el-descriptions-item label="调用方法" :span="2">
-        <div>{{ data.invokeTarget }}</div>
+        <div>{{ data.invoke_target }}</div>
       </el-descriptions-item>
       <el-descriptions-item label="日志信息" :span="2">
         <div>{{ data.jobMessage }}</div>
@@ -38,7 +38,7 @@
         <div>{{ data.exceptionInfo }}</div>
       </el-descriptions-item>
       <el-descriptions-item label="执行时间" :span="2">
-        <div>{{ data.createTime }}</div>
+        <div>{{ data.create_time }}</div>
       </el-descriptions-item>
     </el-descriptions>
   </ele-modal>

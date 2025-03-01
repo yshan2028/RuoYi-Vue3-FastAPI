@@ -6,7 +6,7 @@
       <!-- 表格 -->
       <ele-pro-table
         ref="tableRef"
-        row-key="configId"
+        row-key="config_id"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
@@ -38,11 +38,11 @@
             刷新缓存
           </el-button>
         </template>
-        <template #configType="{ row }">
+        <template #config_type="{ row }">
           <dict-data
             code="sys_yes_no"
             type="tag"
-            :model-value="row.configType"
+            :model-value="row.config_type"
           />
         </template>
         <template #action="{ row }">
@@ -95,29 +95,29 @@
       fixed: 'left'
     },
     {
-      prop: 'configName',
+      prop: 'config_name',
       label: '参数名称',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'configKey',
+      prop: 'config_key',
       label: '参数键名',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'configValue',
+      prop: 'config_value',
       label: '参数键值',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'configType',
+      prop: 'config_type',
       label: '系统内置',
       width: 90,
       align: 'center',
-      slot: 'configType'
+      slot: 'config_type'
     },
     {
       prop: 'remark',
@@ -126,7 +126,7 @@
       minWidth: 110
     },
     {
-      prop: 'createTime',
+      prop: 'create_time',
       label: '创建时间',
       align: 'center',
       minWidth: 110
@@ -173,13 +173,13 @@
       return;
     }
     ElMessageBox.confirm(
-      `是否确认删除参数键名为"${rows.map((d) => d.configKey).join()}"的数据项?`,
+      `是否确认删除参数键名为"${rows.map((d) => d.config_key).join()}"的数据项?`,
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
         const loading = EleMessage.loading('请求中..');
-        removeConfigs(rows.map((d) => d.configId))
+        removeConfigs(rows.map((d) => d.config_id))
           .then(() => {
             loading.close();
             EleMessage.success('删除成功');

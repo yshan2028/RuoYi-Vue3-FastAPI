@@ -8,27 +8,27 @@
     @update:modelValue="updateModelValue"
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-      <el-form-item label="岗位名称" prop="postName">
+      <el-form-item label="岗位名称" prop="post_name">
         <el-input
           clearable
           :maxlength="20"
-          v-model="form.postName"
+          v-model="form.post_name"
           placeholder="请输入岗位名称"
         />
       </el-form-item>
-      <el-form-item label="岗位编码" prop="postCode">
+      <el-form-item label="岗位编码" prop="post_code">
         <el-input
           clearable
           :maxlength="20"
-          v-model="form.postCode"
+          v-model="form.post_code"
           placeholder="请输入岗位编码"
         />
       </el-form-item>
-      <el-form-item label="岗位排序" prop="postSort">
+      <el-form-item label="岗位排序" prop="post_sort">
         <el-input-number
           :min="0"
           :max="99999"
-          v-model="form.postSort"
+          v-model="form.post_sort"
           placeholder="请输入岗位排序"
           controls-position="right"
           class="ele-fluid"
@@ -85,17 +85,17 @@
 
   /** 表单数据 */
   const { form, resetFields, assignFields } = useFormData({
-    postId: void 0,
-    postName: '',
-    postCode: '',
-    postSort: 0,
+    post_id: void 0,
+    post_name: '',
+    post_code: '',
+    post_sort: 0,
     status: '0',
     remark: ''
   });
 
   /** 表单验证规则 */
   const rules = reactive({
-    postName: [
+    post_name: [
       {
         required: true,
         message: '请输入岗位名称',
@@ -103,7 +103,7 @@
         trigger: 'blur'
       }
     ],
-    postCode: [
+    post_code: [
       {
         required: true,
         message: '请输入岗位编码',
@@ -111,7 +111,7 @@
         trigger: 'blur'
       }
     ],
-    postSort: [
+    post_sort: [
       {
         required: true,
         message: '请输入岗位排序',

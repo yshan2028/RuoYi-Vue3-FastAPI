@@ -7,7 +7,7 @@
       <ele-pro-table
         sticky
         ref="tableRef"
-        row-key="menuId"
+        row-key="menu_id"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
@@ -40,7 +40,7 @@
             折叠全部
           </el-button>
         </template>
-        <template #menuName="{ row }">
+        <template #menu_name="{ row }">
           <el-icon
             v-if="row.icon && row.icon != '#'"
             :size="16"
@@ -48,11 +48,11 @@
           >
             <component :is="row.icon" />
           </el-icon>
-          <span>{{ row.menuName }}</span>
+          <span>{{ row.menu_name }}</span>
         </template>
-        <template #menuType="{ row }">
+        <template #menu_type="{ row }">
           <el-tag
-            v-if="row.isFrame == '0'"
+            v-if="row.is_frame == '0'"
             size="small"
             type="danger"
             :disable-transitions="true"
@@ -60,14 +60,14 @@
             外链
           </el-tag>
           <el-tag
-            v-else-if="row.menuType === 'M'"
+            v-else-if="row.menu_type === 'M'"
             size="small"
             :disable-transitions="true"
           >
             目录
           </el-tag>
           <el-tag
-            v-else-if="row.menuType === 'C'"
+            v-else-if="row.menu_type === 'C'"
             size="small"
             type="success"
             :disable-transitions="true"
@@ -75,7 +75,7 @@
             菜单
           </el-tag>
           <el-tag
-            v-else-if="row.menuType === 'F'"
+            v-else-if="row.menu_type === 'F'"
             size="small"
             type="info"
             :disable-transitions="true"
@@ -95,7 +95,7 @@
             <el-link
               type="primary"
               :underline="false"
-              @click="openEdit(null, row.menuId)"
+              @click="openEdit(null, row.menu_id)"
             >
               添加
             </el-link>
@@ -115,7 +115,7 @@
     <menu-edit
       v-model="showEdit"
       :data="current"
-      :parent-id="parentId"
+      :parent-id="parent_id"
       @done="reload"
     />
   </ele-page>
@@ -147,9 +147,9 @@
       fixed: 'left'
     },
     {
-      prop: 'menuName',
+      prop: 'menu_name',
       label: '菜单名称',
-      slot: 'menuName',
+      slot: 'menu_name',
       minWidth: 160
     },
     {
@@ -158,7 +158,7 @@
       minWidth: 110
     },
     {
-      prop: 'orderNum',
+      prop: 'order_num',
       label: '排序',
       align: 'center',
       width: 100
@@ -171,10 +171,10 @@
       width: 100
     },
     {
-      prop: 'menuType',
+      prop: 'menu_type',
       label: '类型',
       align: 'center',
-      slot: 'menuType',
+      slot: 'menu_type',
       width: 100
     },
     {
@@ -193,15 +193,15 @@
   const showEdit = ref(false);
 
   /** 上级菜单id */
-  const parentId = ref();
+  const parent_id = ref();
 
   /** 表格数据源 */
   const datasource = async ({ where }) => {
     const data = await listMenus({ ...where });
     return toTree({
       data,
-      idField: 'menuId',
-      parentIdField: 'parentId'
+      idField: 'menu_id',
+      parentIdField: 'parent_id'
     });
   };
 
@@ -213,20 +213,20 @@
   /** 打开编辑弹窗 */
   const openEdit = (row, id) => {
     current.value = row ?? null;
-    parentId.value = id;
+    parent_id.value = id;
     showEdit.value = true;
   };
 
   /** 删除单个 */
   const remove = (row) => {
     ElMessageBox.confirm(
-      `是否确认删除名称为“${row.menuName}”的数据项？`,
+      `是否确认删除名称为“${row.menu_name}”的数据项？`,
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
         const loading = EleMessage.loading('请求中..');
-        removeMenu(row.menuId)
+        removeMenu(row.menu_id)
           .then(() => {
             loading.close();
             EleMessage.success('删除成功');

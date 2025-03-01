@@ -9,7 +9,7 @@
   >
     <ele-pro-table
       ref="tableRef"
-      row-key="roleId"
+      row-key="role_id"
       :columns="columns"
       :datasource="datasource"
       :show-overflow-tooltip="true"
@@ -62,17 +62,17 @@
       fixed: 'left'
     },
     {
-      prop: 'roleName',
+      prop: 'role_name',
       label: '角色名称',
       minWidth: 110
     },
     {
-      prop: 'roleKey',
+      prop: 'role_key',
       label: '权限字符',
       minWidth: 110
     },
     {
-      prop: 'createTime',
+      prop: 'create_time',
       label: '创建时间',
       align: 'center',
       width: 180
@@ -96,8 +96,8 @@
   /** 保存编辑 */
   const save = () => {
     loading.value = true;
-    const roleIds = selections.value.map((d) => d.roleId).join();
-    setUserRole({ userId: props.data?.userId, roleIds })
+    const roleIds = selections.value.map((d) => d.role_id).join();
+    setUserRole({ user_id: props.data?.user_id, roleIds })
       .then(() => {
         loading.value = false;
         EleMessage.success('授权成功');
@@ -111,7 +111,7 @@
 
   /** 查询 */
   const query = () => {
-    getUserRole(props.data.userId)
+    getUserRole(props.data.user_id)
       .then((result) => {
         datasource.value = result.roles;
         nextTick(() => {

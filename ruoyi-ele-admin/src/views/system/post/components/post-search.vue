@@ -7,7 +7,7 @@
           <el-form-item label="岗位编码">
             <el-input
               clearable
-              v-model.trim="form.postCode"
+              v-model.trim="form.post_code"
               placeholder="请输入"
             />
           </el-form-item>
@@ -16,7 +16,7 @@
           <el-form-item label="岗位名称">
             <el-input
               clearable
-              v-model.trim="form.postName"
+              v-model.trim="form.post_name"
               placeholder="请输入"
             />
           </el-form-item>
@@ -48,8 +48,8 @@
 
   /** 表单数据 */
   const { form, resetFields } = useFormData({
-    postCode: '',
-    postName: '',
+    post_code: '',
+    post_name: '',
     status: void 0
   });
 

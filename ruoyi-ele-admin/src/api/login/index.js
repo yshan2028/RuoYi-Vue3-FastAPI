@@ -5,7 +5,11 @@ import { setToken } from '@/utils/token-util';
  * 登录
  */
 export async function login(data) {
-  const res = await request.post('/login', data);
+  const res = await request.post('/login', data, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  });
   if (res.data.code === 200) {
     setToken('Bearer ' + res.data.token, data.remember);
     return res.data.msg;

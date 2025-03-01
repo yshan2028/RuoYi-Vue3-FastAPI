@@ -10,9 +10,9 @@
   >
     <el-option
       v-for="item in data"
-      :key="item.postId"
-      :value="item.postId"
-      :label="item.postName"
+      :key="item.post_id"
+      :value="item.post_id"
+      :label="item.post_name"
     />
   </el-select>
 </template>

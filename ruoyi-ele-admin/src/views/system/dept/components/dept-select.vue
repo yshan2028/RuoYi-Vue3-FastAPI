@@ -5,8 +5,8 @@
     check-strictly
     default-expand-all
     :data="data"
-    node-key="deptId"
-    :props="{ label: 'deptName' }"
+    node-key="dept_id"
+    :props="{ label: 'dept_name' }"
     :model-value="modelValue"
     :placeholder="placeholder"
     class="ele-fluid"
@@ -44,8 +44,8 @@
     .then((list) => {
       data.value = toTree({
         data: list,
-        idField: 'deptId',
-        parentIdField: 'parentId'
+        idField: 'dept_id',
+        parentIdField: 'parent_id'
       });
     })
     .catch((e) => {

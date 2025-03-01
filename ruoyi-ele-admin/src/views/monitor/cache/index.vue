@@ -128,7 +128,7 @@
     .then((res) => {
       loading.value = false;
       data.value = res;
-      const commandStats = res.commandStats || [];
+      const command_stats = res.command_stats || [];
       //
       Object.assign(commandChartOption, {
         tooltip: {
@@ -148,7 +148,7 @@
             label: {
               formatter: '{b}({d}%)'
             },
-            data: commandStats.sort((a, b) => a.name.localeCompare(b.name))
+            data: command_stats.sort((a, b) => a.name.localeCompare(b.name))
           }
         ]
       });

@@ -10,11 +10,11 @@
     <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
       <el-row :gutter="16">
         <el-col :sm="12" :xs="24">
-          <el-form-item label="用户昵称" prop="nickName">
+          <el-form-item label="用户昵称" prop="nick_name">
             <el-input
               clearable
               :maxlength="20"
-              v-model="form.nickName"
+              v-model="form.nick_name"
               placeholder="请输入用户名"
               autocomplete="off"
             />
@@ -27,11 +27,11 @@
               placeholder="请输入手机号码"
             />
           </el-form-item>
-          <el-form-item v-if="!isUpdate" label="用户名称" prop="userName">
+          <el-form-item v-if="!isUpdate" label="用户名称" prop="user_name">
             <el-input
               clearable
               :maxlength="20"
-              v-model="form.userName"
+              v-model="form.user_name"
               placeholder="请输入用户名称"
             />
           </el-form-item>
@@ -48,7 +48,7 @@
         </el-col>
         <el-col :sm="12" :xs="24">
           <el-form-item label="归属部门">
-            <dept-select v-model="form.deptId" />
+            <dept-select v-model="form.dept_id" />
           </el-form-item>
           <el-form-item label="邮箱" prop="email">
             <el-input
@@ -117,7 +117,7 @@
     /** 修改回显的数据 */
     data: Object,
     /** 部门id */
-    deptId: Number
+    dept_id: Number
   });
 
   /** 是否是修改 */
@@ -131,11 +131,11 @@
 
   /** 表单数据 */
   const { form, resetFields, assignFields } = useFormData({
-    userId: void 0,
-    deptId: void 0,
-    nickName: '',
+    user_id: void 0,
+    dept_id: void 0,
+    nick_name: '',
     phonenumber: '',
-    userName: '',
+    user_name: '',
     sex: void 0,
     email: '',
     password: '',
@@ -147,7 +147,7 @@
 
   /** 表单验证规则 */
   const rules = reactive({
-    nickName: [
+    nick_name: [
       {
         required: true,
         message: '请输入用户名',
@@ -163,7 +163,7 @@
         trigger: 'blur'
       }
     ],
-    userName: [
+    user_name: [
       {
         required: true,
         message: '请输入用户名称',
@@ -244,7 +244,7 @@
       if (modelValue) {
         if (props.data) {
           assignFields({ ...props.data, password: '' });
-          getUser(props.data.userId)
+          getUser(props.data.user_id)
             .then((data) => {
               assignFields({
                 ...props.data,
@@ -258,7 +258,7 @@
             });
           isUpdate.value = true;
         } else {
-          form.deptId = props.deptId;
+          form.dept_id = props.dept_id;
           isUpdate.value = false;
         }
       } else {

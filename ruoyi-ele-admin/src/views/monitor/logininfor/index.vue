@@ -6,7 +6,7 @@
       <!-- 表格 -->
       <ele-pro-table
         ref="tableRef"
-        row-key="infoId"
+        row-key="info_id"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
@@ -95,7 +95,7 @@
         fixed: 'left'
       },
       {
-        prop: 'userName',
+        prop: 'user_name',
         label: '用户名称',
         sortable: 'custom',
         align: 'center',
@@ -108,7 +108,7 @@
         minWidth: 110
       },
       {
-        prop: 'loginLocation',
+        prop: 'login_location',
         label: '登录地点',
         align: 'center',
         minWidth: 110
@@ -132,7 +132,7 @@
         slot: 'status',
         align: 'center',
         filters: statusDicts.value.map((d) => {
-          return { text: d.dictLabel, value: d.dictValue };
+          return { text: d.dict_label, value: d.dict_value };
         }),
         filterMultiple: false
       },
@@ -143,7 +143,7 @@
         minWidth: 110
       },
       {
-        prop: 'loginTime',
+        prop: 'login_time',
         label: '登录日期',
         sortable: 'custom',
         align: 'center',
@@ -192,7 +192,7 @@
       EleMessage.error('请至少选择一条数据');
       return;
     }
-    const ids = selections.value.map((d) => d.infoId);
+    const ids = selections.value.map((d) => d.info_id);
     ElMessageBox.confirm(
       `是否确认删除访问编号为"${ids.join()}"的数据项?`,
       '系统提示',
@@ -246,17 +246,17 @@
       EleMessage.error('只能选择一条数据');
       return;
     }
-    const userName = selections.value[0].userName;
-    ElMessageBox.confirm(`是否确认解锁用户"${userName}"数据项?`, '系统提示', {
+    const user_name = selections.value[0].user_name;
+    ElMessageBox.confirm(`是否确认解锁用户"${user_name}"数据项?`, '系统提示', {
       type: 'warning',
       draggable: true
     })
       .then(() => {
         const loading = EleMessage.loading('请求中..');
-        unlockLogininfors(userName)
+        unlockLogininfors(user_name)
           .then(() => {
             loading.close();
-            EleMessage.success(`用户${userName}解锁成功`);
+            EleMessage.success(`用户${user_name}解锁成功`);
             reload();
           })
           .catch((e) => {

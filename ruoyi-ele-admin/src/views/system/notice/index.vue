@@ -6,7 +6,7 @@
       <!-- 表格 -->
       <ele-pro-table
         ref="tableRef"
-        row-key="noticeId"
+        row-key="notice_id"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
@@ -39,11 +39,11 @@
             :model-value="row.status"
           />
         </template>
-        <template #noticeType="{ row }">
+        <template #notice_type="{ row }">
           <dict-data
             code="sys_notice_type"
             type="tag"
-            :model-value="row.noticeType"
+            :model-value="row.notice_type"
           />
         </template>
         <template #action="{ row }">
@@ -91,16 +91,16 @@
       fixed: 'left'
     },
     {
-      prop: 'noticeTitle',
+      prop: 'notice_title',
       label: '公告标题',
       minWidth: 160
     },
     {
-      prop: 'noticeType',
+      prop: 'notice_type',
       label: '公告类型',
       width: 90,
       align: 'center',
-      slot: 'noticeType'
+      slot: 'notice_type'
     },
     {
       prop: 'status',
@@ -110,13 +110,13 @@
       slot: 'status'
     },
     {
-      prop: 'createBy',
+      prop: 'create_by',
       label: '创建者',
       width: 100,
       align: 'center'
     },
     {
-      prop: 'createTime',
+      prop: 'create_time',
       label: '创建时间',
       width: 160,
       align: 'center'
@@ -162,7 +162,7 @@
       EleMessage.error('请至少选择一条数据');
       return;
     }
-    const ids = rows.map((d) => d.noticeId);
+    const ids = rows.map((d) => d.notice_id);
     ElMessageBox.confirm(
       `是否确认删除公告编号为"${ids.join()}"的数据项?`,
       '系统提示',

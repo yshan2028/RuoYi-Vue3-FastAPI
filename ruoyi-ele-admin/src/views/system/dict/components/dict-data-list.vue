@@ -7,7 +7,7 @@
   <!-- 表格 -->
   <ele-pro-table
     ref="tableRef"
-    row-key="dictCode"
+    row-key="dict_code"
     :columns="columns"
     :datasource="datasource"
     :show-overflow-tooltip="true"
@@ -57,7 +57,7 @@
   <dict-data-edit
     v-model="showEdit"
     :data="current"
-    :dict-type="dictType"
+    :dict-type="dict_type"
     @done="reload"
   />
 </template>
@@ -77,7 +77,7 @@
 
   const props = defineProps({
     /** 字典类型 */
-    dictType: String
+    dict_type: String
   });
 
   /** 搜索栏实例 */
@@ -96,19 +96,19 @@
       fixed: 'left'
     },
     {
-      prop: 'dictLabel',
+      prop: 'dict_label',
       label: '数据标签',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'dictValue',
+      prop: 'dict_value',
       label: '数据键值',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'dictSort',
+      prop: 'dict_sort',
       label: '显示排序',
       width: 110,
       align: 'center'
@@ -127,7 +127,7 @@
       minWidth: 110
     },
     {
-      prop: 'createTime',
+      prop: 'create_time',
       label: '创建时间',
       align: 'center',
       minWidth: 110
@@ -157,7 +157,7 @@
       ...orders,
       pageNum: page,
       pageSize: limit,
-      dictType: props.dictType
+      dict_type: props.dict_type
     });
   };
 
@@ -180,7 +180,7 @@
       return;
     }
     ElMessageBox.confirm(
-      `是否确认删除数据标签为"${rows.map((d) => d.dictLabel).join()}"的数据项?`,
+      `是否确认删除数据标签为"${rows.map((d) => d.dict_label).join()}"的数据项?`,
       '系统提示',
       {
         type: 'warning',
@@ -189,7 +189,7 @@
     )
       .then(() => {
         const loading = EleMessage.loading('请求中..');
-        removeDictDataBatch(rows.map((d) => d.dictCode))
+        removeDictDataBatch(rows.map((d) => d.dict_code))
           .then(() => {
             loading.close();
             EleMessage.success('删除成功');
@@ -220,7 +220,7 @@
 
   // 监听字典id变化
   watch(
-    () => props.dictType,
+    () => props.dict_type,
     () => {
       searchRef.value?.resetFields?.();
       reload({});

@@ -59,9 +59,9 @@ export async function removeJobs(ids) {
 /**
  * 修改定时任务状态
  */
-export async function updateJobStatus(jobId, status) {
+export async function updateJobStatus(job_id, status) {
   const res = await request.put('/monitor/job/changeStatus', {
-    jobId,
+    job_id,
     status
   });
   if (res.data.code === 200) {
@@ -86,10 +86,10 @@ export async function exportJobs(params) {
 /**
  * 执行定时任务
  */
-export async function runJob(jobId, jobGroup) {
+export async function runJob(job_id, job_group) {
   const res = await request.put('/monitor/job/run', {
-    jobId,
-    jobGroup
+    job_id,
+    job_group
   });
   if (res.data.code === 200) {
     return res.data.msg;

@@ -3,7 +3,7 @@
   <!-- 表格 -->
   <ele-pro-table
     ref="tableRef"
-    row-key="userId"
+    row-key="user_id"
     :columns="columns"
     :datasource="datasource"
     :show-overflow-tooltip="true"
@@ -87,7 +87,7 @@
   <user-edit
     :data="current"
     v-model="showEdit"
-    :dept-id="deptId"
+    :dept-id="dept_id"
     @done="reload"
   />
   <!-- 导入弹窗 -->
@@ -122,7 +122,7 @@
 
   const props = defineProps({
     /** 部门id */
-    deptId: Number
+    dept_id: Number
   });
 
   const { hasPermission } = usePermission();
@@ -150,19 +150,19 @@
       fixed: 'left'
     },
     {
-      prop: 'userName',
+      prop: 'user_name',
       label: '用户名称',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'nickName',
+      prop: 'nick_name',
       label: '用户昵称',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'dept.deptName',
+      prop: 'dept.dept_name',
       label: '部门',
       align: 'center',
       minWidth: 110
@@ -181,7 +181,7 @@
       slot: 'status'
     },
     {
-      prop: 'createTime',
+      prop: 'create_time',
       label: '创建时间',
       align: 'center',
       minWidth: 110
@@ -229,7 +229,7 @@
       ...orders,
       pageNum: page,
       pageSize: limit,
-      deptId: props.deptId
+      dept_id: props.dept_id
     });
   };
 
@@ -257,13 +257,13 @@
       return;
     }
     ElMessageBox.confirm(
-      `是否确认删除用户名称为"${rows.map((d) => d.userName).join()}"的数据项？`,
+      `是否确认删除用户名称为"${rows.map((d) => d.user_name).join()}"的数据项？`,
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
         const loading = EleMessage.loading('请求中..');
-        removeUsers(rows.map((d) => d.userId))
+        removeUsers(rows.map((d) => d.user_id))
           .then(() => {
             loading.close();
             EleMessage.success('删除成功');
@@ -280,7 +280,7 @@
   /** 修改用户状态 */
   const editStatus = (checked, row) => {
     const status = checked ? '0' : '1';
-    updateUserStatus(row.userId, status)
+    updateUserStatus(row.user_id, status)
       .then((msg) => {
         row.status = status;
         EleMessage.success(msg);
@@ -293,7 +293,7 @@
   /** 下拉菜单点击事件 */
   const dropClick = (key, row) => {
     if (key === 'password') {
-      ElMessageBox.prompt(`请输入"${row.userName}"的新密码:`, '重置密码', {
+      ElMessageBox.prompt(`请输入"${row.user_name}"的新密码:`, '重置密码', {
         inputPlaceholder: '请输入5-18位非空白字符',
         inputPattern: /^[\S]{5,18}$/,
         inputErrorMessage: '密码必须为5-18位非空白字符',
@@ -301,7 +301,7 @@
         draggable: true
       })
         .then(({ value }) => {
-          updateUserPassword(row.userId, value)
+          updateUserPassword(row.user_id, value)
             .then((msg) => {
               EleMessage.success(msg);
             })
@@ -333,7 +333,7 @@
 
   // 监听机构 id 变化
   watch(
-    () => props.deptId,
+    () => props.dept_id,
     () => {
       searchRef.value?.resetFields?.();
       reload({});

@@ -67,7 +67,7 @@ export default defineConfig(({ command }) => {
     },
     server: {
       host: true, // 允许外部访问
-      port: 3000, // 设置默认端口为 80
+      port: 80, // 设置默认端口为 80
       strictPort: true, // 如果 80 端口被占用，就报错而不是换其他端口
       open: true // 启动后自动打开浏览器
     }

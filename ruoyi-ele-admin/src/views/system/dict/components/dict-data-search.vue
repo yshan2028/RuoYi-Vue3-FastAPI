@@ -6,7 +6,7 @@
         <el-form-item label="数据标签">
           <el-input
             clearable
-            v-model.trim="form.dictLabel"
+            v-model.trim="form.dict_label"
             placeholder="请输入"
           />
         </el-form-item>
@@ -37,7 +37,7 @@
 
   /** 表单数据 */
   const { form, resetFields } = useFormData({
-    dictLabel: '',
+    dict_label: '',
     status: void 0
   });
 

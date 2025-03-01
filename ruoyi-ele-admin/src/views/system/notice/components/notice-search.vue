@@ -7,7 +7,7 @@
           <el-form-item label="公告标题">
             <el-input
               clearable
-              v-model.trim="form.noticeTitle"
+              v-model.trim="form.notice_title"
               placeholder="请输入"
             />
           </el-form-item>
@@ -16,7 +16,7 @@
           <el-form-item label="创建者">
             <el-input
               clearable
-              v-model.trim="form.createBy"
+              v-model.trim="form.create_by"
               placeholder="请输入"
             />
           </el-form-item>
@@ -25,7 +25,7 @@
           <el-form-item label="公告类型">
             <dict-data
               code="sys_notice_type"
-              v-model="form.noticeType"
+              v-model="form.notice_type"
               placeholder="请选择"
             />
           </el-form-item>
@@ -48,9 +48,9 @@
 
   /** 表单数据 */
   const { form, resetFields } = useFormData({
-    noticeTitle: '',
-    createBy: '',
-    noticeType: void 0
+    notice_title: '',
+    create_by: '',
+    notice_type: void 0
   });
 
   /** 搜索 */
