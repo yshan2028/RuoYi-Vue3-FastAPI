@@ -16,17 +16,10 @@
 
 RuoYi-Vue3-FastAPI是一套全部开源的快速开发平台，毫无保留给个人及企业免费使用。
 
-* 前端采用Vue3、Element Plus，基于<u>[RuoYi-Vue3](https://github.com/yangzongzhuan/RuoYi-Vue3)</u>前端项目修改。
+* 前端采用Vue3、Element Plus 前端项目。
 * 后端采用FastAPI、sqlalchemy、MySQL（PostgreSQL）、Redis、OAuth2 & Jwt。
 * 权限认证使用OAuth2 & Jwt，支持多终端认证系统。
 * 支持加载动态权限菜单，多方式轻松权限控制。
-* Vue2版本：
-  - Gitte仓库地址：https://gitee.com/insistence2022/RuoYi-Vue-FastAPI
-  - GitHub仓库地址：https://github.com/insistence/RuoYi-Vue-FastAPI
-* 纯Python版本：
-  - Gitte仓库地址：https://gitee.com/insistence2022/dash-fastapi-admin
-  - GitHub仓库地址：https://github.com/insistence/Dash-FastAPI-Admin
-* 特别鸣谢：<u>[RuoYi-Vue3](https://github.com/yangzongzhuan/RuoYi-Vue3)</u>
 
 ## 内置功能
 
@@ -96,27 +89,16 @@ RuoYi-Vue3-FastAPI是一套全部开源的快速开发平台，毫无保留给�
     </tr>
 </table>
 
-## 在线体验
-- *账号：admin*
-- *密码：admin123*
-- 演示地址：<a href="https://vfadmin.insistence.tech">vfadmin管理系统<a>
 
 ## 项目开发及发布相关
 
 ### 开发
 
-```bash
-# 克隆项目
-git clone https://gitee.com/insistence2022/RuoYi-Vue3-FastAPI.git
-
-# 进入项目根目录
-cd RuoYi-Vue3-FastAPI
-```
 
 #### 前端
 ```bash
 # 进入前端目录
-cd ruoyi-fastapi-frontend
+cd ruoyi-ele-admin
 
 # 安装依赖
 npm install 或 yarn --registry=https://registry.npmmirror.com
@@ -178,15 +160,3 @@ npm run build:prod 或 yarn build:prod
 # 运行后端
 python3 app.py --env=prod
 ```
-
-## 交流与赞助
-如果有对本项目及FastAPI感兴趣的朋友，欢迎加入知识星球一起交流学习，让我们一起变得更强。如果你觉得这个项目帮助到了你，你可以请作者喝杯咖啡表示鼓励☕。扫描下面微信二维码添加微信备注VF-Admin即可进群。
-<table>
-    <tr>
-        <td><img alt="zsxq" src="https://gitee.com/insistence2022/RuoYi-Vue-FastAPI/raw/master/demo-pictures/zsxq.jpg"></td>
-        <td><img alt="zanzhu" src="https://gitee.com/insistence2022/RuoYi-Vue-FastAPI/raw/master/demo-pictures/zanzhu.jpg"></td>
-    </tr>
-    <tr>
-        <td><img alt="wxcode" src="https://gitee.com/insistence2022/RuoYi-Vue-FastAPI/raw/master/demo-pictures/wxcode.jpg"></td>
-    </tr>
-</table>

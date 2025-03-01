@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from config.enums import BusinessType
 from config.get_db import get_db
@@ -29,7 +29,7 @@ logController = APIRouter(prefix='/monitor', dependencies=[Depends(LoginService.
 )
 async def get_system_operation_log_list(
     request: Request,
-    operation_log_page_query: OperLogPageQueryModel = Depends(OperLogPageQueryModel.as_query),
+    operation_log_page_query: OperLogPageQueryModel = Query(),
     query_db: AsyncSession = Depends(get_db),
 ):
     # 获取分页数据
@@ -53,7 +53,7 @@ async def clear_system_operation_log(request: Request, query_db: AsyncSession = 
 @logController.delete('/operlog/{oper_ids}', dependencies=[Depends(CheckUserInterfaceAuth('monitor:operlog:remove'))])
 @Log(title='操作日志', business_type=BusinessType.DELETE)
 async def delete_system_operation_log(request: Request, oper_ids: str, query_db: AsyncSession = Depends(get_db)):
-    delete_operation_log = DeleteOperLogModel(operIds=oper_ids)
+    delete_operation_log = DeleteOperLogModel(oper_ids=oper_ids)
     delete_operation_log_result = await OperationLogService.delete_operation_log_services(
         query_db, delete_operation_log
     )
@@ -88,7 +88,7 @@ async def export_system_operation_log_list(
 )
 async def get_system_login_log_list(
     request: Request,
-    login_log_page_query: LoginLogPageQueryModel = Depends(LoginLogPageQueryModel.as_query),
+    login_log_page_query: LoginLogPageQueryModel = Query(),
     query_db: AsyncSession = Depends(get_db),
 ):
     # 获取分页数据
@@ -114,7 +114,7 @@ async def clear_system_login_log(request: Request, query_db: AsyncSession = Depe
 )
 @Log(title='登录日志', business_type=BusinessType.DELETE)
 async def delete_system_login_log(request: Request, info_ids: str, query_db: AsyncSession = Depends(get_db)):
-    delete_login_log = DeleteLoginLogModel(infoIds=info_ids)
+    delete_login_log = DeleteLoginLogModel(info_ids=info_ids)
     delete_login_log_result = await LoginLogService.delete_login_log_services(query_db, delete_login_log)
     logger.info(delete_login_log_result.message)
 
@@ -126,7 +126,7 @@ async def delete_system_login_log(request: Request, info_ids: str, query_db: Asy
 )
 @Log(title='账户解锁', business_type=BusinessType.OTHER)
 async def unlock_system_user(request: Request, user_name: str, query_db: AsyncSession = Depends(get_db)):
-    unlock_user = UnlockUser(userName=user_name)
+    unlock_user = UnlockUser(user_name=user_name)
     unlock_user_result = await LoginLogService.unlock_user_services(request, unlock_user)
     logger.info(unlock_user_result.message)
 

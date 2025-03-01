@@ -1,11 +1,9 @@
 import re
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from pydantic.alias_generators import to_camel
 from pydantic_validation_decorator import Network, NotBlank, Size, Xss
 from typing import List, Literal, Optional, Union
 from exceptions.exception import ModelValidatorException
-from module_admin.annotation.pydantic_annotation import as_query
 from module_admin.entity.vo.dept_vo import DeptModel
 from module_admin.entity.vo.post_vo import PostModel
 from module_admin.entity.vo.role_vo import RoleModel
@@ -24,7 +22,7 @@ class UserModel(BaseModel):
     用户表对应pydantic模型
     """
 
-    model_config = ConfigDict(alias_generator=to_camel, from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)
 
     user_id: Optional[int] = Field(default=None, description='用户ID')
     dept_id: Optional[int] = Field(default=None, description='部门ID')
@@ -95,7 +93,7 @@ class UserRoleModel(BaseModel):
     用户和角色关联表对应pydantic模型
     """
 
-    model_config = ConfigDict(alias_generator=to_camel, from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)
 
     user_id: Optional[int] = Field(default=None, description='用户ID')
     role_id: Optional[int] = Field(default=None, description='角色ID')
@@ -106,7 +104,7 @@ class UserPostModel(BaseModel):
     用户与岗位关联表对应pydantic模型
     """
 
-    model_config = ConfigDict(alias_generator=to_camel, from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)
 
     user_id: Optional[int] = Field(default=None, description='用户ID')
     post_id: Optional[int] = Field(default=None, description='岗位ID')
@@ -120,8 +118,6 @@ class UserInfoModel(UserModel):
 
 
 class CurrentUserModel(BaseModel):
-    model_config = ConfigDict(alias_generator=to_camel)
-
     permissions: List = Field(description='权限信息')
     roles: List = Field(description='角色信息')
     user: Union[UserInfoModel, None] = Field(description='用户信息')
@@ -131,8 +127,6 @@ class UserDetailModel(BaseModel):
     """
     获取用户详情信息响应模型
     """
-
-    model_config = ConfigDict(alias_generator=to_camel)
 
     data: Optional[Union[UserInfoModel, None]] = Field(default=None, description='用户信息')
     post_ids: Optional[List] = Field(default=None, description='岗位ID信息')
@@ -145,8 +139,6 @@ class UserProfileModel(BaseModel):
     """
     获取个人信息响应模型
     """
-
-    model_config = ConfigDict(alias_generator=to_camel)
 
     data: Union[UserInfoModel, None] = Field(description='用户信息')
     post_group: Union[str, None] = Field(description='岗位信息')
@@ -162,7 +154,6 @@ class UserQueryModel(UserModel):
     end_time: Optional[str] = Field(default=None, description='结束时间')
 
 
-@as_query
 class UserPageQueryModel(UserQueryModel):
     """
     用户管理分页查询模型
@@ -195,8 +186,6 @@ class ResetPasswordModel(BaseModel):
     重置密码模型
     """
 
-    model_config = ConfigDict(alias_generator=to_camel)
-
     old_password: Optional[str] = Field(default=None, description='旧密码')
     new_password: Optional[str] = Field(default=None, description='新密码')
 
@@ -224,8 +213,6 @@ class DeleteUserModel(BaseModel):
     删除用户模型
     """
 
-    model_config = ConfigDict(alias_generator=to_camel)
-
     user_ids: str = Field(description='需要删除的用户ID')
     update_by: Optional[str] = Field(default=None, description='更新者')
     update_time: Optional[datetime] = Field(default=None, description='更新时间')
@@ -239,7 +226,6 @@ class UserRoleQueryModel(UserModel):
     role_id: Optional[int] = Field(default=None, description='角色ID')
 
 
-@as_query
 class UserRolePageQueryModel(UserRoleQueryModel):
     """
     用户角色关联管理分页查询模型
@@ -262,19 +248,14 @@ class UserRoleResponseModel(BaseModel):
     用户角色关联管理列表返回模型
     """
 
-    model_config = ConfigDict(alias_generator=to_camel)
-
     roles: List[Union[SelectedRoleModel, None]] = Field(default=[], description='角色信息')
     user: UserInfoModel = Field(description='用户信息')
 
 
-@as_query
 class CrudUserRoleModel(BaseModel):
     """
     新增、删除用户关联角色及角色关联用户模型
     """
-
-    model_config = ConfigDict(alias_generator=to_camel)
 
     user_id: Optional[int] = Field(default=None, description='用户ID')
     user_ids: Optional[str] = Field(default=None, description='用户ID信息')

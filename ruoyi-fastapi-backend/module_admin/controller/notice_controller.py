@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from pydantic_validation_decorator import ValidateFields
 from sqlalchemy.ext.asyncio import AsyncSession
 from config.enums import BusinessType
@@ -23,7 +23,7 @@ noticeController = APIRouter(prefix='/system/notice', dependencies=[Depends(Logi
 )
 async def get_system_notice_list(
     request: Request,
-    notice_page_query: NoticePageQueryModel = Depends(NoticePageQueryModel.as_query),
+    notice_page_query: NoticePageQueryModel = Query(),
     query_db: AsyncSession = Depends(get_db),
 ):
     # 获取分页数据
@@ -72,7 +72,7 @@ async def edit_system_notice(
 @noticeController.delete('/{notice_ids}', dependencies=[Depends(CheckUserInterfaceAuth('system:notice:remove'))])
 @Log(title='通知公告', business_type=BusinessType.DELETE)
 async def delete_system_notice(request: Request, notice_ids: str, query_db: AsyncSession = Depends(get_db)):
-    delete_notice = DeleteNoticeModel(noticeIds=notice_ids)
+    delete_notice = DeleteNoticeModel(notice_ids=notice_ids)
     delete_notice_result = await NoticeService.delete_notice_services(query_db, delete_notice)
     logger.info(delete_notice_result.message)
 

@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, Query, Request
 from pydantic_validation_decorator import ValidateFields
 from sqlalchemy.ext.asyncio import AsyncSession
 from config.enums import BusinessType
@@ -32,7 +32,7 @@ jobController = APIRouter(prefix='/monitor', dependencies=[Depends(LoginService.
 )
 async def get_system_job_list(
     request: Request,
-    job_page_query: JobPageQueryModel = Depends(JobPageQueryModel.as_query),
+    job_page_query: JobPageQueryModel = Query(),
     query_db: AsyncSession = Depends(get_db),
 ):
     # 获取分页数据
@@ -87,10 +87,10 @@ async def change_system_job_status(
     current_user: CurrentUserModel = Depends(LoginService.get_current_user),
 ):
     edit_job = EditJobModel(
-        jobId=change_job.job_id,
+        job_id=change_job.job_id,
         status=change_job.status,
-        updateBy=current_user.user.user_name,
-        updateTime=datetime.now(),
+        update_by=current_user.user.user_name,
+        update_time=datetime.now(),
         type='status',
     )
     edit_job_result = await JobService.edit_job_services(query_db, edit_job)
@@ -111,7 +111,7 @@ async def execute_system_job(request: Request, execute_job: JobModel, query_db: 
 @jobController.delete('/job/{job_ids}', dependencies=[Depends(CheckUserInterfaceAuth('monitor:job:remove'))])
 @Log(title='定时任务', business_type=BusinessType.DELETE)
 async def delete_system_job(request: Request, job_ids: str, query_db: AsyncSession = Depends(get_db)):
-    delete_job = DeleteJobModel(jobIds=job_ids)
+    delete_job = DeleteJobModel(job_ids=job_ids)
     delete_job_result = await JobService.delete_job_services(query_db, delete_job)
     logger.info(delete_job_result.message)
 
@@ -148,7 +148,7 @@ async def export_system_job_list(
 )
 async def get_system_job_log_list(
     request: Request,
-    job_log_page_query: JobLogPageQueryModel = Depends(JobLogPageQueryModel.as_query),
+    job_log_page_query: JobLogPageQueryModel = Query(),
     query_db: AsyncSession = Depends(get_db),
 ):
     # 获取分页数据
@@ -172,7 +172,7 @@ async def clear_system_job_log(request: Request, query_db: AsyncSession = Depend
 @jobController.delete('/jobLog/{job_log_ids}', dependencies=[Depends(CheckUserInterfaceAuth('monitor:job:remove'))])
 @Log(title='定时任务调度日志', business_type=BusinessType.DELETE)
 async def delete_system_job_log(request: Request, job_log_ids: str, query_db: AsyncSession = Depends(get_db)):
-    delete_job_log = DeleteJobLogModel(jobLogIds=job_log_ids)
+    delete_job_log = DeleteJobLogModel(job_log_ids=job_log_ids)
     delete_job_log_result = await JobLogService.delete_job_log_services(query_db, delete_job_log)
     logger.info(delete_job_log_result.message)
 

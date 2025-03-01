@@ -1,9 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
-from pydantic.alias_generators import to_camel
 from pydantic_validation_decorator import NotBlank, Size, Xss
 from typing import Literal, Optional
-from module_admin.annotation.pydantic_annotation import as_query
 
 
 class NoticeModel(BaseModel):
@@ -11,7 +9,7 @@ class NoticeModel(BaseModel):
     通知公告表对应pydantic模型
     """
 
-    model_config = ConfigDict(alias_generator=to_camel, from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)
 
     notice_id: Optional[int] = Field(default=None, description='公告ID')
     notice_title: Optional[str] = Field(default=None, description='公告标题')
@@ -43,7 +41,6 @@ class NoticeQueryModel(NoticeModel):
     end_time: Optional[str] = Field(default=None, description='结束时间')
 
 
-@as_query
 class NoticePageQueryModel(NoticeQueryModel):
     """
     通知公告管理分页查询模型
@@ -57,7 +54,5 @@ class DeleteNoticeModel(BaseModel):
     """
     删除通知公告模型
     """
-
-    model_config = ConfigDict(alias_generator=to_camel)
 
     notice_ids: str = Field(description='需要删除的公告ID')

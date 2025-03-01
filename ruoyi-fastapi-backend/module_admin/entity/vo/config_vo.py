@@ -1,9 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
-from pydantic.alias_generators import to_camel
 from pydantic_validation_decorator import NotBlank, Size
 from typing import Literal, Optional
-from module_admin.annotation.pydantic_annotation import as_query
 
 
 class ConfigModel(BaseModel):
@@ -11,7 +9,7 @@ class ConfigModel(BaseModel):
     参数配置表对应pydantic模型
     """
 
-    model_config = ConfigDict(alias_generator=to_camel, from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)
 
     config_id: Optional[int] = Field(default=None, description='参数主键')
     config_name: Optional[str] = Field(default=None, description='参数名称')
@@ -54,7 +52,6 @@ class ConfigQueryModel(ConfigModel):
     end_time: Optional[str] = Field(default=None, description='结束时间')
 
 
-@as_query
 class ConfigPageQueryModel(ConfigQueryModel):
     """
     参数配置管理分页查询模型
@@ -68,7 +65,5 @@ class DeleteConfigModel(BaseModel):
     """
     删除参数配置模型
     """
-
-    model_config = ConfigDict(alias_generator=to_camel)
 
     config_ids: str = Field(description='需要删除的参数主键')

@@ -1,0 +1,342 @@
+<template>
+  <user-search ref="searchRef" style="margin-bottom: -14px" @search="reload" />
+  <!-- 表格 -->
+  <ele-pro-table
+    ref="tableRef"
+    row-key="user_id"
+    :columns="columns"
+    :datasource="datasource"
+    :show-overflow-tooltip="true"
+    v-model:selections="selections"
+    highlight-current-row
+    cache-key="systemUserTable"
+  >
+    <template #toolbar>
+      <el-button
+        type="primary"
+        class="ele-btn-icon"
+        :icon="Plus"
+        v-permission="'system:user:add'"
+        @click="openEdit()"
+      >
+        新建
+      </el-button>
+      <el-button
+        type="danger"
+        class="ele-btn-icon hidden-sm-and-down"
+        :icon="Delete"
+        v-permission="'system:user:remove'"
+        @click="removeBatch()"
+      >
+        删除
+      </el-button>
+      <el-button
+        class="ele-btn-icon"
+        :icon="Upload"
+        v-permission="'system:user:import'"
+        @click="openImport"
+      >
+        导入
+      </el-button>
+      <el-button
+        class="ele-btn-icon"
+        :icon="Download"
+        v-permission="'system:user:export'"
+        @click="exportData"
+      >
+        导出
+      </el-button>
+    </template>
+    <template #status="{ row }">
+      <el-switch
+        size="small"
+        :model-value="row.status == 0"
+        @change="(checked) => editStatus(checked, row)"
+      />
+    </template>
+    <template #action="{ row }">
+      <el-link
+        type="primary"
+        :underline="false"
+        v-permission="'system:user:edit'"
+        @click="openEdit(row)"
+      >
+        修改
+      </el-link>
+      <el-divider v-permission="'system:user:remove'" direction="vertical" />
+      <el-link type="danger" :underline="false" @click="removeBatch(row)">
+        删除
+      </el-link>
+      <el-divider v-if="moreItems.length" direction="vertical" />
+      <ele-dropdown
+        v-if="moreItems.length"
+        :items="moreItems"
+        style="display: inline"
+        @command="(key) => dropClick(key, row)"
+      >
+        <el-link type="primary" :underline="false">
+          <span>更多</span>
+          <el-icon :size="12" style="vertical-align: -1px; margin-left: 2px">
+            <arrow-down />
+          </el-icon>
+        </el-link>
+      </ele-dropdown>
+    </template>
+  </ele-pro-table>
+  <!-- 编辑弹窗 -->
+  <user-edit
+    :data="current"
+    v-model="showEdit"
+    :dept-id="dept_id"
+    @done="reload"
+  />
+  <!-- 导入弹窗 -->
+  <user-import v-model="showImport" @done="reload" />
+  <!-- 分配角色弹窗 -->
+  <user-role v-model="showRole" :data="current" />
+</template>
+
+<script setup>
+  import { ref, watch, computed } from 'vue';
+  import {
+    Plus,
+    Delete,
+    ArrowDown,
+    Upload,
+    Download
+  } from '@element-plus/icons-vue';
+  import { ElMessageBox } from 'element-plus/es';
+  import { EleMessage } from 'ele-admin-plus/es';
+  import { usePermission } from '@/utils/use-permission';
+  import UserSearch from './user-search.vue';
+  import UserEdit from './user-edit.vue';
+  import UserImport from './user-import.vue';
+  import UserRole from './user-role.vue';
+  import {
+    pageUsers,
+    removeUsers,
+    updateUserStatus,
+    updateUserPassword,
+    exportUsers
+  } from '@/api/system/user';
+
+  const props = defineProps({
+    /** 部门id */
+    dept_id: Number
+  });
+
+  const { hasPermission } = usePermission();
+
+  /** 搜索栏实例 */
+  const searchRef = ref(null);
+
+  /** 表格实例 */
+  const tableRef = ref(null);
+
+  /** 表格列配置 */
+  const columns = ref([
+    {
+      type: 'selection',
+      columnKey: 'selection',
+      width: 50,
+      align: 'center',
+      fixed: 'left'
+    },
+    {
+      type: 'index',
+      columnKey: 'index',
+      width: 50,
+      align: 'center',
+      fixed: 'left'
+    },
+    {
+      prop: 'user_name',
+      label: '用户名称',
+      align: 'center',
+      minWidth: 110
+    },
+    {
+      prop: 'nick_name',
+      label: '用户昵称',
+      align: 'center',
+      minWidth: 110
+    },
+    {
+      prop: 'dept.dept_name',
+      label: '部门',
+      align: 'center',
+      minWidth: 110
+    },
+    {
+      prop: 'phonenumber',
+      label: '手机号码',
+      align: 'center',
+      minWidth: 110
+    },
+    {
+      prop: 'status',
+      label: '状态',
+      width: 90,
+      align: 'center',
+      slot: 'status'
+    },
+    {
+      prop: 'create_time',
+      label: '创建时间',
+      align: 'center',
+      minWidth: 110
+    },
+    {
+      columnKey: 'action',
+      label: '操作',
+      width: 180,
+      align: 'center',
+      slot: 'action'
+    }
+  ]);
+
+  /** 表格选中数据 */
+  const selections = ref([]);
+
+  /** 当前编辑数据 */
+  const current = ref(null);
+
+  /** 是否显示编辑弹窗 */
+  const showEdit = ref(false);
+
+  /** 是否显示用户导入弹窗 */
+  const showImport = ref(false);
+
+  /** 是否显示分配角色弹窗 */
+  const showRole = ref(false);
+
+  /** 操作列更多下拉菜单 */
+  const moreItems = computed(() => {
+    const items = [];
+    if (hasPermission('system:user:resetPwd')) {
+      items.push({ title: '重置密码', command: 'password' });
+    }
+    if (hasPermission('system:user:edit')) {
+      items.push({ title: '分配角色', command: 'role' });
+    }
+    return items;
+  });
+
+  /** 表格数据源 */
+  const datasource = ({ page, limit, where, orders }) => {
+    return pageUsers({
+      ...where,
+      ...orders,
+      pageNum: page,
+      pageSize: limit,
+      dept_id: props.dept_id
+    });
+  };
+
+  /** 搜索 */
+  const reload = (where) => {
+    tableRef.value?.reload?.({ page: 1, where });
+  };
+
+  /** 打开编辑弹窗 */
+  const openEdit = (row) => {
+    current.value = row ?? null;
+    showEdit.value = true;
+  };
+
+  /** 打开编辑弹窗 */
+  const openImport = () => {
+    showImport.value = true;
+  };
+
+  /** 批量删除 */
+  const removeBatch = (row) => {
+    const rows = row == null ? selections.value : [row];
+    if (!rows.length) {
+      EleMessage.error('请至少选择一条数据');
+      return;
+    }
+    ElMessageBox.confirm(
+      `是否确认删除用户名称为"${rows.map((d) => d.user_name).join()}"的数据项？`,
+      '系统提示',
+      { type: 'warning', draggable: true }
+    )
+      .then(() => {
+        const loading = EleMessage.loading('请求中..');
+        removeUsers(rows.map((d) => d.user_id))
+          .then(() => {
+            loading.close();
+            EleMessage.success('删除成功');
+            reload();
+          })
+          .catch((e) => {
+            loading.close();
+            EleMessage.error(e.message);
+          });
+      })
+      .catch(() => {});
+  };
+
+  /** 修改用户状态 */
+  const editStatus = (checked, row) => {
+    const status = checked ? '0' : '1';
+    updateUserStatus(row.user_id, status)
+      .then((msg) => {
+        row.status = status;
+        EleMessage.success(msg);
+      })
+      .catch((e) => {
+        EleMessage.error(e.message);
+      });
+  };
+
+  /** 下拉菜单点击事件 */
+  const dropClick = (key, row) => {
+    if (key === 'password') {
+      ElMessageBox.prompt(`请输入"${row.user_name}"的新密码:`, '重置密码', {
+        inputPlaceholder: '请输入5-18位非空白字符',
+        inputPattern: /^[\S]{5,18}$/,
+        inputErrorMessage: '密码必须为5-18位非空白字符',
+        customStyle: { '--ele-message-box-body-padding': '4px 20px 0 20px' },
+        draggable: true
+      })
+        .then(({ value }) => {
+          updateUserPassword(row.user_id, value)
+            .then((msg) => {
+              EleMessage.success(msg);
+            })
+            .catch((e) => {
+              EleMessage.error(e.message);
+            });
+        })
+        .catch(() => {});
+    } else if (key === 'role') {
+      current.value = row ?? null;
+      showRole.value = true;
+    }
+  };
+
+  /** 导出数据 */
+  const exportData = () => {
+    const loading = EleMessage.loading('请求中..');
+    tableRef.value?.fetch?.(({ where, orders, filters }) => {
+      exportUsers({ ...where, ...orders, ...filters })
+        .then(() => {
+          loading.close();
+        })
+        .catch((e) => {
+          loading.close();
+          EleMessage.error(e.message);
+        });
+    });
+  };
+
+  // 监听机构 id 变化
+  watch(
+    () => props.dept_id,
+    () => {
+      searchRef.value?.resetFields?.();
+      reload({});
+    }
+  );
+</script>
