@@ -37,6 +37,18 @@ class RoleService:
         return SqlalchemyUtil.serialize_result(role_list_result)
 
     @classmethod
+    async def get_role_all_services(cls, query_db: AsyncSession):
+        """
+        获取角色列表不分页信息service
+
+        :param query_db: orm对象
+        :return: 角色列表不分页信息对象
+        """
+        role_all_result = await RoleDao.get_role_all_dao(query_db)
+
+        return SqlalchemyUtil.serialize_result(role_all_result)
+
+    @classmethod
     async def get_role_dept_tree_services(cls, query_db: AsyncSession, role_id: int):
         """
         根据角色id获取部门树信息service

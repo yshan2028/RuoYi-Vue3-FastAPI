@@ -38,6 +38,14 @@ async def get_system_role_dept_tree(
     return ResponseUtil.success(model_content=role_dept_query_result)
 
 
+@roleController.get('/optionselect', dependencies=[Depends(CheckUserInterfaceAuth('system:role:list'))])
+async def get_system_role_all(request: Request,query_db: AsyncSession = Depends(get_db),):
+    # 获取全量数据
+    role_all_result = await RoleService.get_role_all_services(query_db)
+    logger.info('获取成功')
+
+    return ResponseUtil.success(data=role_all_result)
+
 @roleController.get(
     '/list', response_model=PageResponseModel, dependencies=[Depends(CheckUserInterfaceAuth('system:role:list'))]
 )

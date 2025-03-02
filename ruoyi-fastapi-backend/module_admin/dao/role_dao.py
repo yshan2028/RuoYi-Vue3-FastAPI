@@ -105,6 +105,20 @@ class RoleDao:
         return query_role_info
 
     @classmethod
+    async def get_role_all_dao(cls, db: AsyncSession):
+        """
+        获取编辑页面对应的在用角色列表信息
+
+        :param db: orm对象
+        :return: 角色列表信息
+        """
+        result = await db.execute(select(SysRole).where(SysRole.status == '0', SysRole.del_flag == '0').order_by(SysRole.role_sort))
+
+        role_all = result.scalars().all()
+
+        return role_all
+
+    @classmethod
     async def get_role_select_option_dao(cls, db: AsyncSession):
         """
         获取编辑页面对应的在用角色列表信息
