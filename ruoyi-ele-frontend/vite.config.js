@@ -4,7 +4,7 @@ import { resolve } from 'path';
 import Compression from 'vite-plugin-compression';
 import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
-import { EleAdminResolver } from 'ele-admin-plus/lib/utils/resolvers';
+import { EleAdminResolver } from 'ele-admin-plus/es/utils/resolvers';
 
 export default defineConfig(({ command }) => {
   const isBuild = command === 'build';
