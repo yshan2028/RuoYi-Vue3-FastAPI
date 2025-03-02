@@ -11,7 +11,10 @@
         :datasource="datasource"
         :show-overflow-tooltip="true"
         v-model:selections="selections"
-        highlight-current-row
+        :highlight-current-row="true"
+        :export-config="{ fileName: '角色数据', datasource: exportSource }"
+        :print-config="{ datasource: exportSource }"
+        :tools="['reload', 'export', 'print', 'size', 'columns', 'maximized']"
         cache-key="systemRoleTable"
       >
         <template #toolbar>
@@ -108,7 +111,8 @@
     pageRoles,
     removeRoles,
     exportRoles,
-    updateRoleStatus
+    updateRoleStatus,
+    listRoles
   } from '@/api/system/role';
 
   /** 表格实例 */
@@ -266,6 +270,11 @@
       current.value = row ?? null;
       showUser.value = true;
     }
+  };
+
+  /** 导出和打印全部数据的数据源 */
+  const exportSource = ({ where, orders }) => {
+    return listRoles({ ...where, ...orders });
   };
 </script>
 
