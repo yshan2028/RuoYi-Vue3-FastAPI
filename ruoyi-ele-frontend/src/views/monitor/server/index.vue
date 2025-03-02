@@ -62,24 +62,24 @@
                 <tr>
                   <th>属性</th>
                   <th style="text-align: center">内存</th>
-                  <th style="text-align: center">JVM</th>
+                  <th style="text-align: center">Py 内存</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td>总内存</td>
                   <td style="text-align: center">{{ data.mem?.total }}G</td>
-                  <td style="text-align: center">{{ data.jvm?.total }}M</td>
+                  <td style="text-align: center">{{ data.py?.total }}M</td>
                 </tr>
                 <tr>
                   <td>已用内存</td>
                   <td style="text-align: center">{{ data.mem?.used }}G</td>
-                  <td style="text-align: center">{{ data.jvm?.used }}M</td>
+                  <td style="text-align: center">{{ data.py?.used }}M</td>
                 </tr>
                 <tr>
                   <td>剩余内存</td>
                   <td style="text-align: center">{{ data.mem?.free }}G</td>
-                  <td style="text-align: center">{{ data.jvm?.free }}M</td>
+                  <td style="text-align: center">{{ data.py?.free }}M</td>
                 </tr>
                 <tr>
                   <td>使用率</td>
@@ -89,8 +89,8 @@
                     </ele-text>
                   </td>
                   <td style="text-align: center">
-                    <ele-text :type="data.jvm?.usage > 80 ? 'danger' : void 0">
-                      {{ data.jvm?.usage }}%
+                    <ele-text :type="data.py?.usage > 80 ? 'danger' : void 0">
+                      {{ data.py?.usage }}%
                     </ele-text>
                   </td>
                 </tr>

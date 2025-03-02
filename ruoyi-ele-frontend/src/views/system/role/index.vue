@@ -43,11 +43,21 @@
           />
         </template>
         <template #action="{ row }">
-          <el-link type="primary" :underline="false" @click="openEdit(row)">
+          <el-link
+            type="primary"
+            :underline="false"
+            :disabled="row.roleId === 1"
+            @click="row.roleId !== 1 && openEdit(row)"
+          >
             修改
           </el-link>
           <el-divider direction="vertical" />
-          <el-link type="danger" :underline="false" @click="removeBatch(row)">
+          <el-link
+            type="danger"
+            :underline="false"
+            :disabled="row.roleId === 1"
+            @click="row.roleId !== 1 && removeBatch(row)"
+          >
             删除
           </el-link>
           <el-divider direction="vertical" />
@@ -59,7 +69,11 @@
             style="display: inline"
             @command="(key) => dropClick(key, row)"
           >
-            <el-link type="primary" :underline="false">
+            <el-link
+              type="primary"
+              :underline="false"
+              :disabled="row.roleId === 1"
+            >
               <span>更多</span>
               <el-icon
                 :size="12"

@@ -60,10 +60,12 @@
             <el-link type="primary" :underline="false" @click="openEdit(row)">
               修改
             </el-link>
-            <el-divider direction="vertical" style="margin: 0 8px" />
-            <el-link type="danger" :underline="false" @click="remove(row)">
-              删除
-            </el-link>
+            <template v-if="row.parentId !== 0">
+              <el-divider direction="vertical" style="margin: 0 8px" />
+              <el-link type="danger" :underline="false" @click="remove(row)">
+                删除
+              </el-link>
+            </template>
           </div>
         </template>
       </ele-pro-table>

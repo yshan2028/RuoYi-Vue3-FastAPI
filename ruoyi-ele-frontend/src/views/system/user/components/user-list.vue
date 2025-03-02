@@ -59,12 +59,19 @@
         type="primary"
         :underline="false"
         v-permission="'system:user:edit'"
-        @click="openEdit(row)"
+        :disabled="row.userId === 1"
+        @click="row.userId !== 1 && openEdit(row)"
       >
         修改
       </el-link>
       <el-divider v-permission="'system:user:remove'" direction="vertical" />
-      <el-link type="danger" :underline="false" @click="removeBatch(row)">
+      <el-link
+        type="danger"
+        :underline="false"
+        v-permission="'system:user:remove'"
+        :disabled="row.userId === 1"
+        @click="row.userId !== 1 && removeBatch(row)"
+      >
         删除
       </el-link>
       <el-divider v-if="moreItems.length" direction="vertical" />
@@ -72,9 +79,9 @@
         v-if="moreItems.length"
         :items="moreItems"
         style="display: inline"
-        @command="(key) => dropClick(key, row)"
+        @command="(key) => row.userId !== 1 && dropClick(key, row)"
       >
-        <el-link type="primary" :underline="false">
+        <el-link type="primary" :underline="false" :disabled="row.userId === 1">
           <span>更多</span>
           <el-icon :size="12" style="vertical-align: -1px; margin-left: 2px">
             <arrow-down />
