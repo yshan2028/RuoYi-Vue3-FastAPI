@@ -10,7 +10,7 @@
     <gen-import-search @search="reload" />
     <ele-pro-table
       ref="tableRef"
-      row-key="table_name"
+      row-key="tableName"
       :columns="columns"
       :datasource="datasource"
       :show-overflow-tooltip="true"
@@ -64,25 +64,25 @@
       fixed: 'left'
     },
     {
-      prop: 'table_name',
+      prop: 'tableName',
       label: '表名称',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'table_comment',
+      prop: 'tableComment',
       label: '表描述',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'create_time',
+      prop: 'createTime',
       label: '创建时间',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'update_time',
+      prop: 'updateTime',
       label: '更新时间',
       align: 'center',
       minWidth: 110
@@ -114,7 +114,7 @@
       return;
     }
     loading.value = true;
-    const tables = selections.value.map((d) => d.table_name).join();
+    const tables = selections.value.map((d) => d.tableName).join();
     importTables({ tables })
       .then((msg) => {
         loading.value = false;

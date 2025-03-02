@@ -1,19 +1,19 @@
 <!-- 字典组件 -->
 <template>
   <template v-if="type === 'text'">
-    <span v-for="item in valueData" :key="item.dict_code">
-      {{ item.dict_label }}
+    <span v-for="item in valueData" :key="item.dictCode">
+      {{ item.dictLabel }}
     </span>
   </template>
   <template v-else-if="type === 'tag'">
     <el-tag
       v-for="item in valueData"
-      :key="item.dict_code"
+      :key="item.dictCode"
       :disable-transitions="true"
       size="small"
-      :type="item.list_class == 'primary' ? '' : item.list_class"
+      :type="item.listClass == 'primary' ? '' : item.listClass"
     >
-      {{ item.dict_label }}
+      {{ item.dictLabel }}
     </el-tag>
   </template>
   <el-radio-group
@@ -22,8 +22,8 @@
     @update:modelValue="updateValue"
     :model-value="modelValue"
   >
-    <el-radio v-for="item in data" :key="item.dict_code" :label="item.dict_value">
-      {{ item.dict_label }}
+    <el-radio v-for="item in data" :key="item.dictCode" :label="item.dictValue">
+      {{ item.dictLabel }}
     </el-radio>
   </el-radio-group>
   <el-checkbox-group
@@ -34,10 +34,10 @@
   >
     <el-checkbox
       v-for="item in data"
-      :key="item.dict_code"
-      :label="item.dict_value"
+      :key="item.dictCode"
+      :label="item.dictValue"
     >
-      {{ item.dict_label }}
+      {{ item.dictLabel }}
     </el-checkbox>
   </el-checkbox-group>
   <el-select
@@ -52,9 +52,9 @@
   >
     <el-option
       v-for="item in data"
-      :key="item.dict_code"
-      :value="item.dict_value"
-      :label="item.dict_label"
+      :key="item.dictCode"
+      :value="item.dictValue"
+      :label="item.dictLabel"
     />
   </el-select>
 </template>
@@ -92,11 +92,11 @@
     }
     const values = Array.isArray(val) ? val : [val];
     values.forEach((v) => {
-      const temp = data.value.find((d) => d.dict_value == v);
+      const temp = data.value.find((d) => d.dictValue == v);
       if (temp != null) {
         result.push(temp);
       } else {
-        result.push({ dict_code: v, dict_value: v, dict_label: v });
+        result.push({ dictCode: v, dictValue: v, dictLabel: v });
       }
     });
     return result;

@@ -32,7 +32,7 @@
       updateLoginUser({
         ...info,
         postGroup: res.postGroup,
-        role_group: res.role_group
+        roleGroup: res.roleGroup
       });
     })
     .catch((e) => {

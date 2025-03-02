@@ -6,7 +6,7 @@
       <!-- 表格 -->
       <ele-pro-table
         ref="tableRef"
-        row-key="job_id"
+        row-key="jobId"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
@@ -128,25 +128,25 @@
       fixed: 'left'
     },
     {
-      prop: 'job_name',
+      prop: 'jobName',
       label: '任务名称',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'job_group',
+      prop: 'jobGroup',
       label: '任务组名',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'invoke_target',
+      prop: 'invokeTarget',
       label: '调用目标字符串',
       align: 'center',
       minWidth: 140
     },
     {
-      prop: 'cron_expression',
+      prop: 'cronExpression',
       label: 'cron执行表达式',
       align: 'center',
       minWidth: 140
@@ -218,13 +218,13 @@
       return;
     }
     ElMessageBox.confirm(
-      `是否确认删除任务名称为"${rows.map((d) => d.job_name).join()}"的数据项?`,
+      `是否确认删除任务名称为"${rows.map((d) => d.jobName).join()}"的数据项?`,
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
         const loading = EleMessage.loading('请求中..');
-        removeJobs(rows.map((d) => d.job_id))
+        removeJobs(rows.map((d) => d.jobId))
           .then(() => {
             loading.close();
             EleMessage.success('删除成功');
@@ -241,7 +241,7 @@
   /** 修改状态 */
   const editStatus = (checked, row) => {
     const status = checked ? '0' : '1';
-    updateJobStatus(row.job_id, status)
+    updateJobStatus(row.jobId, status)
       .then((msg) => {
         row.status = status;
         EleMessage.success(msg);
@@ -270,13 +270,13 @@
   const dropClick = (key, row) => {
     if (key === 'execute') {
       ElMessageBox.confirm(
-        `确认要立即执行一次"${row.job_name}"任务吗?`,
+        `确认要立即执行一次"${row.jobName}"任务吗?`,
         '系统提示',
         { type: 'warning', draggable: true }
       )
         .then(() => {
           const loading = EleMessage.loading('请求中..');
-          runJob(row.job_id, row.job_group)
+          runJob(row.jobId, row.jobGroup)
             .then(() => {
               loading.close();
               EleMessage.success('执行成功');

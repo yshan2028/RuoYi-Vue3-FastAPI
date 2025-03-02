@@ -11,26 +11,26 @@
     <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
       <el-row :gutter="16">
         <el-col :sm="12" :xs="24">
-          <el-form-item label="任务名称" prop="job_name">
+          <el-form-item label="任务名称" prop="jobName">
             <el-input
               clearable
               :maxlength="20"
-              v-model="form.job_name"
+              v-model="form.jobName"
               placeholder="请输入任务名称"
             />
           </el-form-item>
         </el-col>
         <el-col :sm="12" :xs="24">
-          <el-form-item label="任务分组" prop="job_group">
+          <el-form-item label="任务分组" prop="jobGroup">
             <dict-data
               code="sys_job_group"
-              v-model="form.job_group"
+              v-model="form.jobGroup"
               placeholder="请选择任务分组"
             />
           </el-form-item>
         </el-col>
       </el-row>
-      <el-form-item prop="invoke_target">
+      <el-form-item prop="invokeTarget">
         <template #label>
           <ele-tooltip>
             <el-icon
@@ -52,15 +52,15 @@
         <el-input
           clearable
           :maxlength="200"
-          v-model="form.invoke_target"
+          v-model="form.invokeTarget"
           placeholder="请输入调用目标字符串"
         />
       </el-form-item>
-      <el-form-item label="cron表达式" prop="cron_expression">
+      <el-form-item label="cron表达式" prop="cronExpression">
         <el-input
           clearable
           :maxlength="200"
-          v-model="form.cron_expression"
+          v-model="form.cronExpression"
           placeholder="请输入cron执行表达式"
         >
           <template #append>
@@ -73,8 +73,8 @@
           </template>
         </el-input>
       </el-form-item>
-      <el-form-item label="执行策略" prop="misfire_policy">
-        <el-radio-group v-model="form.misfire_policy">
+      <el-form-item label="执行策略" prop="misfirePolicy">
+        <el-radio-group v-model="form.misfirePolicy">
           <el-radio-button label="1">立即执行</el-radio-button>
           <el-radio-button label="2">执行一次</el-radio-button>
           <el-radio-button label="3">放弃执行</el-radio-button>
@@ -126,19 +126,19 @@
 
   /** 表单数据 */
   const { form, resetFields, assignFields } = useFormData({
-    job_id: void 0,
-    job_name: '',
-    job_group: void 0,
-    invoke_target: '',
-    cron_expression: '',
-    misfire_policy: '1',
+    jobId: void 0,
+    jobName: '',
+    jobGroup: void 0,
+    invokeTarget: '',
+    cronExpression: '',
+    misfirePolicy: '1',
     concurrent: '0',
     status: '0'
   });
 
   /** 表单验证规则 */
   const rules = reactive({
-    job_name: [
+    jobName: [
       {
         required: true,
         message: '请输入任务名称',
@@ -146,7 +146,7 @@
         trigger: 'blur'
       }
     ],
-    invoke_target: [
+    invokeTarget: [
       {
         required: true,
         message: '请输入调用目标字符串',
@@ -154,7 +154,7 @@
         trigger: 'blur'
       }
     ],
-    cron_expression: [
+    cronExpression: [
       {
         required: true,
         message: '请输入cron执行表达式',

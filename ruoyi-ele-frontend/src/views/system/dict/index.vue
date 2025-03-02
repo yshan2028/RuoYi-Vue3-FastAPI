@@ -60,24 +60,24 @@
             ref="treeRef"
             :data="data"
             highlight-current
-            node-key="dict_id"
+            node-key="dictId"
             :expand-on-click-node="false"
             :default-expand-all="true"
             :filter-node-method="filterNode"
             @node-click="onNodeClick"
           >
             <template #default="{ data: d }">
-              <div>{{ d.dict_name }}</div>
+              <div>{{ d.dictName }}</div>
               <div style="font-size: 12px; opacity: 0.8; font-weight: normal">
-                &nbsp;({{ d.dict_type }})
+                &nbsp;({{ d.dictType }})
               </div>
             </template>
           </el-tree>
         </ele-loading>
         <template #body>
           <dict-data-list
-            v-if="current && current.dict_type"
-            :dict-type="current.dict_type"
+            v-if="current && current.dictType"
+            :dict-type="current.dictType"
           />
         </template>
       </ele-split-panel>
@@ -147,9 +147,9 @@
     if (current.value != null && mobile.value) {
       splitRef.value?.toggleCollapse?.(true);
     }
-    if (row && row.dict_id) {
+    if (row && row.dictId) {
       current.value = row;
-      treeRef.value?.setCurrentKey?.(row.dict_id);
+      treeRef.value?.setCurrentKey?.(row.dictId);
     } else {
       current.value = null;
     }
@@ -163,8 +163,8 @@
 
   /** 删除 */
   const remove = () => {
-    const id = current.value?.dict_id;
-    const name = current.value?.dict_type;
+    const id = current.value?.dictId;
+    const name = current.value?.dictType;
     ElMessageBox.confirm(
       `是否确认删除字典类型为"${name}"的数据项？`,
       '系统提示',
@@ -189,7 +189,7 @@
   /** 树过滤方法 */
   const filterNode = (value, data) => {
     if (value) {
-      return data.dict_name && data.dict_name.includes(value);
+      return data.dictName && data.dictName.includes(value);
     }
     return true;
   };

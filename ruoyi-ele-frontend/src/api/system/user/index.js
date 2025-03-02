@@ -70,9 +70,9 @@ export async function removeUsers(ids) {
 /**
  * 修改用户状态
  */
-export async function updateUserStatus(user_id, status) {
+export async function updateUserStatus(userId, status) {
   const res = await request.put('/system/user/changeStatus', {
-    user_id,
+    userId,
     status
   });
   if (res.data.code === 200) {
@@ -84,9 +84,9 @@ export async function updateUserStatus(user_id, status) {
 /**
  * 重置用户密码
  */
-export async function updateUserPassword(user_id, password) {
+export async function updateUserPassword(userId, password) {
   const res = await request.put('/system/user/resetPwd', {
-    user_id,
+    userId,
     password
   });
   if (res.data.code === 200) {

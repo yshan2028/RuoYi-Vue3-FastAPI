@@ -12,19 +12,19 @@
     <el-form ref="formRef" :model="form" :rules="rules" label-width="108px">
       <el-row>
         <el-col :sm="12" :xs="24">
-          <el-form-item label="角色名称" prop="role_name">
+          <el-form-item label="角色名称" prop="roleName">
             <el-input
               clearable
               :maxlength="20"
-              v-model="form.role_name"
+              v-model="form.roleName"
               placeholder="请输入角色名称"
             />
           </el-form-item>
-          <el-form-item label="显示顺序" prop="role_sort">
+          <el-form-item label="显示顺序" prop="roleSort">
             <el-input-number
               :min="0"
               :max="99999"
-              v-model="form.role_sort"
+              v-model="form.roleSort"
               placeholder="请输入显示顺序"
               controls-position="right"
               class="ele-fluid"
@@ -32,7 +32,7 @@
           </el-form-item>
         </el-col>
         <el-col :sm="12" :xs="24">
-          <el-form-item prop="role_key">
+          <el-form-item prop="roleKey">
             <template #label>
               <ele-tooltip
                 content="控制器中定义的权限字符, 如: @PreAuthorize(`@ss.hasRole('admin')`)"
@@ -50,7 +50,7 @@
             <el-input
               clearable
               :maxlength="20"
-              v-model="form.role_key"
+              v-model="form.roleKey"
               placeholder="请输入权限字符"
             />
           </el-form-item>
@@ -167,17 +167,17 @@
 
   /** 表单数据 */
   const { form, resetFields, assignFields } = useFormData({
-    role_id: void 0,
-    role_name: '',
-    role_key: '',
-    role_sort: 0,
+    roleId: void 0,
+    roleName: '',
+    roleKey: '',
+    roleSort: 0,
     status: '0',
     remark: ''
   });
 
   /** 表单验证规则 */
   const rules = reactive({
-    role_name: [
+    roleName: [
       {
         required: true,
         message: '请输入角色名称',
@@ -185,7 +185,7 @@
         trigger: 'blur'
       }
     ],
-    role_key: [
+    roleKey: [
       {
         required: true,
         message: '请输入权限字符',
@@ -193,7 +193,7 @@
         trigger: 'blur'
       }
     ],
-    role_sort: [
+    roleSort: [
       {
         required: true,
         message: '请输入显示顺序',
@@ -269,7 +269,7 @@
     menuData.value = [];
     checkedKeys.value = [];
     menuLoading.value = true;
-    listRoleMenus(props.data?.role_id)
+    listRoleMenus(props.data?.roleId)
       .then((result) => {
         menuLoading.value = false;
         menuData.value = result.menus;

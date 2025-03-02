@@ -8,10 +8,10 @@
         </el-icon>
       </div>
       <ele-text size="xxl" style="margin-top: 6px">
-        {{ data.nick_name }}
+        {{ data.nickName }}
       </ele-text>
       <ele-text type="placeholder">
-        <span>{{ data.dept?.dept_name }}</span>
+        <span>{{ data.dept?.deptName }}</span>
         <span style="padding: 0 8px">/</span>
         <span>{{ data.postGroup }}</span>
       </ele-text>
@@ -24,7 +24,7 @@
         </el-icon>
         <div class="info-item-text">
           <span>用户名称:</span>
-          <span>{{ data.user_name }}</span>
+          <span>{{ data.userName }}</span>
         </div>
       </div>
       <div class="info-item">
@@ -51,7 +51,7 @@
         </el-icon>
         <div class="info-item-text">
           <span>所属角色:</span>
-          <span>{{ data.role_group }}</span>
+          <span>{{ data.roleGroup }}</span>
         </div>
       </div>
     </div>

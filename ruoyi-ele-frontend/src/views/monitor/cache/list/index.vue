@@ -27,7 +27,7 @@
           </template>
           <ele-pro-table
             ref="tableRef"
-            row-key="cache_name"
+            row-key="cacheName"
             :columns="columns"
             :datasource="datasource"
             :show-overflow-tooltip="true"
@@ -70,7 +70,7 @@
             </ele-tooltip>
           </template>
           <ele-pro-table
-            row-key="cache_key"
+            row-key="cacheKey"
             :columns="columns2"
             :datasource="datasource2"
             :show-overflow-tooltip="true"
@@ -123,13 +123,13 @@
           <ele-loading :loading="loading">
             <el-descriptions :border="true" :column="1" class="detail-table">
               <el-descriptions-item label="缓存名称">
-                <div>{{ data.cache_name }}</div>
+                <div>{{ data.cacheName }}</div>
               </el-descriptions-item>
               <el-descriptions-item label="缓存键名">
-                <div style="word-break: break-all">{{ data.cache_key }}</div>
+                <div style="word-break: break-all">{{ data.cacheKey }}</div>
               </el-descriptions-item>
               <el-descriptions-item label="缓存内容">
-                <div style="word-break: break-all">{{ data.cache_value }}</div>
+                <div style="word-break: break-all">{{ data.cacheValue }}</div>
               </el-descriptions-item>
             </el-descriptions>
           </ele-loading>
@@ -171,11 +171,11 @@
       align: 'center'
     },
     {
-      prop: 'cache_name',
+      prop: 'cacheName',
       label: '缓存名称',
       align: 'center',
       minWidth: 80,
-      formatter: (row) => row.cache_name.replace(':', '')
+      formatter: (row) => row.cacheName.replace(':', '')
     },
     {
       prop: 'remark',
@@ -201,11 +201,11 @@
       align: 'center'
     },
     {
-      prop: 'cache_key',
+      prop: 'cacheKey',
       label: '缓存键名',
       align: 'center',
       minWidth: 80,
-      formatter: (row) => row.cache_key.replace(row.cache_name, '')
+      formatter: (row) => row.cacheKey.replace(row.cacheName, '')
     },
     {
       columnKey: 'action',
@@ -241,13 +241,13 @@
 
   /** 清空 */
   const clear = (row) => {
-    ElMessageBox.confirm('是否确认清空“' + row.cache_name + '”？', '系统提示', {
+    ElMessageBox.confirm('是否确认清空“' + row.cacheName + '”？', '系统提示', {
       type: 'warning',
       draggable: true
     })
       .then(() => {
         const loading = EleMessage.loading('请求中..');
-        clearCacheName(row.cache_name)
+        clearCacheName(row.cacheName)
           .then(() => {
             loading.close();
             EleMessage.success('清空成功');
@@ -263,13 +263,13 @@
 
   /** 删除 */
   const remove = (row) => {
-    ElMessageBox.confirm('是否确认删除“' + row.cache_key + '”？', '系统提示', {
+    ElMessageBox.confirm('是否确认删除“' + row.cacheKey + '”？', '系统提示', {
       type: 'warning',
       draggable: true
     })
       .then(() => {
         const loading = EleMessage.loading('请求中..');
-        clearCacheKey(row.cache_key)
+        clearCacheKey(row.cacheKey)
           .then(() => {
             loading.close();
             EleMessage.success('删除成功');
@@ -312,11 +312,11 @@
       return;
     }
     keyLoading.value = true;
-    getCacheKeys(current.value?.cache_name)
+    getCacheKeys(current.value?.cacheName)
       .then((result) => {
         keyLoading.value = false;
         datasource2.value = result.map((d) => {
-          return { cache_key: d, cache_name: current.value.cache_name };
+          return { cacheKey: d, cacheName: current.value.cacheName };
         });
       })
       .catch((e) => {
@@ -329,7 +329,7 @@
   const query = () => {
     if (current.value && current2.value) {
       loading.value = true;
-      getCacheValue(current.value?.cache_name, current2.value?.cache_key)
+      getCacheValue(current.value?.cacheName, current2.value?.cacheKey)
         .then((result) => {
           loading.value = false;
           data.value = result;

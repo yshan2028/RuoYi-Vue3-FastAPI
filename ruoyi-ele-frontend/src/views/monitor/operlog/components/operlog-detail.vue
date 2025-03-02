@@ -17,33 +17,33 @@
           <dict-data
             code="sys_oper_type"
             type="text"
-            :model-value="data.business_type"
+            :model-value="data.businessType"
           />
         </div>
       </el-descriptions-item>
       <el-descriptions-item label="请求地址">
-        <div>{{ data.oper_url }}</div>
+        <div>{{ data.operUrl }}</div>
       </el-descriptions-item>
       <el-descriptions-item label="请求方式">
-        <div>{{ data.request_method }}</div>
+        <div>{{ data.requestMethod }}</div>
       </el-descriptions-item>
       <el-descriptions-item label="操作时间">
-        <div>{{ data.oper_time }}</div>
+        <div>{{ data.operTime }}</div>
       </el-descriptions-item>
       <el-descriptions-item label="登录信息" :span="2">
         <div style="word-break: break-all">
-          {{ data.oper_name }} / {{ data.oper_ip }} / {{ data.oper_location }}
+          {{ data.operName }} / {{ data.operIp }} / {{ data.operLocation }}
         </div>
       </el-descriptions-item>
       <el-descriptions-item label="操作方法" :span="2">
         <div style="word-break: break-all">{{ data.method }}</div>
       </el-descriptions-item>
       <el-descriptions-item label="请求参数" :span="2">
-        <ele-ellipsis :max-line="4">{{ data.oper_param }}</ele-ellipsis>
+        <ele-ellipsis :max-line="4">{{ data.operParam }}</ele-ellipsis>
       </el-descriptions-item>
       <el-descriptions-item label="返回参数" :span="2">
         <ele-ellipsis :max-line="4">
-          {{ data.json_result }}
+          {{ data.jsonResult }}
         </ele-ellipsis>
       </el-descriptions-item>
       <el-descriptions-item label="操作状态">
@@ -54,7 +54,7 @@
         />
       </el-descriptions-item>
       <el-descriptions-item label="消耗时间">
-        <div>{{ data.cost_time }}毫秒</div>
+        <div>{{ data.costTime }}毫秒</div>
       </el-descriptions-item>
       <el-descriptions-item v-if="data.status === 1" label="异常信息" :span="2">
         <ele-ellipsis
@@ -69,7 +69,7 @@
             placement: 'top'
           }"
         >
-          {{ data.error_msg }}
+          {{ data.errorMsg }}
         </ele-ellipsis>
       </el-descriptions-item>
     </el-descriptions>

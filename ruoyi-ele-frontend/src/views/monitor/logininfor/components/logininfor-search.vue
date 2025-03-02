@@ -16,7 +16,7 @@
           <el-form-item label="用户名称">
             <el-input
               clearable
-              v-model.trim="form.user_name"
+              v-model.trim="form.userName"
               placeholder="请输入"
             />
           </el-form-item>
@@ -55,7 +55,7 @@
   /** 表单数据 */
   const { form, resetFields } = useFormData({
     ipaddr: '',
-    user_name: ''
+    userName: ''
   });
 
   /** 日期范围 */

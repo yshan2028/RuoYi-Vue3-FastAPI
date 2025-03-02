@@ -7,11 +7,11 @@
       label-width="88px"
       style="max-width: 520px; padding-top: 20px"
     >
-      <el-form-item label="用户昵称" prop="nick_name">
+      <el-form-item label="用户昵称" prop="nickName">
         <el-input
           clearable
           :maxlength="20"
-          v-model="form.nick_name"
+          v-model="form.nickName"
           placeholder="请输入用户昵称"
         />
       </el-form-item>
@@ -63,16 +63,16 @@
 
   /** 表单数据 */
   const { form, assignFields, resetFields } = useFormData({
-    nick_name: '',
+    nickName: '',
     phonenumber: '',
     email: '',
     sex: void 0,
-    user_id: void 0
+    userId: void 0
   });
 
   /** 表单验证规则 */
   const rules = reactive({
-    nick_name: [
+    nickName: [
       {
         required: true,
         message: '请输入用户昵称',

@@ -7,7 +7,7 @@
       <ele-pro-table
         sticky
         ref="tableRef"
-        row-key="dept_id"
+        row-key="deptId"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
@@ -52,7 +52,7 @@
             <el-link
               type="primary"
               :underline="false"
-              @click="openEdit(null, row.dept_id)"
+              @click="openEdit(null, row.deptId)"
             >
               添加
             </el-link>
@@ -72,7 +72,7 @@
     <dept-edit
       v-model="showEdit"
       :data="current"
-      :parent-id="parent_id"
+      :parent-id="parentId"
       @done="reload"
     />
   </ele-page>
@@ -104,12 +104,12 @@
       fixed: 'left'
     },
     {
-      prop: 'dept_name',
+      prop: 'deptName',
       label: '部门名称',
       minWidth: 160
     },
     {
-      prop: 'order_num',
+      prop: 'orderNum',
       label: '排序',
       align: 'center',
       minWidth: 90
@@ -122,7 +122,7 @@
       minWidth: 90
     },
     {
-      prop: 'create_time',
+      prop: 'createTime',
       label: '创建时间',
       align: 'center',
       minWidth: 110
@@ -143,15 +143,15 @@
   const showEdit = ref(false);
 
   /** 上级菜单id */
-  const parent_id = ref();
+  const parentId = ref();
 
   /** 表格数据源 */
   const datasource = async ({ where }) => {
     const data = await listDepts({ ...where });
     return toTree({
       data,
-      idField: 'dept_id',
-      parentIdField: 'parent_id'
+      idField: 'deptId',
+      parentIdField: 'parentId'
     });
   };
 
@@ -163,20 +163,20 @@
   /** 打开编辑弹窗 */
   const openEdit = (row, id) => {
     current.value = row ?? null;
-    parent_id.value = id;
+    parentId.value = id;
     showEdit.value = true;
   };
 
   /** 删除单个 */
   const remove = (row) => {
     ElMessageBox.confirm(
-      `是否确认删除名称为“${row.dept_name}”的数据项？`,
+      `是否确认删除名称为“${row.deptName}”的数据项？`,
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
         const loading = EleMessage.loading('请求中..');
-        removeDept(row.dept_id)
+        removeDept(row.deptId)
           .then(() => {
             loading.close();
             EleMessage.success('删除成功');

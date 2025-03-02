@@ -6,7 +6,7 @@
       <!-- 表格 -->
       <ele-pro-table
         ref="tableRef"
-        row-key="token_id"
+        row-key="tokenId"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
@@ -48,19 +48,19 @@
       fixed: 'left'
     },
     {
-      prop: 'token_id',
+      prop: 'tokenId',
       label: '会话编号',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'user_name',
+      prop: 'userName',
       label: '登录名称',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'dept_name',
+      prop: 'deptName',
       label: '部门名称',
       align: 'center',
       minWidth: 110
@@ -72,7 +72,7 @@
       minWidth: 110
     },
     {
-      prop: 'login_location',
+      prop: 'loginLocation',
       label: '登录地点',
       align: 'center',
       minWidth: 110
@@ -90,11 +90,11 @@
       minWidth: 110
     },
     {
-      prop: 'login_time',
+      prop: 'loginTime',
       label: '登录时间',
       align: 'center',
       minWidth: 110,
-      formatter: (row) => dayjs(row.login_time).format('YYYY-MM-DD HH:mm:ss')
+      formatter: (row) => dayjs(row.loginTime).format('YYYY-MM-DD HH:mm:ss')
     },
     {
       columnKey: 'action',
@@ -130,13 +130,13 @@
   /** 强退 */
   const kickout = (row) => {
     ElMessageBox.confirm(
-      '是否确认强退名称为“' + row.user_name + '”的用户？',
+      '是否确认强退名称为“' + row.userName + '”的用户？',
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
         const loading = EleMessage.loading('请求中..');
-        kickoutOnline(row.token_id)
+        kickoutOnline(row.tokenId)
           .then(() => {
             loading.close();
             EleMessage.success('强退成功');

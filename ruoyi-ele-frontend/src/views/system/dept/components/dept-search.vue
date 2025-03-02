@@ -7,7 +7,7 @@
           <el-form-item label="部门名称">
             <el-input
               clearable
-              v-model.trim="form.dept_name"
+              v-model.trim="form.deptName"
               placeholder="请输入"
             />
           </el-form-item>
@@ -39,7 +39,7 @@
 
   /** 表单数据 */
   const { form, resetFields } = useFormData({
-    dept_name: '',
+    deptName: '',
     status: void 0
   });
 

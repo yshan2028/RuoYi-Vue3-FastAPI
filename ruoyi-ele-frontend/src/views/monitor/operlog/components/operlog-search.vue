@@ -16,7 +16,7 @@
           <el-form-item label="操作人员">
             <el-input
               clearable
-              v-model.trim="form.oper_name"
+              v-model.trim="form.operName"
               placeholder="请输入"
             />
           </el-form-item>
@@ -55,7 +55,7 @@
   /** 表单数据 */
   const { form, resetFields } = useFormData({
     title: '',
-    oper_name: ''
+    operName: ''
   });
 
   /** 日期范围 */

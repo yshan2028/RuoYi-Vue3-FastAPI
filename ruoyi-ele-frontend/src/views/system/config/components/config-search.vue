@@ -7,7 +7,7 @@
           <el-form-item label="参数名称">
             <el-input
               clearable
-              v-model.trim="form.config_name"
+              v-model.trim="form.configName"
               placeholder="请输入"
             />
           </el-form-item>
@@ -16,7 +16,7 @@
           <el-form-item label="参数键名">
             <el-input
               clearable
-              v-model.trim="form.config_key"
+              v-model.trim="form.configKey"
               placeholder="请输入"
             />
           </el-form-item>
@@ -25,7 +25,7 @@
           <el-form-item label="系统内置">
             <dict-data
               code="sys_yes_no"
-              v-model="form.config_type"
+              v-model="form.configType"
               placeholder="请选择"
             />
           </el-form-item>
@@ -48,9 +48,9 @@
 
   /** 表单数据 */
   const { form, resetFields } = useFormData({
-    config_name: '',
-    config_key: '',
-    config_type: void 0
+    configName: '',
+    configKey: '',
+    configType: void 0
   });
 
   /** 搜索 */

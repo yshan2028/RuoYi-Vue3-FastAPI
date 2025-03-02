@@ -10,7 +10,7 @@
     <role-user-search @search="reload" />
     <ele-pro-table
       ref="tableRef"
-      row-key="user_id"
+      row-key="userId"
       :columns="columns"
       :datasource="datasource"
       :show-overflow-tooltip="true"
@@ -48,7 +48,7 @@
     /** 是否显示 */
     modelValue: Boolean,
     /** 角色id */
-    role_id: Number
+    roleId: Number
   });
 
   /** 提交状态 */
@@ -74,13 +74,13 @@
       fixed: 'left'
     },
     {
-      prop: 'user_name',
+      prop: 'userName',
       label: '用户名称',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'nick_name',
+      prop: 'nickName',
       label: '用户昵称',
       align: 'center',
       minWidth: 110
@@ -105,7 +105,7 @@
       slot: 'status'
     },
     {
-      prop: 'create_time',
+      prop: 'createTime',
       label: '创建时间',
       align: 'center',
       width: 168
@@ -121,7 +121,7 @@
       ...where,
       pageNum: page,
       pageSize: limit,
-      role_id: props.role_id
+      roleId: props.roleId
     });
   };
 
@@ -142,8 +142,8 @@
       return;
     }
     loading.value = true;
-    const userIds = selections.value.map((d) => d.user_id).join();
-    addRoleUsers({ role_id: props.role_id, userIds })
+    const userIds = selections.value.map((d) => d.userId).join();
+    addRoleUsers({ roleId: props.roleId, userIds })
       .then((msg) => {
         loading.value = false;
         EleMessage.success(msg);

@@ -8,22 +8,22 @@
     @update:modelValue="updateModelValue"
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-      <el-form-item label="上级部门" prop="parent_id">
-        <dept-select v-model="form.parent_id" placeholder="请选择上级部门" />
+      <el-form-item label="上级部门" prop="parentId">
+        <dept-select v-model="form.parentId" placeholder="请选择上级部门" />
       </el-form-item>
-      <el-form-item label="部门名称" prop="dept_name">
+      <el-form-item label="部门名称" prop="deptName">
         <el-input
           clearable
           :maxlength="20"
-          v-model="form.dept_name"
+          v-model="form.deptName"
           placeholder="请输入部门名称"
         />
       </el-form-item>
-      <el-form-item label="显示排序" prop="order_num">
+      <el-form-item label="显示排序" prop="orderNum">
         <el-input-number
           :min="0"
           :max="99999"
-          v-model="form.order_num"
+          v-model="form.orderNum"
           placeholder="请输入显示排序"
           controls-position="right"
           class="ele-fluid"
@@ -75,7 +75,7 @@
     /** 修改回显的数据 */
     data: Object,
     /** 上级部门id */
-    parent_id: Number
+    parentId: Number
   });
 
   /** 是否是修改 */
@@ -89,10 +89,10 @@
 
   /** 表单数据 */
   const { form, resetFields, assignFields } = useFormData({
-    dept_id: void 0,
-    parent_id: void 0,
-    dept_name: '',
-    order_num: 0,
+    deptId: void 0,
+    parentId: void 0,
+    deptName: '',
+    orderNum: 0,
     leader: '',
     phone: '',
     email: '',
@@ -101,7 +101,7 @@
 
   /** 表单验证规则 */
   const rules = reactive({
-    dept_name: [
+    deptName: [
       {
         required: true,
         message: '请输入部门名称',
@@ -109,7 +109,7 @@
         trigger: 'blur'
       }
     ],
-    order_num: [
+    orderNum: [
       {
         required: true,
         message: '请输入显示排序',
@@ -143,7 +143,7 @@
       }
       loading.value = true;
       const saveOrUpdate = isUpdate.value ? updateDept : addDept;
-      saveOrUpdate({ ...form, parent_id: form.parent_id || 0 })
+      saveOrUpdate({ ...form, parentId: form.parentId || 0 })
         .then((msg) => {
           loading.value = false;
           EleMessage.success(msg);
@@ -169,11 +169,11 @@
         if (props.data) {
           assignFields({
             ...props.data,
-            parent_id: props.data.parent_id || void 0
+            parentId: props.data.parentId || void 0
           });
           isUpdate.value = true;
         } else {
-          form.parent_id = props.parent_id;
+          form.parentId = props.parentId;
           isUpdate.value = false;
         }
       } else {

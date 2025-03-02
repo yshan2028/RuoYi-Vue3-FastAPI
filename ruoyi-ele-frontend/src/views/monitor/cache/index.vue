@@ -13,41 +13,41 @@
           :column="mobile ? 1 : 3"
           class="detail-table"
         >
-          <el-descriptions-item label="Redis版本">
-            <div>{{ data.info?.redis_version }}</div>
+          <el-descriptions-item label="Redis 版本">
+            <div>{{ data.info?.redisVersion }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="运行模式">
-            <div>{{ data.info?.redis_mode }}</div>
+            <div>{{ data.info?.redisMode }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="端口">
-            <div>{{ data.info?.tcp_port }}</div>
+            <div>{{ data.info?.tcpPort }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="客户端数">
-            <div>{{ data.info?.connected_clients }}</div>
+            <div>{{ data.info?.connectedClients }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="运行时间(天)">
-            <div>{{ data.info?.uptime_in_days }}</div>
+            <div>{{ data.info?.uptimeInDays }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="使用内存">
-            <div>{{ data.info?.used_memory_human }}</div>
+            <div>{{ data.info?.usedMemoryHuman }}</div>
           </el-descriptions-item>
-          <el-descriptions-item label="使用CPU">
-            <div>{{ data.info?.used_cpu_user_children }}</div>
+          <el-descriptions-item label="使用 CPU">
+            <div>{{ data.info?.usedCpuUserChildren }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="内存配置">
-            <div>{{ data.info?.maxmemory_human }}</div>
+            <div>{{ data.info?.maxmemoryHuman }}</div>
           </el-descriptions-item>
-          <el-descriptions-item label="AOF是否开启">
-            <div>{{ data.info?.aof_enabled }}</div>
+          <el-descriptions-item label="AOF 是否开启">
+            <div>{{ data.info?.aofEnabled }}</div>
           </el-descriptions-item>
-          <el-descriptions-item label="RDB是否成功">
-            <div>{{ data.info?.rdb_last_bgsave_status }}</div>
+          <el-descriptions-item label="RDB 是否成功">
+            <div>{{ data.info?.rdbLastBgsaveStatus }}</div>
           </el-descriptions-item>
-          <el-descriptions-item label="Key数量">
-            <div>{{ data.db_size }}</div>
+          <el-descriptions-item label="Key 数量">
+            <div>{{ data.dbSize }}</div>
           </el-descriptions-item>
           <el-descriptions-item label="网络入口/出口">
-            <div>{{ data.info?.instantaneous_input_kbps }}</div>
+            <div>{{ data.info?.instantaneousInputKbps }}</div>
           </el-descriptions-item>
         </el-descriptions>
       </ele-loading>
@@ -128,7 +128,7 @@
     .then((res) => {
       loading.value = false;
       data.value = res;
-      const command_stats = res.command_stats || [];
+      const commandStats = res.commandStats || [];
       //
       Object.assign(commandChartOption, {
         tooltip: {
@@ -148,7 +148,7 @@
             label: {
               formatter: '{b}({d}%)'
             },
-            data: command_stats.sort((a, b) => a.name.localeCompare(b.name))
+            data: commandStats.sort((a, b) => a.name.localeCompare(b.name))
           }
         ]
       });
@@ -176,7 +176,7 @@
             },
             data: [
               {
-                value: parseFloat(res.info?.used_memory_human || 0),
+                value: parseFloat(res.info?.usedMemoryHuman || 0),
                 name: '内存消耗'
               }
             ]

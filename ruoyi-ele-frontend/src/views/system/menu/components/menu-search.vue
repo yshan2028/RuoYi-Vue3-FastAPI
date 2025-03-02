@@ -7,7 +7,7 @@
           <el-form-item label="菜单名称">
             <el-input
               clearable
-              v-model.trim="form.menu_name"
+              v-model.trim="form.menuName"
               placeholder="请输入"
             />
           </el-form-item>
@@ -39,7 +39,7 @@
 
   /** 表单数据 */
   const { form, resetFields } = useFormData({
-    menu_name: '',
+    menuName: '',
     status: void 0
   });
 

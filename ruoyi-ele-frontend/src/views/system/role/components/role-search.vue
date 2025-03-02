@@ -7,7 +7,7 @@
           <el-form-item label="角色名称">
             <el-input
               clearable
-              v-model.trim="form.role_name"
+              v-model.trim="form.roleName"
               placeholder="请输入"
             />
           </el-form-item>
@@ -16,7 +16,7 @@
           <el-form-item label="权限字符">
             <el-input
               clearable
-              v-model.trim="form.role_key"
+              v-model.trim="form.roleKey"
               placeholder="请输入"
             />
           </el-form-item>
@@ -48,8 +48,8 @@
 
   /** 表单数据 */
   const { form, resetFields } = useFormData({
-    role_name: '',
-    role_key: '',
+    roleName: '',
+    roleKey: '',
     status: void 0
   });
 

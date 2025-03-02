@@ -8,19 +8,19 @@
     @update:modelValue="updateModelValue"
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-      <el-form-item label="字典名称" prop="dict_name">
+      <el-form-item label="字典名称" prop="dictName">
         <el-input
           clearable
           :maxlength="20"
-          v-model="form.dict_name"
+          v-model="form.dictName"
           placeholder="请输入字典名称"
         />
       </el-form-item>
-      <el-form-item label="字典类型" prop="dict_type">
+      <el-form-item label="字典类型" prop="dictType">
         <el-input
           clearable
           :maxlength="20"
-          v-model="form.dict_type"
+          v-model="form.dictType"
           placeholder="请输入字典类型"
         />
       </el-form-item>
@@ -76,16 +76,16 @@
 
   /** 表单数据 */
   const { form, resetFields, assignFields } = useFormData({
-    dict_id: void 0,
-    dict_name: '',
-    dict_type: '',
+    dictId: void 0,
+    dictName: '',
+    dictType: '',
     status: '0',
     comments: ''
   });
 
   /** 表单验证规则 */
   const rules = reactive({
-    dict_name: [
+    dictName: [
       {
         required: true,
         message: '请输入字典名称',
@@ -93,7 +93,7 @@
         trigger: 'blur'
       }
     ],
-    dict_type: [
+    dictType: [
       {
         required: true,
         message: '请输入字典类型',

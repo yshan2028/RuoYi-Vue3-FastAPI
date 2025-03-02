@@ -9,20 +9,20 @@
     @update:modelValue="updateModelValue"
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-      <el-form-item label="公告标题" prop="notice_title">
+      <el-form-item label="公告标题" prop="noticeTitle">
         <el-input
           clearable
           :maxlength="100"
-          v-model="form.notice_title"
+          v-model="form.noticeTitle"
           placeholder="请输入公告标题"
         />
       </el-form-item>
       <el-row :gutter="16">
         <el-col :sm="12" :xs="24">
-          <el-form-item label="公告类型" prop="notice_type">
+          <el-form-item label="公告类型" prop="noticeType">
             <dict-data
               code="sys_notice_type"
-              v-model="form.notice_type"
+              v-model="form.noticeType"
               placeholder="请选择公告类型"
             />
           </el-form-item>
@@ -41,7 +41,7 @@
         <tinymce-editor
           ref="editorRef"
           :init="config"
-          v-model="form.notice_content"
+          v-model="form.noticeContent"
         />
       </el-form-item>
     </el-form>
@@ -88,16 +88,16 @@
 
   /** 表单数据 */
   const { form, resetFields, assignFields } = useFormData({
-    notice_id: void 0,
-    notice_title: '',
-    notice_type: void 0,
+    noticeId: void 0,
+    noticeTitle: '',
+    noticeType: void 0,
     status: '0',
-    notice_content: ''
+    noticeContent: ''
   });
 
   /** 表单验证规则 */
   const rules = reactive({
-    notice_title: [
+    noticeTitle: [
       {
         required: true,
         message: '请输入公告标题',
@@ -105,7 +105,7 @@
         trigger: 'blur'
       }
     ],
-    notice_type: [
+    noticeType: [
       {
         required: true,
         message: '请选择公告类型',
