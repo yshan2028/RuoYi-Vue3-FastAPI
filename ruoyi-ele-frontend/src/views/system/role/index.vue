@@ -157,7 +157,16 @@
       label: '状态',
       width: 90,
       align: 'center',
-      slot: 'status'
+      slot: 'status',
+      filters: [
+        { text: '正常', value: '0' },
+        { text: '关闭', value: '1' }
+      ],
+      filterMultiple: false, // 只能选一个
+      filterMethod: (value, row) => {
+        if (value === '') return true; // 选 "全部" 显示所有数据
+        return row.status == value; // 选 "正常" 或 "关闭" 进行筛选
+      }
     },
     {
       prop: 'createTime',
