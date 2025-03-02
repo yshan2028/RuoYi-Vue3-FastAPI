@@ -11,7 +11,10 @@
         :datasource="datasource"
         :show-overflow-tooltip="true"
         v-model:selections="selections"
-        highlight-current-row
+        :highlight-current-row="true"
+        :export-config="{ fileName: '岗位信息', datasource: exportSource }"
+        :print-config="{ datasource: exportSource }"
+        :tools="['reload', 'export', 'print', 'size', 'columns', 'maximized']"
         cache-key="systemPostTable"
       >
         <template #toolbar>
@@ -109,8 +112,16 @@
       label: '状态',
       width: 90,
       align: 'center',
-      minWidth: 110,
-      slot: 'status'
+      slot: 'status',
+      filters: [
+        { text: '正常', value: '0' },
+        { text: '停用', value: '1' }
+      ],
+      filterMultiple: false, // 只能选一个
+      filterMethod: (value, row) => {
+        if (value === '') return true; // 选 "全部" 显示所有数据
+        return row.status == value; // 选 "正常" 或 "停用" 进行筛选
+      }
     },
     {
       prop: 'createTime',
@@ -123,7 +134,9 @@
       label: '操作',
       width: 140,
       align: 'center',
-      slot: 'action'
+      slot: 'action',
+      hideInPrint: true,
+      hideInExport: true
     }
   ]);
 
@@ -193,6 +206,11 @@
           EleMessage.error(e.message);
         });
     });
+  };
+
+  /** 导出和打印全部数据的数据源 */
+  const exportSource = ({ where, orders }) => {
+    return pagePosts({ ...where, ...orders });
   };
 </script>
 

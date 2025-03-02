@@ -160,12 +160,12 @@
       slot: 'status',
       filters: [
         { text: '正常', value: '0' },
-        { text: '关闭', value: '1' }
+        { text: '停用', value: '1' }
       ],
       filterMultiple: false, // 只能选一个
       filterMethod: (value, row) => {
         if (value === '') return true; // 选 "全部" 显示所有数据
-        return row.status == value; // 选 "正常" 或 "关闭" 进行筛选
+        return row.status == value; // 选 "正常" 或 "停用" 进行筛选
       }
     },
     {
@@ -179,7 +179,9 @@
       label: '操作',
       width: 180,
       align: 'center',
-      slot: 'action'
+      slot: 'action',
+      hideInPrint: true,
+      hideInExport: true
     }
   ]);
 

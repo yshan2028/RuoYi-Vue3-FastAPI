@@ -11,7 +11,10 @@
         :datasource="datasource"
         :show-overflow-tooltip="true"
         v-model:selections="selections"
-        highlight-current-row
+        :highlight-current-row="true"
+        :export-config="{ fileName: '操作信息', datasource: exportSource }"
+        :print-config="{ datasource: exportSource }"
+        :tools="['reload', 'export', 'print', 'size', 'columns', 'maximized']"
         cache-key="systemLogOperlogTable"
       >
         <template #toolbar>
@@ -171,7 +174,8 @@
         width: 80,
         align: 'center',
         slot: 'action',
-        fixed: 'right'
+        hideInPrint: true,
+        hideInExport: true
       }
     ];
   });
@@ -270,6 +274,11 @@
           });
       })
       .catch(() => {});
+  };
+
+  /** 导出和打印全部数据的数据源 */
+  const exportSource = ({ where, orders }) => {
+    return pageOperlogs({ ...where, ...orders });
   };
 </script>
 

@@ -11,7 +11,10 @@
         :datasource="datasource"
         :show-overflow-tooltip="true"
         v-model:selections="selections"
-        highlight-current-row
+        :highlight-current-row="true"
+        :export-config="{ fileName: '参数信息', datasource: exportSource }"
+        :print-config="{ datasource: exportSource }"
+        :tools="['reload', 'export', 'print', 'size', 'columns', 'maximized']"
         cache-key="systemConfigTable"
       >
         <template #toolbar>
@@ -136,7 +139,9 @@
       label: '操作',
       width: 120,
       align: 'center',
-      slot: 'action'
+      slot: 'action',
+      hideInPrint: true,
+      hideInExport: true
     }
   ]);
 
@@ -220,6 +225,11 @@
         loading.close();
         EleMessage.error(e.message);
       });
+  };
+
+  /** 导出和打印全部数据的数据源 */
+  const exportSource = ({ where, orders }) => {
+    return pageConfigs({ ...where, ...orders });
   };
 </script>
 

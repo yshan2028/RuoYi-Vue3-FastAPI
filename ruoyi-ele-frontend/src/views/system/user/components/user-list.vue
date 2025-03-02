@@ -1,6 +1,7 @@
 <template>
   <user-search ref="searchRef" style="margin-bottom: -14px" @search="reload" />
   <!-- 表格 -->
+  <!-- 表格 -->
   <ele-pro-table
     ref="tableRef"
     row-key="userId"
@@ -8,7 +9,10 @@
     :datasource="datasource"
     :show-overflow-tooltip="true"
     v-model:selections="selections"
-    highlight-current-row
+    :highlight-current-row="true"
+    :export-config="{ fileName: '用户信息', datasource: exportSource }"
+    :print-config="{ datasource: exportSource }"
+    :tools="['reload', 'export', 'print', 'size', 'columns', 'maximized']"
     cache-key="systemUserTable"
   >
     <template #toolbar>
@@ -145,14 +149,14 @@
     {
       type: 'selection',
       columnKey: 'selection',
-      width: 50,
+      width: 40,
       align: 'center',
       fixed: 'left'
     },
     {
       type: 'index',
       columnKey: 'index',
-      width: 50,
+      width: 40,
       align: 'center',
       fixed: 'left'
     },
@@ -175,6 +179,12 @@
       minWidth: 110
     },
     {
+      prop: 'email',
+      label: '用户邮箱',
+      align: 'center',
+      minWidth: 110
+    },
+    {
       prop: 'phonenumber',
       label: '手机号码',
       align: 'center',
@@ -185,7 +195,28 @@
       label: '状态',
       width: 90,
       align: 'center',
-      slot: 'status'
+      slot: 'status',
+      filters: [
+        { text: '正常', value: '0' },
+        { text: '停用', value: '1' }
+      ],
+      filterMultiple: false, // 只能选一个
+      filterMethod: (value, row) => {
+        if (value === '') return true; // 选 "全部" 显示所有数据
+        return row.status == value; // 选 "正常" 或 "停用" 进行筛选
+      }
+    },
+    {
+      prop: 'loginDate',
+      label: '最后登录时间',
+      align: 'center',
+      minWidth: 110
+    },
+    {
+      prop: 'remark',
+      label: '备注',
+      align: 'center',
+      minWidth: 110
     },
     {
       prop: 'createTime',
@@ -198,7 +229,9 @@
       label: '操作',
       width: 180,
       align: 'center',
-      slot: 'action'
+      slot: 'action',
+      hideInPrint: true,
+      hideInExport: true
     }
   ]);
 
@@ -336,6 +369,11 @@
           EleMessage.error(e.message);
         });
     });
+  };
+
+  /** 导出和打印全部数据的数据源 */
+  const exportSource = ({ where, orders }) => {
+    return pageUsers({ ...where, ...orders });
   };
 
   // 监听机构 id 变化

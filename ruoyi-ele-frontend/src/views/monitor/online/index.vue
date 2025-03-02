@@ -11,7 +11,10 @@
         :datasource="datasource"
         :show-overflow-tooltip="true"
         :loading="loading"
-        highlight-current-row
+        :highlight-current-row="true"
+        :export-config="{ fileName: '在线用户信息', datasource: exportSource }"
+        :print-config="{ datasource: exportSource }"
+        :tools="['reload', 'export', 'print', 'size', 'columns', 'maximized']"
         cache-key="monitorOnlineTable"
         @refresh="reload(getWhere())"
       >
@@ -102,7 +105,9 @@
       width: 80,
       align: 'center',
       slot: 'action',
-      fixed: 'right'
+      fixed: 'right',
+      hideInPrint: true,
+      hideInExport: true
     }
   ]);
 
@@ -153,6 +158,11 @@
   /** 获取当前搜索条件 */
   const getWhere = () => {
     return searchRef.value?.getWhere?.();
+  };
+
+  /** 导出和打印全部数据的数据源 */
+  const exportSource = ({ where, orders }) => {
+    return pageOnlines({ ...where, ...orders });
   };
 
   reload();
