@@ -1,8 +1,8 @@
 <template>
-  <div style="padding-top: 40px">
+  <ele-page>
     <el-result title="404">
       <template #icon>
-        <div style="width: 250px; height: 295px; margin-bottom: 10px">
+        <div style="width: 250px; height: 295px; margin: 20px 0 10px 0">
           <icon-svg />
         </div>
       </template>
@@ -15,15 +15,11 @@
         </router-link>
       </template>
     </el-result>
-  </div>
+  </ele-page>
 </template>
 
 <script setup>
   import IconSvg from './components/icon-svg.vue';
-</script>
 
-<script>
-  export default {
-    name: 'Exception404'
-  };
+  defineOptions({ name: 'Exception404' });
 </script>
