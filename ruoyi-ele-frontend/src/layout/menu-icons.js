@@ -29,4 +29,4 @@ export {
 
 export { HomeOutlined as House } from 'ele-admin-plus/es/icons';
 
-export { ProtectOutlined } from '@/components/icons';
+export * from '@/components/icons';

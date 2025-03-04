@@ -14,7 +14,6 @@
         :highlight-current-row="true"
         :export-config="{ fileName: '部门信息', datasource: exportSource }"
         :print-config="{ datasource: exportSource }"
-        :tools="['reload', 'export', 'print', 'size', 'columns', 'maximized']"
         :default-expand-all="true"
         :pagination="false"
         cache-key="systemDeptTable"

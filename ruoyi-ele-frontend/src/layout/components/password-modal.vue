@@ -5,11 +5,16 @@
     :width="420"
     title="修改密码"
     :append-to-body="true"
-    :model-value="modelValue"
-    @update:modelValue="updateModelValue"
-    @closed="onCancel"
+    v-model="visible"
+    @closed="handleClosed"
   >
-    <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      label-width="80px"
+      @submit.prevent=""
+    >
       <el-form-item label="旧密码" prop="oldPassword">
         <el-input
           show-password
@@ -39,8 +44,8 @@
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="updateModelValue(false)">取消</el-button>
-      <el-button type="primary" :loading="loading" @click="onOk">
+      <el-button @click="handleCancel">取消</el-button>
+      <el-button type="primary" :loading="loading" @click="handleOk">
         保存
       </el-button>
     </template>
@@ -53,11 +58,8 @@
   import { useFormData } from '@/utils/use-form-data';
   import { updatePassword } from '@/api/layout';
 
-  const emit = defineEmits(['update:modelValue']);
-
-  defineProps({
-    modelValue: Boolean
-  });
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   /** 提交loading */
   const loading = ref(false);
@@ -66,7 +68,7 @@
   const formRef = ref(null);
 
   /** 表单数据 */
-  const { form, resetFields } = useFormData({
+  const [form, resetFields] = useFormData({
     oldPassword: '',
     newPassword: '',
     confirmPassword: ''
@@ -116,23 +118,23 @@
     ]
   });
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
+  /** 关闭弹窗 */
+  const handleCancel = () => {
+    visible.value = false;
   };
 
   /** 保存修改 */
-  const onOk = () => {
+  const handleOk = () => {
     formRef.value?.validate?.((valid) => {
       if (!valid) {
         return;
       }
       loading.value = true;
       updatePassword(form)
-        .then(() => {
+        .then((msg) => {
           loading.value = false;
-          EleMessage.success('修改成功');
-          updateModelValue(false);
+          EleMessage.success(msg);
+          handleCancel();
         })
         .catch((e) => {
           loading.value = false;
@@ -141,8 +143,8 @@
     });
   };
 
-  /** 关闭回调 */
-  const onCancel = () => {
+  /** 弹窗关闭事件 */
+  const handleClosed = () => {
     resetFields();
     formRef.value?.clearValidate?.();
     loading.value = false;

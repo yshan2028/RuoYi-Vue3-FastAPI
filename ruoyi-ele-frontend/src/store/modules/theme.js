@@ -45,12 +45,24 @@ const DEFAULT_STATE = Object.freeze({
   uniqueOpened: true,
   /** 固定主页页签 */
   fixedHome: true,
+  /** 页签是否置于顶栏 */
+  tabInHeader: false,
   /** 路由切换动画 */
   transitionName: 'slide-right',
+  /** 是否色弱模式 */
+  weakMode: false,
   /** 是否暗黑模式 */
   darkMode: false,
+  /** 主题色 */
+  color: null,
   /** 内容区宽度 */
-  contentWidth: null
+  contentWidth: null,
+  /** 是否开启圆角主题 */
+  roundedTheme: true,
+  /** 菜单触发模式 */
+  menuItemTrigger: 'click',
+  /** 是否开启响应式 */
+  responsive: true
 });
 
 /**
@@ -83,6 +95,43 @@ function cacheSetting(key, value) {
 }
 
 /**
+ * 开关响应式布局
+ */
+function changeResponsive(responsive) {
+  const classes = 'ele-body-limited';
+  if (responsive) {
+    document.body.classList.remove(classes);
+  } else {
+    document.body.classList.add(classes);
+  }
+}
+
+/**
+ * 切换圆角主题
+ */
+function changeRoundedTheme(roundedTheme) {
+  const classes = 'rounded';
+  const $html = document.querySelector('html');
+  if ($html && roundedTheme) {
+    $html.classList.add(classes);
+  } else if ($html) {
+    $html.classList.remove(classes);
+  }
+}
+
+/**
+ * 切换色弱模式
+ */
+function changeWeakMode(weakMode) {
+  const classes = 'ele-admin-weak';
+  if (weakMode) {
+    document.body.classList.add(classes);
+  } else {
+    document.body.classList.remove(classes);
+  }
+}
+
+/**
  * 切换主题
  */
 function changeTheme(value, dark) {
@@ -96,8 +145,7 @@ function changeTheme(value, dark) {
   });
 }
 
-export const useThemeStore = defineStore({
-  id: 'theme',
+export const useThemeStore = defineStore('theme', {
   state: () => {
     const state = { ...DEFAULT_STATE };
     // 读取本地缓存
@@ -198,12 +246,21 @@ export const useThemeStore = defineStore({
       this.fixedHome = value;
       cacheSetting('fixedHome', value);
     },
+    setTabInHeader(value) {
+      this.tabInHeader = value;
+      cacheSetting('tabInHeader', value);
+    },
     setTransitionName(value) {
       this.transitionName = value;
       cacheSetting('transitionName', value);
     },
     setContentWidth(value) {
       this.contentWidth = value;
+    },
+    setWeakMode(value) {
+      changeWeakMode(value);
+      this.weakMode = value;
+      cacheSetting('weakMode', value);
     },
     /**
      * 切换暗黑模式
@@ -215,12 +272,49 @@ export const useThemeStore = defineStore({
       cacheSetting('darkMode', value);
     },
     /**
+     * 切换主题色
+     * @param value 主题色
+     */
+    async setColor(value) {
+      await changeTheme(value, this.darkMode);
+      this.color = value;
+      cacheSetting('color', value);
+    },
+    /**
+     * 重置
+     */
+    async resetSetting() {
+      const excludes = ['tabs', 'collapse', 'contentWidth'];
+      Object.keys(DEFAULT_STATE).forEach((key) => {
+        if (!excludes.includes(key)) {
+          this[key] = DEFAULT_STATE[key];
+        }
+      });
+      localStorage.removeItem(THEME_CACHE_NAME);
+      changeResponsive(this.responsive);
+      changeRoundedTheme(this.roundedTheme);
+      changeWeakMode(this.weakMode);
+      await changeTheme(this.color, this.darkMode);
+    },
+    /**
      * 恢复主题
      */
     recoverTheme() {
+      // 关闭响应式布局
+      if (!this.responsive) {
+        changeResponsive(false);
+      }
+      // 开启圆角主题
+      if (this.roundedTheme) {
+        changeRoundedTheme(true);
+      }
+      // 开启色弱模式
+      if (this.weakMode) {
+        changeWeakMode(true);
+      }
       // 恢复主题色
-      if (this.darkMode) {
-        changeTheme(void 0, this.darkMode).catch((e) => {
+      if (this.color || this.darkMode) {
+        changeTheme(this.color, this.darkMode).catch((e) => {
           console.error(e);
         });
       }
@@ -248,7 +342,10 @@ export const useThemeStore = defineStore({
         return {};
       }
       const t = this.tabs[i];
-      if (!t.closable || (t.home && this.tabs.length === 1)) {
+      if (
+        !t.closable ||
+        (t.home && (this.tabs.length === 1 || this.fixedHome))
+      ) {
         return Promise.reject();
       }
       const path = this.tabs[i + (i === 0 ? 1 : -1)]?.fullPath;
@@ -327,7 +424,9 @@ export const useThemeStore = defineStore({
       if (this.tabs.length === 1 && this.tabs[0].home) {
         return Promise.reject();
       }
-      const temps = this.tabs.filter((d) => !d.closable);
+      const temps = this.tabs.filter(
+        (t) => !t.closable || (t.home && this.fixedHome)
+      );
       if (temps.length === this.tabs.length) {
         return Promise.reject();
       }
@@ -382,6 +481,23 @@ export const useThemeStore = defineStore({
       const temps = [...this.tabs];
       temps[i] = item;
       this.setTabs(temps);
+    },
+    /** 修改菜单触发模式 */
+    setMenuItemTrigger(value) {
+      this.menuItemTrigger = value;
+      cacheSetting('menuItemTrigger', value);
+    },
+    /** 切换圆角主题 */
+    setRoundedTheme(value) {
+      changeRoundedTheme(value);
+      this.roundedTheme = value;
+      cacheSetting('roundedTheme', value);
+    },
+    /** 修改响应式开关 */
+    setResponsive(value) {
+      changeResponsive(value);
+      this.responsive = value;
+      cacheSetting('responsive', value);
     }
   }
 });

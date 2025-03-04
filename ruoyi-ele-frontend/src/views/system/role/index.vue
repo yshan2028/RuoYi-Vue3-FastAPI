@@ -14,7 +14,6 @@
         :highlight-current-row="true"
         :export-config="{ fileName: '角色数据', datasource: exportSource }"
         :print-config="{ datasource: exportSource }"
-        :tools="['reload', 'export', 'print', 'size', 'columns', 'maximized']"
         cache-key="systemRoleTable"
       >
         <template #toolbar>

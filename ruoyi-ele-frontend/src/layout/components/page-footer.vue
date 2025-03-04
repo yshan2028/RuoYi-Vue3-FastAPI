@@ -9,19 +9,32 @@
       :size="24"
       style="--el-text-color-regular: var(--el-text-color-placeholder)"
     >
-      <el-link :underline="false" href="http://doc.ruoyi.vip/" target="_blank">
-        RuoYi
+      <el-link :underline="false" href="https://eleadmin.com" target="_blank">
+        {{ t('layout.footer.website') }}
       </el-link>
       <el-link
         :underline="false"
         href="https://eleadmin.com/doc/eleadminplus/"
         target="_blank"
       >
-        EleAdmin
+        {{ t('layout.footer.document') }}
+      </el-link>
+      <el-link
+        :underline="false"
+        href="https://eleadmin.com/goods/11"
+        target="_blank"
+      >
+        {{ t('layout.footer.authorization') }}
       </el-link>
     </el-space>
     <div style="margin-top: 8px">
-      Copyright © 2023 RuoYi & EleAdmin All Rights Reserved.
+      {{ t('layout.footer.copyright') }}
     </div>
   </ele-text>
 </template>
+
+<script setup>
+  import { useI18n } from 'vue-i18n';
+
+  const { t } = useI18n();
+</script>

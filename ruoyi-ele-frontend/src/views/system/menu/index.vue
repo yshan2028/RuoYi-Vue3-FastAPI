@@ -14,7 +14,6 @@
         :highlight-current-row="true"
         :export-config="{ fileName: '菜单信息', datasource: exportSource }"
         :print-config="{ datasource: exportSource }"
-        :tools="['reload', 'export', 'print', 'size', 'columns', 'maximized']"
         :default-expand-all="false"
         :pagination="false"
         cache-key="systemMenuTable"

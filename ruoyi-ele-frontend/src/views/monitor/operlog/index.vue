@@ -14,7 +14,6 @@
         :highlight-current-row="true"
         :export-config="{ fileName: '操作信息', datasource: exportSource }"
         :print-config="{ datasource: exportSource }"
-        :tools="['reload', 'export', 'print', 'size', 'columns', 'maximized']"
         cache-key="systemLogOperlogTable"
       >
         <template #toolbar>

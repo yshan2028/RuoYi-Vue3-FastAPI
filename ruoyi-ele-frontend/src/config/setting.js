@@ -26,6 +26,9 @@ export const TOKEN_CACHE_NAME = 'token';
 /** 主题配置本地缓存的名称 */
 export const THEME_CACHE_NAME = 'theme';
 
+/** i18n本地缓存的名称 */
+export const I18N_CACHE_NAME = 'i18n-lang';
+
 /** 高德地图key, 请到高德地图官网自行申请 */
 export const MAP_KEY = '006d995d433058322319fa797f2876f5';
 

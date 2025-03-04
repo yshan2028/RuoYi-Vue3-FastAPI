@@ -8,6 +8,8 @@
   import { storeToRefs } from 'pinia';
   import { useThemeStore } from '@/store/modules/theme';
 
+  defineOptions({ name: 'RedirectLayout' });
+
   const { replace } = useRouter();
   const { params, query } = useRoute();
   const themeStore = useThemeStore();
@@ -23,10 +25,4 @@
     });
     replace({ path: '/' + from, query });
   }, 100);
-</script>
-
-<script>
-  export default {
-    name: 'RedirectLayout'
-  };
 </script>

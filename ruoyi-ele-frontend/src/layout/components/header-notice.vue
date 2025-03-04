@@ -8,6 +8,7 @@
     :body-style="{ overflow: 'hidden' }"
     :popper-style="{ maxWidth: 'calc(100% - 32px)' }"
     :popper-options="{
+      strategy: 'fixed',
       modifiers: [{ name: 'offset', options: { offset: [0, 5] } }]
     }"
   >
@@ -18,8 +19,8 @@
           :hidden="!unreadNum"
           style="line-height: 1; padding: 4px 0"
         >
-          <el-icon style="transform: scale(1.29) translateY(1px)">
-            <bell />
+          <el-icon style="transform: scale(1.17) translateY(1px)">
+            <BellOutlined />
           </el-icon>
         </el-badge>
       </div>
@@ -52,11 +53,14 @@
           <div v-for="item in notice" :key="item.id" class="list-item">
             <div class="list-item-icon" :style="{ background: item.color }">
               <el-icon>
-                <calendar v-if="item.icon === 'report'" />
-                <coordinate v-else-if="item.icon === 'leave'" />
-                <video-camera v-else-if="item.icon === 'meeting'" />
-                <checked v-else-if="item.icon === 'interview'" />
-                <bell v-else-if="item.icon === 'salary'" />
+                <Comment
+                  v-if="item.icon === 'report'"
+                  style="transform: translateY(1px)"
+                />
+                <Stamp v-else-if="item.icon === 'leave'" />
+                <Promotion v-else-if="item.icon === 'meeting'" />
+                <Checked v-else-if="item.icon === 'interview'" />
+                <BellFilled v-else-if="item.icon === 'salary'" />
               </el-icon>
             </div>
             <div class="list-item-body">
@@ -70,7 +74,9 @@
         <div v-if="notice.length" class="bottom-tools">
           <div class="bottom-tool" @click="clearNotice">清空通知</div>
           <el-divider direction="vertical" style="margin: 0; width: 0" />
-          <div class="bottom-tool">查看更多</div>
+          <router-link to="/user/message?type=notice" class="bottom-tool">
+            查看更多
+          </router-link>
         </div>
         <el-empty v-else description="已查看所有通知" :image-size="68" />
       </template>
@@ -92,7 +98,9 @@
         <div v-if="letter.length" class="bottom-tools">
           <div class="bottom-tool" @click="clearLetter">清空私信</div>
           <el-divider direction="vertical" style="margin: 0; width: 0" />
-          <div class="bottom-tool">查看更多</div>
+          <router-link to="/user/message?type=letter" class="bottom-tool">
+            查看更多
+          </router-link>
         </div>
         <el-empty v-else description="已读完所有私信" :image-size="68" />
       </template>
@@ -133,7 +141,9 @@
         <div v-if="todo.length" class="bottom-tools">
           <div class="bottom-tool" @click="clearTodo">清空待办</div>
           <el-divider direction="vertical" style="margin: 0; width: 0" />
-          <div class="bottom-tool">查看更多</div>
+          <router-link to="/user/message?type=todo" class="bottom-tool">
+            查看更多
+          </router-link>
         </div>
         <el-empty v-else description="已完成所有任务" :image-size="68" />
       </template>
@@ -143,13 +153,16 @@
 
 <script setup>
   import { ref, computed, nextTick } from 'vue';
+  import { EleMessage } from 'ele-admin-plus/es';
   import {
-    Bell,
-    Calendar,
-    Coordinate,
-    VideoCamera,
-    Checked
+    Comment,
+    Stamp,
+    Promotion,
+    Checked,
+    BellFilled
   } from '@element-plus/icons-vue';
+  import { BellOutlined } from '@/components/icons';
+  import { getUnreadNotice } from '@/api/example';
 
   /** 标签页 */
   const tabRef = ref(null);
@@ -173,108 +186,15 @@
 
   /** 查询数据 */
   const query = () => {
-    const result = {
-      notice: [
-        {
-          id: 1,
-          color: '#60B2FC',
-          icon: 'report',
-          title: '你收到了一封14份新周报',
-          time: '2020-07-27 18:30:18'
-        },
-        {
-          id: 2,
-          color: '#F5686F',
-          icon: 'leave',
-          title: '许经理同意了你的请假申请',
-          time: '2020-07-27 09:08:36'
-        },
-        {
-          id: 3,
-          color: '#7CD734',
-          icon: 'meeting',
-          title: '陈总邀请你参加视频会议',
-          time: '2020-07-26 18:30:01'
-        },
-        {
-          id: 4,
-          color: '#FAAD14',
-          icon: 'interview',
-          title: '你推荐的刘诗雨已通过第三轮面试',
-          time: '2020-07-25 16:38:46'
-        },
-        {
-          id: 5,
-          color: '#2BCACD',
-          icon: 'salary',
-          title: '你的6月加班奖金已发放',
-          time: '2020-07-25 11:03:31'
-        }
-      ],
-      letter: [
-        {
-          id: 1,
-          avatar:
-            'https://cdn.eleadmin.com/20200609/c184eef391ae48dba87e3057e70238fb.jpg',
-          title: 'SunSmile 评论了你的日志',
-          content: '写的不错, 以后多多向你学习~',
-          time: '2020-07-27 18:30:18'
-        },
-        {
-          id: 2,
-          avatar:
-            'https://cdn.eleadmin.com/20200609/948344a2a77c47a7a7b332fe12ff749a.jpg',
-          title: '刘诗雨 点赞了你的日志',
-          content: '写的不错, 以后多多向你学习~',
-          time: '2020-07-27 09:08:36'
-        },
-        {
-          id: 3,
-          avatar:
-            'https://cdn.eleadmin.com/20200609/2d98970a51b34b6b859339c96b240dcd.jpg',
-          title: '酷酷的大叔 评论了你的周报',
-          content: '写的不错, 以后多多向你学习~',
-          time: '2020-07-26 18:30:01'
-        },
-        {
-          id: 4,
-          avatar:
-            'https://cdn.eleadmin.com/20200609/f6bc05af944a4f738b54128717952107.jpg',
-          title: 'Jasmine 点赞了你的周报',
-          content: '写的不错, 以后多多向你学习~',
-          time: '2020-07-25 11:03:31'
-        }
-      ],
-      todo: [
-        {
-          id: 1,
-          status: 0,
-          title: '刘诗雨的请假审批',
-          description: '刘诗雨在 07-27 18:30 提交的请假申请'
-        },
-        {
-          id: 2,
-          status: 1,
-          title: '第三方代码紧急变更',
-          description: '需要在 2020-07-27 之前完成'
-        },
-        {
-          id: 3,
-          status: 2,
-          title: '信息安全考试',
-          description: '需要在 2020-07-26 18:30 前完成'
-        },
-        {
-          id: 4,
-          status: 2,
-          title: 'EleAdmin发布新版本',
-          description: '需要在 2020-07-25 11:03 前完成'
-        }
-      ]
-    };
-    notice.value = result.notice;
-    letter.value = result.letter;
-    todo.value = result.todo;
+    getUnreadNotice()
+      .then((result) => {
+        notice.value = result.notice;
+        letter.value = result.letter;
+        todo.value = result.todo;
+      })
+      .catch((e) => {
+        EleMessage.error(e.message);
+      });
   };
 
   /** 清空通知 */
@@ -309,6 +229,9 @@
   .list-wrapper {
     padding-top: 8px;
     box-sizing: border-box;
+    max-height: calc(100vh - 180px);
+    min-height: 60px;
+    overflow: auto;
   }
 
   .list-item {
@@ -331,7 +254,7 @@
       width: 32px;
       height: 32px;
       color: #fff;
-      font-size: 18px;
+      font-size: 16px;
       border-radius: 50%;
       text-align: center;
       background-color: #60b2fc;

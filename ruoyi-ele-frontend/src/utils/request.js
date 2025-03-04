@@ -6,10 +6,11 @@ import { unref } from 'vue';
 import { ElMessageBox } from 'element-plus/es';
 import { API_BASE_URL, LAYOUT_PATH } from '@/config/setting';
 import router from '@/router';
-import { getToken } from './token-util';
-import { logout } from './common';
+import { getToken, setToken } from './token-util';
+import { logout, toURLSearch } from './common';
+import _ from 'lodash'; // 引入 lodash（更稳定的 `camelCase` / `snakeCase` 处理）
 
-// 创建 axios 实例
+/** 创建axios实例 */
 const service = axios.create({
   baseURL: API_BASE_URL
 });
@@ -17,18 +18,17 @@ const service = axios.create({
 /**
  * 递归转换 `camelCase` ⇄ `snake_case`
  * @param {Object} obj 需要转换的对象
- * @param {Boolean} toSnake 是否转换为 `snake_case`
+ * @param {Function} convertFn 转换函数（_.camelCase / _.snakeCase）
  */
-function transformKeys(obj, toSnake = true) {
+function transformKeys(obj, convertFn) {
   if (Array.isArray(obj)) {
-    return obj.map((item) => transformKeys(item, toSnake));
+    return obj.map((item) =>
+      typeof item === 'object' ? transformKeys(item, convertFn) : item
+    );
   } else if (typeof obj === 'object' && obj !== null) {
-    return Object.keys(obj).reduce((acc, key) => {
-      const transformedKey = toSnake
-        ? key.replace(/([A-Z])/g, '_$1').toLowerCase() // `camelCase` → `snake_case`
-        : key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase()); // `snake_case` → `camelCase`
-
-      acc[transformedKey] = transformKeys(obj[key], toSnake);
+    return Object.entries(obj).reduce((acc, [key, value]) => {
+      acc[convertFn(key)] =
+        value === null || value === undefined ? value : transformKeys(value, convertFn);
       return acc;
     }, {});
   }
@@ -36,36 +36,44 @@ function transformKeys(obj, toSnake = true) {
 }
 
 /**
- * 请求拦截器：自动转换 `camelCase` → `snake_case`
+ * 添加请求拦截器
  */
 service.interceptors.request.use(
   (config) => {
-    // 添加 token 到 header
+    // 添加token到header
     const token = getToken();
     if (token && config.headers) {
-      config.headers.Authorization = token;
+      config.headers['Authorization'] = token;
     }
 
-    // 直接转换 `params` 和 `data`，不区分 `GET` / `POST` / `PUT` / `DELETE`
-    if (config.params) {
-      config.params = transformKeys(config.params, true);
+    // **避免转换特殊数据类型**
+    if (
+      config.data &&
+      !(config.data instanceof FormData) &&
+      !(config.data instanceof URLSearchParams) &&
+      !config.url.includes('/graphql') // 排除 GraphQL API
+    ) {
+      config.data = transformKeys(config.data, _.snakeCase);
     }
-    if (config.data) {
-      config.data = transformKeys(config.data, true);
+    if (config.params) {
+      config.params = transformKeys(config.params, _.snakeCase);
     }
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error(error);
+    return Promise.reject(new Error('网络错误'));
+  }
 );
 
 /**
- * 响应拦截器：自动转换 `snake_case` → `camelCase`
+ * 添加响应拦截器
  */
 service.interceptors.response.use(
-  (response) => {
+  (res) => {
     // 登录过期处理
-    if (response.data?.code === 401) {
+    if (res.data?.code === 401) {
       const { path, fullPath } = unref(router.currentRoute);
       if (path === LAYOUT_PATH) {
         logout(true, void 0, router.push);
@@ -82,17 +90,29 @@ service.interceptors.response.use(
           draggable: true
         });
       }
-      return Promise.reject(new Error(response.data.msg));
+      return Promise.reject(new Error(res.data.message));
     }
 
-    // 直接转换后端返回的数据
-    if (response.data) {
-      response.data = transformKeys(response.data, false);
+    // 续期token
+    const newToken = res.headers['authorization'];
+    if (newToken) {
+      setToken(newToken);
     }
 
-    return response;
+    // **只转换 JSON 数据，避免影响文件下载**
+    if (
+      res.data &&
+      res.headers['content-type']?.includes('application/json')
+    ) {
+      res.data = transformKeys(res.data, _.camelCase);
+    }
+
+    return res;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error(error);
+    return Promise.reject(new Error('网络错误'));
+  }
 );
 
 export default service;

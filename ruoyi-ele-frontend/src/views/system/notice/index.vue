@@ -14,7 +14,6 @@
         :highlight-current-row="true"
         :export-config="{ fileName: '公告信息', datasource: exportSource }"
         :print-config="{ datasource: exportSource }"
-        :tools="['reload', 'export', 'print', 'size', 'columns', 'maximized']"
         cache-key="systemNoticeTable"
       >
         <template #toolbar>

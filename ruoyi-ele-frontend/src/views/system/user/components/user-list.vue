@@ -1,7 +1,6 @@
 <template>
   <user-search ref="searchRef" style="margin-bottom: -14px" @search="reload" />
   <!-- 表格 -->
-  <!-- 表格 -->
   <ele-pro-table
     ref="tableRef"
     row-key="userId"
@@ -10,16 +9,16 @@
     :show-overflow-tooltip="true"
     v-model:selections="selections"
     :highlight-current-row="true"
-    :export-config="{ fileName: '用户信息', datasource: exportSource }"
+    :export-config="{ fileName: '用户数据', datasource: exportSource }"
     :print-config="{ datasource: exportSource }"
-    :tools="['reload', 'export', 'print', 'size', 'columns', 'maximized']"
+    :footer-style="{ paddingBottom: '16px' }"
     cache-key="systemUserTable"
   >
     <template #toolbar>
       <el-button
         type="primary"
         class="ele-btn-icon"
-        :icon="Plus"
+        :icon="PlusOutlined"
         v-permission="'system:user:add'"
         @click="openEdit()"
       >
@@ -28,7 +27,7 @@
       <el-button
         type="danger"
         class="ele-btn-icon hidden-sm-and-down"
-        :icon="Delete"
+        :icon="DeleteOutlined"
         v-permission="'system:user:remove'"
         @click="removeBatch()"
       >
@@ -36,7 +35,7 @@
       </el-button>
       <el-button
         class="ele-btn-icon"
-        :icon="Upload"
+        :icon="UploadOutlined"
         v-permission="'system:user:import'"
         @click="openImport"
       >
@@ -44,12 +43,17 @@
       </el-button>
       <el-button
         class="ele-btn-icon"
-        :icon="Download"
+        :icon="DownloadOutlined"
         v-permission="'system:user:export'"
         @click="exportData"
       >
         导出
       </el-button>
+    </template>
+    <template #userName="{ row }">
+      <el-link type="primary" :underline="false" @click="openDetail(row)">
+        {{ row.userName }}
+      </el-link>
     </template>
     <template #status="{ row }">
       <el-switch
@@ -101,6 +105,13 @@
     :dept-id="deptId"
     @done="reload"
   />
+  <!-- 编辑弹窗 -->
+  <user-detail
+    :data="current"
+    v-model="showDetail"
+    :userId="current"
+    @done="reload"
+  />
   <!-- 导入弹窗 -->
   <user-import v-model="showImport" @done="reload" />
   <!-- 分配角色弹窗 -->
@@ -109,18 +120,20 @@
 
 <script setup>
   import { ref, watch, computed } from 'vue';
+  import { useRouter } from 'vue-router';
   import {
-    Plus,
-    Delete,
+    PlusOutlined,
+    DeleteOutlined,
     ArrowDown,
-    Upload,
-    Download
-  } from '@element-plus/icons-vue';
+    UploadOutlined,
+    DownloadOutlined
+  } from '@/components/icons';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
   import { usePermission } from '@/utils/use-permission';
   import UserSearch from './user-search.vue';
   import UserEdit from './user-edit.vue';
+  import UserDetail from './user-details.vue';
   import UserImport from './user-import.vue';
   import UserRole from './user-role.vue';
   import {
@@ -162,9 +175,10 @@
     },
     {
       prop: 'userName',
-      label: '用户名称',
+      label: '用户账号',
       align: 'center',
-      minWidth: 110
+      minWidth: 110,
+      slot: 'userName'
     },
     {
       prop: 'nickName',
@@ -244,6 +258,9 @@
   /** 是否显示编辑弹窗 */
   const showEdit = ref(false);
 
+  /** 控制详情弹窗的显示状态 */
+  const showDetail = ref(false);
+
   /** 是否显示用户导入弹窗 */
   const showImport = ref(false);
 
@@ -282,6 +299,12 @@
   const openEdit = (row) => {
     current.value = row ?? null;
     showEdit.value = true;
+  };
+
+  /** 点击用户名时打开详情弹窗 */
+  const openDetail = async (row) => {
+    current.value = row.userId;
+    showDetail.value = true;  // 显示弹窗
   };
 
   /** 打开编辑弹窗 */
