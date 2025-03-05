@@ -311,13 +311,13 @@ class LoginService:
         router_list: List[RouterModel] = []
         for permission in permission_list:
             router = RouterModel(
-                hidden=True if permission.visible == '1' else False,
+                hidden=True if permission.hide == '1' else False,
                 name=RouterUtil.get_router_name(permission),
                 path=RouterUtil.get_router_path(permission),
                 component=RouterUtil.get_component(permission),
                 query=permission.query,
                 meta=MetaModel(
-                    title=permission.menu_name,
+                    title=permission.title,
                     icon=permission.icon,
                     no_cache=True if permission.is_cache == 1 else False,
                     link=permission.path if RouterUtil.is_http(permission.path) else None,
@@ -336,7 +336,7 @@ class LoginService:
                     component=permission.component,
                     name=RouterUtil.get_route_name(permission.route_name, permission.path),
                     meta=MetaModel(
-                        title=permission.menu_name,
+                        title=permission.title,
                         icon=permission.icon,
                         no_cache=True if permission.is_cache == 1 else False,
                         link=permission.path if RouterUtil.is_http(permission.path) else None,
@@ -346,7 +346,7 @@ class LoginService:
                 children_list.append(children)
                 router.children = children_list
             elif permission.parent_id == 0 and RouterUtil.is_inner_link(permission):
-                router.meta = MetaModel(title=permission.menu_name, icon=permission.icon)
+                router.meta = MetaModel(title=permission.title, icon=permission.icon)
                 router.path = '/'
                 children_list: List[RouterModel] = []
                 router_path = RouterUtil.inner_link_replace_each(permission.path)
@@ -355,7 +355,7 @@ class LoginService:
                     component=MenuConstant.INNER_LINK,
                     name=RouterUtil.get_route_name(permission.route_name, permission.path),
                     meta=MetaModel(
-                        title=permission.menu_name,
+                        title=permission.title,
                         icon=permission.icon,
                         link=permission.path if RouterUtil.is_http(permission.path) else None,
                     ),

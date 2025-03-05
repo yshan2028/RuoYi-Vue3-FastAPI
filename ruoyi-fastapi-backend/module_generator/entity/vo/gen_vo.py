@@ -92,7 +92,7 @@ class GenTableModel(GenTableBaseModel):
     tree_parent_code: Optional[str] = Field(default=None, description='树父编码字段')
     tree_name: Optional[str] = Field(default=None, description='树名称字段')
     parent_menu_id: Optional[int] = Field(default=None, description='上级菜单ID字段')
-    parent_menu_name: Optional[str] = Field(default=None, description='上级菜单名称字段')
+    parent_title: Optional[str] = Field(default=None, description='上级菜单名称字段')
     sub: Optional[bool] = Field(default=None, description='是否为子表')
     tree: Optional[bool] = Field(default=None, description='是否为树表')
     crud: Optional[bool] = Field(default=None, description='是否为单表')

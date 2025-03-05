@@ -431,7 +431,7 @@ class GenTableService:
             gen_table.tree_parent_code = params_obj.get(GenConstant.TREE_PARENT_CODE)
             gen_table.tree_name = params_obj.get(GenConstant.TREE_NAME)
             gen_table.parent_menu_id = params_obj.get(GenConstant.PARENT_MENU_ID)
-            gen_table.parent_menu_name = params_obj.get(GenConstant.PARENT_MENU_NAME)
+            gen_table.parent_title = params_obj.get(GenConstant.PARENT_TITLE)
 
         return gen_table
 

@@ -38,7 +38,7 @@ class MenuDao:
                 await db.execute(
                     select(SysMenu).where(
                         SysMenu.parent_id == menu.parent_id if menu.parent_id else True,
-                        SysMenu.menu_name == menu.menu_name if menu.menu_name else True,
+                        SysMenu.title == menu.title if menu.title else True,
                         SysMenu.menu_type == menu.menu_type if menu.menu_type else True,
                     )
                 )
@@ -62,7 +62,7 @@ class MenuDao:
         role_id_list = [item.role_id for item in role]
         if 1 in role_id_list:
             menu_query_all = (
-                (await db.execute(select(SysMenu).where(SysMenu.status == '0').order_by(SysMenu.order_num).distinct()))
+                (await db.execute(select(SysMenu).where(SysMenu.deleted == '0').order_by(SysMenu.order_num).distinct()))
                 .scalars()
                 .all()
             )
@@ -82,7 +82,7 @@ class MenuDao:
                             isouter=True,
                         )
                         .join(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id, isouter=True)
-                        .join(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.status == '0'))
+                        .join(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.deleted == '0'))
                         .order_by(SysMenu.order_num)
                         .distinct()
                     )
@@ -111,8 +111,8 @@ class MenuDao:
                     await db.execute(
                         select(SysMenu)
                         .where(
-                            SysMenu.status == page_object.status if page_object.status else True,
-                            SysMenu.menu_name.like(f'%{page_object.menu_name}%') if page_object.menu_name else True,
+                            SysMenu.deleted == page_object.deleted if page_object.deleted else True,
+                            SysMenu.title.like(f'%{page_object.title}%') if page_object.title else True,
                         )
                         .order_by(SysMenu.order_num)
                         .distinct()
@@ -141,8 +141,8 @@ class MenuDao:
                             SysMenu,
                             and_(
                                 SysRoleMenu.menu_id == SysMenu.menu_id,
-                                SysMenu.status == page_object.status if page_object.status else True,
-                                SysMenu.menu_name.like(f'%{page_object.menu_name}%') if page_object.menu_name else True,
+                                SysMenu.deleted == page_object.deleted if page_object.deleted else True,
+                                SysMenu.title.like(f'%{page_object.title}%') if page_object.title else True,
                             ),
                         )
                         .order_by(SysMenu.order_num)

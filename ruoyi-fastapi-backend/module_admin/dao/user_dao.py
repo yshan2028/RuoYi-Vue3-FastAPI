@@ -145,7 +145,7 @@ class UserDao:
         role_id_list = [item.role_id for item in query_user_role_info]
         if 1 in role_id_list:
             query_user_menu_info = (
-                (await db.execute(select(SysMenu).where(SysMenu.status == '0').distinct())).scalars().all()
+                (await db.execute(select(SysMenu).where(SysMenu.deleted == '0').distinct())).scalars().all()
             )
         else:
             query_user_menu_info = (
@@ -163,7 +163,7 @@ class UserDao:
                             isouter=True,
                         )
                         .join(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id, isouter=True)
-                        .join(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.status == '0'))
+                        .join(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.deleted == '0'))
                         .order_by(SysMenu.order_num)
                         .distinct()
                     )
@@ -256,7 +256,7 @@ class UserDao:
                         isouter=True,
                     )
                     .join(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id, isouter=True)
-                    .join(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.status == '0'))
+                    .join(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.deleted == '0'))
                     .distinct()
                 )
             )
