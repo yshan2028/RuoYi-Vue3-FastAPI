@@ -20,7 +20,6 @@
   import 'tinymce/plugins/code';
   import 'tinymce/plugins/preview';
   import 'tinymce/plugins/fullscreen';
-  import 'tinymce/plugins/paste';
   import 'tinymce/plugins/searchreplace';
   //import 'tinymce/plugins/save';
   //import 'tinymce/plugins/autosave';
@@ -32,7 +31,6 @@
   import 'tinymce/plugins/codesample';
   import 'tinymce/plugins/lists';
   import 'tinymce/plugins/advlist';
-  import 'tinymce/plugins/hr';
   import 'tinymce/plugins/charmap';
   import 'tinymce/plugins/emoticons';
   import 'tinymce/plugins/anchor';
