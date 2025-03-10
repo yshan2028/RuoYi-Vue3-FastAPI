@@ -2,7 +2,7 @@
 <template>
   <ele-card :header="title" :body-style="{ padding: '10px', height: '370px' }">
     <template #extra>
-      <more-icon @command="onCommand" />
+      <more-icon @command="handleCommand" />
     </template>
     <ele-pro-table
       :height="352"
@@ -148,7 +148,7 @@
     ];
   };
 
-  const onCommand = (command) => {
+  const handleCommand = (command) => {
     emit('command', command);
   };
 

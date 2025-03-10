@@ -17,8 +17,7 @@ export const LAYOUT_PATH = '/';
 export const REDIRECT_PATH = '/redirect';
 
 /** 开启页签栏后是否缓存组件 */
-export const TAB_KEEP_ALIVE = !import.meta.env.DEV;
-//export const TAB_KEEP_ALIVE = true;
+export const TAB_KEEP_ALIVE = true;
 
 /** token本地缓存的名称 */
 export const TOKEN_CACHE_NAME = 'token';

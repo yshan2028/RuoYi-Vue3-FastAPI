@@ -14,33 +14,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { MAP_KEY, LICENSE_CODE } from '@/config/setting';
-import { useGlobalConfig } from '@/config/use-global-config';
-import { useThemeStore } from '@/store/modules/theme';
-import { useLocale } from '@/i18n/use-locale';
+  import { MAP_KEY, LICENSE_CODE } from '@/config/setting';
+  import { useGlobalConfig } from '@/config/use-global-config';
+  import { useThemeStore } from '@/store/modules/theme';
+  import { useLocale } from '@/i18n/use-locale';
 
-/** 组件全局配置 */
-const { tableConfig } = useGlobalConfig();
+  /** 组件全局配置 */
+  const { tableConfig } = useGlobalConfig();
 
-/** 恢复缓存主题 */
-const themeStore = useThemeStore();
-themeStore.recoverTheme();
+  /** 恢复缓存主题 */
+  const themeStore = useThemeStore();
+  themeStore.recoverTheme();
 
-/** 国际化配置 */
-const { elLocale, eleLocale } = useLocale();
-
-// // 高级表格全局配置
-// const tableConfig = ref({
-//   response: {
-//     dataName: 'rows',
-//     countName: 'total'
-//   },
-//   request: {
-//     sortName: 'orderByColumn',
-//     orderName: 'isAsc',
-//     ascValue: 'ascending',
-//     descValue: 'descending'
-//   }
-// });
+  /** 国际化配置 */
+  const { elLocale, eleLocale } = useLocale();
 </script>

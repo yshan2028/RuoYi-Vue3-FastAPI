@@ -1,5 +1,5 @@
 import request from '@/utils/request';
-import { download, toFormData } from '@/utils/common';
+import { download, toFormData, checkDownloadRes } from '@/utils/common';
 
 /**
  * 分页查询配置
@@ -66,7 +66,8 @@ export async function exportConfigs(params) {
     data: toFormData(params),
     responseType: 'blob'
   });
-  download(res.data, `config_${new Date().getTime()}.xlsx`);
+  await checkDownloadRes(res);
+  download(res.data, `config_${Date.now()}.xlsx`);
 }
 
 /**

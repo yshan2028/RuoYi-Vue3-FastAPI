@@ -467,7 +467,11 @@ export const useThemeStore = defineStore('theme', {
       }
       const item = { ...this.tabs[i] };
       if (data.title) {
-        item.title = data.title;
+        const title = data.title;
+        item.title = title;
+        if (item.meta) {
+          item.meta.lang = { zh_CN: title, zh_TW: title, en: title };
+        }
       }
       if (typeof data.closable === 'boolean') {
         item.closable = data.closable;

@@ -1,31 +1,74 @@
 <template>
   <ele-dropdown
     :items="[
-      { title: '编辑', command: 'edit', icon: EditPen },
-      { title: '删除', command: 'remove', icon: Delete, danger: true }
+      {
+        title: '刷新内容',
+        command: 'refresh',
+        icon: ReloadOutlined
+      },
+      {
+        title: '编辑卡片',
+        command: 'edit',
+        icon: EditOutlined
+      },
+      {
+        title: '删除卡片',
+        command: 'remove',
+        icon: DeleteOutlined,
+        danger: true,
+        divided: true
+      }
     ]"
+    :icon-props="{ size: 15 }"
     placement="bottom-end"
     style="cursor: pointer"
     :popper-options="{
+      strategy: 'fixed',
       modifiers: [{ name: 'offset', options: { offset: [12, 12] } }]
     }"
-    @command="onCommand"
+    @command="handleCommand"
+    class="demo-more-icon"
   >
-    <ele-text
-      type="placeholder"
-      :icon="MoreOutlined"
-      style="transform: scale(1.32); outline: none"
-    />
+    <el-icon style="outline: none">
+      <MoreOutlined style="transform: scale(1.1)" />
+    </el-icon>
   </ele-dropdown>
 </template>
 
 <script setup>
-  import { EditPen, Delete } from '@element-plus/icons-vue';
-  import { MoreOutlined } from '@/components/icons';
+  import {
+    MoreOutlined,
+    ReloadOutlined,
+    EditOutlined,
+    DeleteOutlined
+  } from '@/components/icons';
 
   const emit = defineEmits(['command']);
 
-  const onCommand = (command) => {
+  const handleCommand = (command) => {
     emit('command', command);
   };
 </script>
+
+<style lang="scss" scoped>
+  .demo-more-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--el-text-color-placeholder);
+    font-size: 14px;
+    border-radius: 6px;
+    margin: 0 -10px 0 0;
+    transition: all 0.2s;
+
+    & > .el-icon {
+      width: 26px;
+      height: 26px;
+    }
+
+    &:hover {
+      color: var(--el-text-color-regular);
+      background: var(--el-fill-color-light);
+    }
+  }
+</style>

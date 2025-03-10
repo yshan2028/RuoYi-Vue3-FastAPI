@@ -1,7 +1,7 @@
 <!-- 搜索表单 -->
 <template>
   <ele-card :body-style="{ paddingBottom: '2px' }">
-    <el-form label-width="72px" @keyup.enter="search">
+    <el-form label-width="72px" @keyup.enter="search" @submit.prevent="">
       <el-row :gutter="8">
         <el-col :lg="6" :md="12" :sm="12" :xs="24">
           <el-form-item label="公告标题">
@@ -47,7 +47,7 @@
   const emit = defineEmits(['search']);
 
   /** 表单数据 */
-  const { form, resetFields } = useFormData({
+  const [form, resetFields] = useFormData({
     noticeTitle: '',
     createBy: '',
     noticeType: void 0
@@ -55,7 +55,7 @@
 
   /** 搜索 */
   const search = () => {
-    emit('search', form);
+    emit('search', { ...form });
   };
 
   /** 重置 */

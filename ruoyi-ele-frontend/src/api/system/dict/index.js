@@ -43,3 +43,14 @@ export async function removeDict(id) {
   }
   return Promise.reject(new Error(res.data.msg));
 }
+
+/**
+ * 刷新字典缓存
+ */
+export async function refreshDicts() {
+  const res = await request.delete('/system/dict/type/refreshCache');
+  if (res.data.code === 200) {
+    return res.data.msg;
+  }
+  return Promise.reject(new Error(res.data.msg));
+}

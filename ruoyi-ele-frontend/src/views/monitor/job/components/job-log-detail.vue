@@ -3,8 +3,7 @@
     title="调度日志详情"
     :width="720"
     :body-style="{ paddingTop: '6px' }"
-    :model-value="modelValue"
-    @update:modelValue="updateModelValue"
+    v-model="visible"
   >
     <el-descriptions
       v-if="data"
@@ -47,19 +46,13 @@
 <script setup>
   import { useMobile } from '@/utils/use-mobile';
 
-  const emit = defineEmits(['update:modelValue']);
-
   defineProps({
-    /** 弹窗是否打开 */
-    modelValue: Boolean,
     /** 修改回显的数据 */
     data: Object
   });
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
-  };
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   const { mobile } = useMobile();
 </script>

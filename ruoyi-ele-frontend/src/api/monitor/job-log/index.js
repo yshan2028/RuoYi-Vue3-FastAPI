@@ -1,11 +1,11 @@
 import request from '@/utils/request';
-import { download, toFormData, toURLSearch } from '@/utils/common';
+import { download, toFormData, checkDownloadRes } from '@/utils/common';
 
 /**
  * 分页查询调度日志
  */
 export async function pageJobLogs(params) {
-  const res = await request.get('/monitor/jobLog/list?' + toURLSearch(params));
+  const res = await request.get('/monitor/jobLog/list', { params });
   if (res.data.code === 200) {
     return res.data;
   }
@@ -33,7 +33,8 @@ export async function exportJobLogs(params) {
     data: toFormData(params),
     responseType: 'blob'
   });
-  download(res.data, `job_log_${new Date().getTime()}.xlsx`);
+  await checkDownloadRes(res);
+  download(res.data, `job_log_${Date.now()}.xlsx`);
 }
 
 /**

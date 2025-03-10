@@ -1,27 +1,32 @@
 <!-- 搜索表单 -->
 <template>
   <ele-card :body-style="{ paddingBottom: '2px' }">
-    <el-form label-width="72px" @keyup.enter="search">
+    <el-form label-width="72px" @keyup.enter="search" @submit.prevent="">
       <el-row :gutter="8">
-        <el-col :lg="6" :md="8" :sm="12" :xs="24">
+        <el-col :lg="6" :md="12" :sm="12" :xs="24">
           <el-form-item label="菜单名称">
             <el-input
               clearable
-              v-model.trim="form.menuName"
+              v-model.trim="form.title"
               placeholder="请输入"
             />
           </el-form-item>
         </el-col>
-        <el-col :lg="6" :md="8" :sm="12" :xs="24">
-          <el-form-item label="状态">
-            <dict-data
-              code="sys_normal_disable"
-              v-model="form.status"
-              placeholder="请选择"
+        <el-col :lg="6" :md="12" :sm="12" :xs="24">
+          <el-form-item label="菜单地址">
+            <el-input clearable v-model.trim="form.path" placeholder="请输入" />
+          </el-form-item>
+        </el-col>
+        <el-col :lg="6" :md="12" :sm="12" :xs="24">
+          <el-form-item label="权限标识">
+            <el-input
+              clearable
+              v-model.trim="form.authority"
+              placeholder="请输入"
             />
           </el-form-item>
         </el-col>
-        <el-col :lg="12" :md="8" :sm="24" :xs="24">
+        <el-col :lg="6" :md="12" :sm="12" :xs="24">
           <el-form-item label-width="16px">
             <el-button type="primary" @click="search">查询</el-button>
             <el-button @click="reset">重置</el-button>
@@ -38,17 +43,18 @@
   const emit = defineEmits(['search']);
 
   /** 表单数据 */
-  const { form, resetFields } = useFormData({
-    menuName: '',
-    status: void 0
+  const [form, resetFields] = useFormData({
+    title: '',
+    path: '',
+    authority: ''
   });
 
   /** 搜索 */
   const search = () => {
-    emit('search', form);
+    emit('search', { ...form });
   };
 
-  /** 重置 */
+  /**  重置 */
   const reset = () => {
     resetFields();
     search();

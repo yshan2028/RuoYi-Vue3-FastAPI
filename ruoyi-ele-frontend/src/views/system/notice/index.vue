@@ -11,16 +11,16 @@
         :datasource="datasource"
         :show-overflow-tooltip="true"
         v-model:selections="selections"
-        :highlight-current-row="true"
-        :export-config="{ fileName: '公告信息', datasource: exportSource }"
-        :print-config="{ datasource: exportSource }"
+        highlight-current-row
+        :export-config="{ fileName: '通知公告' }"
         cache-key="systemNoticeTable"
       >
         <template #toolbar>
           <el-button
             type="primary"
             class="ele-btn-icon"
-            :icon="Plus"
+            :icon="PlusOutlined"
+            v-permission="'system:notice:add'"
             @click="openEdit()"
           >
             新建
@@ -28,7 +28,8 @@
           <el-button
             type="danger"
             class="ele-btn-icon"
-            :icon="Delete"
+            :icon="DeleteOutlined"
+            v-permission="'system:notice:remove'"
             @click="removeBatch()"
           >
             删除
@@ -49,11 +50,24 @@
           />
         </template>
         <template #action="{ row }">
-          <el-link type="primary" :underline="false" @click="openEdit(row)">
+          <el-link
+            v-permission="'system:notice:edit'"
+            type="primary"
+            :underline="false"
+            @click="openEdit(row)"
+          >
             修改
           </el-link>
-          <el-divider direction="vertical" />
-          <el-link type="danger" :underline="false" @click="removeBatch(row)">
+          <el-divider
+            v-permission="['system:notice:edit', 'system:notice:remove']"
+            direction="vertical"
+          />
+          <el-link
+            v-permission="'system:notice:remove'"
+            type="danger"
+            :underline="false"
+            @click="removeBatch(row)"
+          >
             删除
           </el-link>
         </template>
@@ -66,12 +80,21 @@
 
 <script setup>
   import { ref } from 'vue';
-  import { Plus, Delete } from '@element-plus/icons-vue';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
+  import { PlusOutlined, DeleteOutlined } from '@/components/icons';
+  import { useDictData } from '@/utils/use-dict-data';
   import NoticeSearch from './components/notice-search.vue';
   import NoticeEdit from './components/notice-edit.vue';
   import { pageNotices, removeNotices } from '@/api/system/notice';
+
+  defineOptions({ name: 'SystemNotice' });
+
+  /** 字典数据 */
+  const [typeDicts, statusDicts] = useDictData([
+    'sys_notice_type',
+    'sys_notice_status'
+  ]);
 
   /** 表格实例 */
   const tableRef = ref(null);
@@ -102,7 +125,9 @@
       label: '公告类型',
       width: 90,
       align: 'center',
-      slot: 'noticeType'
+      slot: 'noticeType',
+      formatter: (row) =>
+        typeDicts.value.find((d) => d.dictValue == row.noticeType)?.dictLabel
     },
     {
       prop: 'status',
@@ -110,15 +135,8 @@
       width: 90,
       align: 'center',
       slot: 'status',
-      filters: [
-        { text: '正常', value: '0' },
-        { text: '停用', value: '1' }
-      ],
-      filterMultiple: false, // 只能选一个
-      filterMethod: (value, row) => {
-        if (value === '') return true; // 选 "全部" 显示所有数据
-        return row.status == value; // 选 "正常" 或 "停用" 进行筛选
-      }
+      formatter: (row) =>
+        statusDicts.value.find((d) => d.dictValue == row.status)?.dictLabel
     },
     {
       prop: 'createBy',
@@ -129,7 +147,7 @@
     {
       prop: 'createTime',
       label: '创建时间',
-      width: 160,
+      width: 180,
       align: 'center'
     },
     {
@@ -153,8 +171,8 @@
   const showEdit = ref(false);
 
   /** 表格数据源 */
-  const datasource = ({ page, limit, where, orders }) => {
-    return pageNotices({ ...where, ...orders, pageNum: page, pageSize: limit });
+  const datasource = ({ pages, where, orders }) => {
+    return pageNotices({ ...where, ...orders, ...pages });
   };
 
   /** 搜索 */
@@ -182,7 +200,10 @@
       { type: 'warning', draggable: true }
     )
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
         removeNotices(ids)
           .then(() => {
             loading.close();
@@ -195,16 +216,5 @@
           });
       })
       .catch(() => {});
-  };
-
-  /** 导出和打印全部数据的数据源 */
-  const exportSource = ({ where, orders }) => {
-    return pageNotices({ ...where, ...orders });
-  };
-</script>
-
-<script>
-  export default {
-    name: 'SystemNotice'
   };
 </script>

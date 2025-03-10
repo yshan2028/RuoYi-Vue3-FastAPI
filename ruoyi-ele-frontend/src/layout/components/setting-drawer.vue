@@ -483,7 +483,6 @@
   import { CheckOutlined } from '@/components/icons';
   import { useThemeStore } from '@/store/modules/theme';
   import { doWithTransition } from '@/utils/common';
-  import {EleText, EleTooltip} from "ele-admin-plus";
 
   /** 抽屉是否打开 */
   const visible = defineModel({ type: Boolean });

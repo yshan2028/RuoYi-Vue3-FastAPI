@@ -57,8 +57,9 @@ export default defineConfig(({ command }) => {
         'echarts/renderers',
         'echarts/components',
         'vue-echarts',
-        'vuedraggable',
-        'sortablejs'
+        'echarts-wordcloud',
+        'sortablejs',
+        'vuedraggable'
       ]
     },
     build: {

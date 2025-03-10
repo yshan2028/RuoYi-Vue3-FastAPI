@@ -20,6 +20,7 @@
   import 'tinymce/plugins/code';
   import 'tinymce/plugins/preview';
   import 'tinymce/plugins/fullscreen';
+  import 'tinymce/plugins/paste';
   import 'tinymce/plugins/searchreplace';
   //import 'tinymce/plugins/save';
   //import 'tinymce/plugins/autosave';
@@ -31,6 +32,7 @@
   import 'tinymce/plugins/codesample';
   import 'tinymce/plugins/lists';
   import 'tinymce/plugins/advlist';
+  import 'tinymce/plugins/hr';
   import 'tinymce/plugins/charmap';
   import 'tinymce/plugins/emoticons';
   import 'tinymce/plugins/anchor';
@@ -51,6 +53,8 @@
     bindHandlers,
     openAlert
   } from './util';
+
+  defineOptions({ name: 'TinymceEditor' });
 
   const props = defineProps({
     /** 编辑器唯一id */
@@ -163,7 +167,7 @@
     () => props.modelValue,
     (val, prevVal) => {
       if (val !== prevVal) {
-        setContent(val);
+        setContent(val || '');
       }
     }
   );
@@ -217,16 +221,14 @@
   });
 </script>
 
-<script>
-  export default {
-    name: 'TinymceEditor'
-  };
-</script>
-
 <style>
   body .tox.tox-tinymce-aux,
   body.tox-fullscreen .tox.tox-tinymce-aux {
     z-index: 19990000;
+  }
+
+  .tox-menu.tox-collection.tox-collection--list {
+    max-height: 420px !important;
   }
 
   textarea[id^='tiny-vue'] {

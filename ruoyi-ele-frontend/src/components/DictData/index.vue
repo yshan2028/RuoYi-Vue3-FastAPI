@@ -11,7 +11,7 @@
       :key="item.dictCode"
       :disable-transitions="true"
       size="small"
-      :type="item.listClass == 'primary' ? '' : item.listClass"
+      :type="item.listClass === 'default' ? 'primary' : item.listClass"
     >
       {{ item.dictLabel }}
     </el-tag>
@@ -19,35 +19,36 @@
   <el-radio-group
     v-else-if="type === 'radio'"
     :disabled="disabled"
-    @update:modelValue="updateValue"
-    :model-value="modelValue"
+    v-model="model"
   >
-    <el-radio v-for="item in data" :key="item.dictCode" :label="item.dictValue">
-      {{ item.dictLabel }}
-    </el-radio>
+    <el-radio
+      v-for="item in data"
+      :key="item.dictCode"
+      :value="item.dictValue"
+      :label="item.dictLabel"
+    />
   </el-radio-group>
   <el-checkbox-group
     v-else-if="type === 'checkbox'"
     :disabled="disabled"
-    @update:modelValue="updateValue"
-    :model-value="modelValue"
+    v-model="model"
   >
     <el-checkbox
       v-for="item in data"
       :key="item.dictCode"
-      :label="item.dictValue"
-    >
-      {{ item.dictLabel }}
-    </el-checkbox>
+      :value="item.dictValue"
+      :label="item.dictLabel"
+    />
   </el-checkbox-group>
   <el-select
     v-else
-    @update:modelValue="updateValue"
-    :model-value="modelValue"
-    :clearable="true"
+    v-model="model"
+    :clearable="clearable"
     :disabled="disabled"
     :placeholder="placeholder"
     :multiple="type === 'multipleSelect'"
+    :teleported="teleported"
+    :filterable="filterable"
     class="ele-fluid"
   >
     <el-option
@@ -63,11 +64,9 @@
   import { computed } from 'vue';
   import { useDictData } from '@/utils/use-dict-data';
 
-  const emit = defineEmits(['update:modelValue']);
+  defineOptions({ name: 'DictData' });
 
   const props = defineProps({
-    /** 字典值 */
-    modelValue: [String, Number, Boolean, Array],
     /** 字典类型 */
     code: String,
     /** 组件类型 */
@@ -76,8 +75,23 @@
     disabled: Boolean,
     /** 提示文本 */
     placeholder: String,
+    /** select是否可清除 */
+    clearable: {
+      type: Boolean,
+      default: true
+    },
     /** select的下拉是否插入到body下 */
-    teleported: Boolean
+    teleported: {
+      type: Boolean,
+      default: true
+    },
+    /** select是否可搜索 */
+    filterable: Boolean
+  });
+
+  /** 字典值 */
+  const model = defineModel({
+    type: [String, Number, Boolean, Array]
   });
 
   /** 字典数据 */
@@ -86,7 +100,7 @@
   /** 绑定值对应的字典数据 */
   const valueData = computed(() => {
     const result = [];
-    const val = props.modelValue;
+    const val = model.value;
     if (val == null || val === '') {
       return result;
     }
@@ -101,9 +115,4 @@
     });
     return result;
   });
-
-  /** 更新选中数据 */
-  const updateValue = (value) => {
-    emit('update:modelValue', value);
-  };
 </script>

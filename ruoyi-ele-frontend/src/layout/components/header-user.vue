@@ -62,7 +62,6 @@
   import { useUserStore } from '@/store/modules/user';
   import { logout } from '@/utils/common';
   import PasswordModal from './password-modal.vue';
-  import { EleDropdown } from 'ele-admin-plus';
 
   const { t } = useI18n();
   const { push } = useRouter();
@@ -79,7 +78,7 @@
     if (command === 'password') {
       passwordVisible.value = true;
     } else if (command === 'profile') {
-      push('/profile');
+      push('/user/profile');
     } else if (command === 'logout') {
       // 退出登录
       ElMessageBox.confirm(

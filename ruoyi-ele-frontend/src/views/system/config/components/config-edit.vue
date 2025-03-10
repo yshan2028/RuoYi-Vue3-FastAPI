@@ -3,15 +3,20 @@
   <ele-modal
     form
     :width="460"
-    :model-value="modelValue"
+    v-model="visible"
     :title="isUpdate ? '修改参数' : '添加参数'"
-    @update:modelValue="updateModelValue"
+    @open="handleOpen"
   >
-    <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      label-width="80px"
+      @submit.prevent=""
+    >
       <el-form-item label="参数名称" prop="configName">
         <el-input
           clearable
-          :maxlength="20"
           v-model="form.configName"
           placeholder="请输入参数名称"
         />
@@ -19,7 +24,6 @@
       <el-form-item label="参数键名" prop="configKey">
         <el-input
           clearable
-          :maxlength="20"
           v-model="form.configKey"
           placeholder="请输入参数键名"
         />
@@ -27,7 +31,6 @@
       <el-form-item label="参数键值" prop="configValue">
         <el-input
           clearable
-          :maxlength="20"
           v-model="form.configValue"
           placeholder="请输入参数键值"
         />
@@ -45,7 +48,7 @@
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="updateModelValue(false)">取消</el-button>
+      <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" :loading="loading" @click="save">
         保存
       </el-button>
@@ -54,19 +57,20 @@
 </template>
 
 <script setup>
-  import { ref, reactive, watch } from 'vue';
+  import { ref, reactive, nextTick } from 'vue';
   import { EleMessage } from 'ele-admin-plus/es';
   import { useFormData } from '@/utils/use-form-data';
   import { addConfig, updateConfig } from '@/api/system/config';
 
-  const emit = defineEmits(['done', 'update:modelValue']);
-
   const props = defineProps({
-    /** 弹窗是否打开 */
-    modelValue: Boolean,
     /** 修改回显的数据 */
     data: Object
   });
+
+  const emit = defineEmits(['done']);
+
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   /** 是否是修改 */
   const isUpdate = ref(false);
@@ -78,7 +82,7 @@
   const formRef = ref(null);
 
   /** 表单数据 */
-  const { form, resetFields, assignFields } = useFormData({
+  const [form, resetFields, assignFields] = useFormData({
     configId: void 0,
     configName: '',
     configKey: '',
@@ -115,6 +119,11 @@
     ]
   });
 
+  /** 关闭弹窗 */
+  const handleCancel = () => {
+    visible.value = false;
+  };
+
   /** 保存编辑 */
   const save = () => {
     formRef.value?.validate?.((valid) => {
@@ -127,7 +136,7 @@
         .then((msg) => {
           loading.value = false;
           EleMessage.success(msg);
-          updateModelValue(false);
+          handleCancel();
           emit('done');
         })
         .catch((e) => {
@@ -137,25 +146,19 @@
     });
   };
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
-  };
-
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (modelValue) {
-        if (props.data) {
-          assignFields(props.data);
-          isUpdate.value = true;
-        } else {
-          isUpdate.value = false;
-        }
-      } else {
-        resetFields();
-        formRef.value?.clearValidate?.();
-      }
+  /** 弹窗打开事件 */
+  const handleOpen = () => {
+    if (props.data) {
+      assignFields(props.data);
+      isUpdate.value = true;
+    } else {
+      resetFields();
+      isUpdate.value = false;
     }
-  );
+    nextTick(() => {
+      nextTick(() => {
+        formRef.value?.clearValidate?.();
+      });
+    });
+  };
 </script>

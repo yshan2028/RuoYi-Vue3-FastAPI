@@ -1,11 +1,11 @@
 import request from '@/utils/request';
-import { download, toFormData, toURLSearch } from '@/utils/common';
+import { download, toFormData, checkDownloadRes } from '@/utils/common';
 
 /**
  * 分页查询操作日志
  */
 export async function pageOperlogs(params) {
-  const res = await request.get('/monitor/operlog/list?' + toURLSearch(params));
+  const res = await request.get('/monitor/operlog/list', { params });
   if (res.data.code === 200) {
     return res.data;
   }
@@ -22,7 +22,8 @@ export async function exportOperlogs(params) {
     data: toFormData(params),
     responseType: 'blob'
   });
-  download(res.data, `operlog_${new Date().getTime()}.xlsx`);
+  await checkDownloadRes(res);
+  download(res.data, `operlog_${Date.now()}.xlsx`);
 }
 
 /**

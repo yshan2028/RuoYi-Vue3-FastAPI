@@ -1,4 +1,6 @@
 /** ElementPlus样式变量修改(影响所有scss) */
+@use 'ele-admin-plus/es/style/themes/rounded.scss' as *;
+
 @forward 'element-plus/theme-chalk/src/common/var.scss' with (
   $colors: (
     'primary': (
@@ -71,11 +73,12 @@
     'extra-light': rgba(255, 255, 255, 0.6)
   ),
   $border-radius: (
-    'base': 3px,
-    'small': 2px
+    'base': 6px,
+    'small': 4px
   )
 );
 
 @forward 'ele-admin-plus/es/style/themes/default.scss' with (
-  $scrollbar-selector: 'pc'
+  $scrollbar-selector: 'pc',
+  $ele: $ele-rounded
 );

@@ -11,16 +11,16 @@
         :datasource="datasource"
         :show-overflow-tooltip="true"
         v-model:selections="selections"
-        :highlight-current-row="true"
-        :export-config="{ fileName: '角色数据', datasource: exportSource }"
-        :print-config="{ datasource: exportSource }"
+        highlight-current-row
+        :export-config="{ fileName: '角色数据' }"
         cache-key="systemRoleTable"
       >
         <template #toolbar>
           <el-button
             type="primary"
             class="ele-btn-icon"
-            :icon="Plus"
+            :icon="PlusOutlined"
+            v-permission="'system:role:add'"
             @click="openEdit()"
           >
             新建
@@ -28,12 +28,18 @@
           <el-button
             type="danger"
             class="ele-btn-icon"
-            :icon="Delete"
+            :icon="DeleteOutlined"
+            v-permission="'system:role:remove'"
             @click="removeBatch()"
           >
             删除
           </el-button>
-          <el-button class="ele-btn-icon" :icon="Download" @click="exportData">
+          <el-button
+            class="ele-btn-icon"
+            :icon="DownloadOutlined"
+            v-permission="'system:role:export'"
+            @click="exportData"
+          >
             导出
           </el-button>
         </template>
@@ -45,46 +51,45 @@
           />
         </template>
         <template #action="{ row }">
-          <el-link
-            type="primary"
-            :underline="false"
-            :disabled="row.roleId === 1"
-            @click="row.roleId !== 1 && openEdit(row)"
-          >
-            修改
-          </el-link>
-          <el-divider direction="vertical" />
-          <el-link
-            type="danger"
-            :underline="false"
-            :disabled="row.roleId === 1"
-            @click="row.roleId !== 1 && removeBatch(row)"
-          >
-            删除
-          </el-link>
-          <el-divider direction="vertical" />
-          <ele-dropdown
-            :items="[
-              { title: '数据权限', command: 'auth' },
-              { title: '分配用户', command: 'user' }
-            ]"
-            style="display: inline"
-            @command="(key) => dropClick(key, row)"
-          >
+          <template v-if="row.roleId !== 1">
             <el-link
+              v-permission="'system:role:edit'"
               type="primary"
               :underline="false"
-              :disabled="row.roleId === 1"
+              @click="openEdit(row)"
             >
-              <span>更多</span>
-              <el-icon
-                :size="12"
-                style="vertical-align: -1px; margin-left: 2px"
-              >
-                <arrow-down />
-              </el-icon>
+              修改
             </el-link>
-          </ele-dropdown>
+            <el-divider
+              v-permission="'system:role:remove'"
+              direction="vertical"
+            />
+            <el-link
+              v-permission="'system:role:remove'"
+              type="danger"
+              :underline="false"
+              @click="removeBatch(row)"
+            >
+              删除
+            </el-link>
+            <el-divider v-if="moreItems.length" direction="vertical" />
+            <ele-dropdown
+              v-if="moreItems.length"
+              :items="moreItems"
+              style="display: inline"
+              @command="(key) => dropClick(key, row)"
+            >
+              <el-link type="primary" :underline="false">
+                <span>更多</span>
+                <el-icon
+                  :size="12"
+                  style="vertical-align: -1px; margin-left: 2px"
+                >
+                  <ArrowDown />
+                </el-icon>
+              </el-link>
+            </ele-dropdown>
+          </template>
         </template>
       </ele-pro-table>
     </ele-card>
@@ -98,10 +103,17 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue';
-  import { Plus, Delete, Download, ArrowDown } from '@element-plus/icons-vue';
+  import { ref, computed } from 'vue';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
+  import {
+    PlusOutlined,
+    DeleteOutlined,
+    DownloadOutlined,
+    ArrowDown
+  } from '@/components/icons';
+  import { usePermission } from '@/utils/use-permission';
+  import { useDictData } from '@/utils/use-dict-data';
   import RoleSearch from './components/role-search.vue';
   import RoleEdit from './components/role-edit.vue';
   import RoleAuth from './components/role-auth.vue';
@@ -110,79 +122,84 @@
     pageRoles,
     removeRoles,
     exportRoles,
-    updateRoleStatus,
-    listRoles
+    updateRoleStatus
   } from '@/api/system/role';
+
+  defineOptions({ name: 'SystemRole' });
+
+  const { hasPermission } = usePermission();
+
+  /** 字典数据 */
+  const [statusDicts] = useDictData(['sys_normal_disable']);
 
   /** 表格实例 */
   const tableRef = ref(null);
 
   /** 表格列配置 */
-  const columns = ref([
-    {
-      type: 'selection',
-      columnKey: 'selection',
-      width: 50,
-      align: 'center',
-      fixed: 'left'
-    },
-    {
-      type: 'index',
-      columnKey: 'index',
-      width: 50,
-      align: 'center',
-      fixed: 'left'
-    },
-    {
-      prop: 'roleName',
-      label: '角色名称',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'roleKey',
-      label: '权限字符',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'roleSort',
-      label: '显示顺序',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'status',
-      label: '状态',
-      width: 90,
-      align: 'center',
-      slot: 'status',
-      filters: [
-        { text: '正常', value: '0' },
-        { text: '停用', value: '1' }
-      ],
-      filterMultiple: false, // 只能选一个
-      filterMethod: (value, row) => {
-        if (value === '') return true; // 选 "全部" 显示所有数据
-        return row.status == value; // 选 "正常" 或 "停用" 进行筛选
+  const columns = computed(() => {
+    return [
+      {
+        type: 'selection',
+        columnKey: 'selection',
+        width: 50,
+        align: 'center',
+        fixed: 'left'
+      },
+      {
+        type: 'index',
+        columnKey: 'index',
+        width: 50,
+        align: 'center',
+        fixed: 'left'
+      },
+      {
+        prop: 'roleName',
+        label: '角色名称',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'roleKey',
+        label: '权限字符',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'roleSort',
+        label: '显示顺序',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'status',
+        label: '状态',
+        width: 90,
+        align: 'center',
+        slot: 'status',
+        filters: statusDicts.value.map((d) => {
+          return { text: d.dictLabel, value: d.dictValue };
+        }),
+        filterMultiple: false,
+        formatter: (row) =>
+          statusDicts.value.find((d) => d.dictValue == row.status)?.dictLabel
+      },
+      {
+        prop: 'createTime',
+        label: '创建时间',
+        align: 'center',
+        width: 180
+      },
+      {
+        columnKey: 'action',
+        label: '操作',
+        width: 180,
+        align: 'center',
+        slot: 'action',
+        hideInPrint: true,
+        hideInExport: true
       }
-    },
-    {
-      prop: 'createTime',
-      label: '创建时间',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      columnKey: 'action',
-      label: '操作',
-      width: 180,
-      align: 'center',
-      slot: 'action',
-      hideInPrint: true,
-      hideInExport: true
-    }
-  ]);
+    ];
+  });
 
   /** 表格选中数据 */
   const selections = ref([]);
@@ -199,9 +216,21 @@
   /** 是否显示分配用户弹窗 */
   const showUser = ref(false);
 
+  /** 操作列更多下拉菜单 */
+  const moreItems = computed(() => {
+    const items = [];
+    if (hasPermission('system:role:edit')) {
+      items.push({ title: '数据权限', command: 'auth' });
+    }
+    if (hasPermission('system:role:edit')) {
+      items.push({ title: '分配用户', command: 'user' });
+    }
+    return items;
+  });
+
   /** 表格数据源 */
-  const datasource = ({ page, limit, where }) => {
-    return pageRoles({ ...where, pageNum: page, pageSize: limit });
+  const datasource = ({ pages, where, filters }) => {
+    return pageRoles({ ...where, ...filters, ...pages });
   };
 
   /** 搜索 */
@@ -228,7 +257,10 @@
       { type: 'warning', draggable: true }
     )
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
         removeRoles(rows.map((d) => d.roleId))
           .then(() => {
             loading.close();
@@ -245,7 +277,10 @@
 
   /** 导出数据 */
   const exportData = () => {
-    const loading = EleMessage.loading('请求中..');
+    const loading = EleMessage.loading({
+      message: '请求中..',
+      plain: true
+    });
     tableRef.value?.fetch?.(({ where }) => {
       exportRoles(where)
         .then(() => {
@@ -256,19 +291,6 @@
           EleMessage.error(e.message);
         });
     });
-  };
-
-  /** 修改用户状态 */
-  const editStatus = (checked, row) => {
-    const status = checked ? '0' : '1';
-    updateRoleStatus(row.roleId, status)
-      .then((msg) => {
-        row.status = status;
-        EleMessage.success(msg);
-      })
-      .catch((e) => {
-        EleMessage.error(e.message);
-      });
   };
 
   /** 下拉菜单点击事件 */
@@ -282,14 +304,16 @@
     }
   };
 
-  /** 导出和打印全部数据的数据源 */
-  const exportSource = ({ where, orders }) => {
-    return listRoles({ ...where, ...orders });
-  };
-</script>
-
-<script>
-  export default {
-    name: 'SystemRole'
+  /** 修改角色状态 */
+  const editStatus = (checked, row) => {
+    const status = checked ? '0' : '1';
+    updateRoleStatus(row.roleId, status)
+      .then((msg) => {
+        row.status = status;
+        EleMessage.success(msg);
+      })
+      .catch((e) => {
+        EleMessage.error(e.message);
+      });
   };
 </script>

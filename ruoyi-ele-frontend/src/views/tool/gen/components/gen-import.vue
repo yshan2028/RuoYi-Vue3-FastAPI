@@ -4,8 +4,8 @@
     title="导入表"
     :body-style="{ padding: '4px 16px' }"
     :destroy-on-close="true"
-    :model-value="modelValue"
-    @update:modelValue="updateModelValue"
+    v-model="visible"
+    @open="handleOpen"
   >
     <gen-import-search @search="reload" />
     <ele-pro-table
@@ -20,7 +20,7 @@
       :pagination="{ pageSize: 6, pageSizes: [6, 10, 20, 40, 100] }"
     />
     <template #footer>
-      <el-button @click="updateModelValue(false)">取消</el-button>
+      <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" :loading="loading" @click="save">
         保存
       </el-button>
@@ -29,17 +29,15 @@
 </template>
 
 <script setup>
-  import { ref, watch } from 'vue';
+  import { ref } from 'vue';
   import { EleMessage } from 'ele-admin-plus/es';
   import GenImportSearch from './gen-import-search.vue';
   import { pageGenDbs, importTables } from '@/api/tool/gen';
 
-  const emit = defineEmits(['update:modelValue', 'done']);
+  const emit = defineEmits(['done']);
 
-  const props = defineProps({
-    /** 是否显示 */
-    modelValue: Boolean
-  });
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   /** 提交状态 */
   const loading = ref(false);
@@ -93,8 +91,8 @@
   const selections = ref([]);
 
   /** 表格数据源 */
-  const datasource = ({ page, limit, where }) => {
-    return pageGenDbs({ ...where, pageNum: page, pageSize: limit });
+  const datasource = ({ pages, where }) => {
+    return pageGenDbs({ ...where, ...pages });
   };
 
   /** 搜索 */
@@ -102,9 +100,9 @@
     tableRef.value?.reload?.({ page: 1, where });
   };
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
+  /** 关闭弹窗 */
+  const handleCancel = () => {
+    visible.value = false;
   };
 
   /** 导入 */
@@ -119,7 +117,7 @@
       .then((msg) => {
         loading.value = false;
         EleMessage.success(msg);
-        updateModelValue(false);
+        handleCancel();
         emit('done');
       })
       .catch((e) => {
@@ -128,14 +126,9 @@
       });
   };
 
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (modelValue) {
-        reload();
-      } else {
-        selections.value = [];
-      }
-    }
-  );
+  /** 弹窗打开事件 */
+  const handleOpen = () => {
+    selections.value = [];
+    reload();
+  };
 </script>

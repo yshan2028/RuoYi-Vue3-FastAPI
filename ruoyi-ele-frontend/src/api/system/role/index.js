@@ -1,5 +1,5 @@
 import request from '@/utils/request';
-import { download, toFormData } from '@/utils/common';
+import { download, toFormData, checkDownloadRes } from '@/utils/common';
 
 /**
  * 分页查询角色
@@ -44,6 +44,18 @@ export async function removeRole(id) {
   }
   return Promise.reject(new Error(res.data.msg));
 }
+
+/**
+ * 批量删除角色
+ */
+export async function removeRoles(ids) {
+  const res = await request.delete('/system/role/' + ids.join());
+  if (res.data.code === 200) {
+    return res.data.msg;
+  }
+  return Promise.reject(new Error(res.data.msg));
+}
+
 /**
  * 修改角色状态
  */
@@ -52,17 +64,6 @@ export async function updateRoleStatus(roleId, status) {
     roleId,
     status
   });
-  if (res.data.code === 200) {
-    return res.data.msg;
-  }
-  return Promise.reject(new Error(res.data.msg));
-}
-
-/**
- * 批量删除角色
- */
-export async function removeRoles(ids) {
-  const res = await request.delete('/system/role/' + ids.join());
   if (res.data.code === 200) {
     return res.data.msg;
   }
@@ -79,7 +80,8 @@ export async function exportRoles(params) {
     data: toFormData(params),
     responseType: 'blob'
   });
-  download(res.data, `role_${new Date().getTime()}.xlsx`);
+  await checkDownloadRes(res);
+  download(res.data, `role_${Date.now()}.xlsx`);
 }
 
 /**

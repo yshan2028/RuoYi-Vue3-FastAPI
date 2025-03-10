@@ -51,7 +51,7 @@
     <router-layout />
     <!-- logo -->
     <template #logo>
-      <img src="@/assets/logo.svg" alt="logo"/>
+      <img src="@/assets/logo.png" style="width: 42px; height: 42px" />
     </template>
     <template #logoTitle>
       <h1>{{ PROJECT_NAME }}</h1>
@@ -105,8 +105,6 @@
           @update:modelValue="updateDarkMode"
         />
       </layout-tool>
-      <!-- 主题设置抽屉 -->
-      <setting-drawer v-model="settingVisible" />
       <!-- 主题设置 -->
       <layout-tool @click="openSetting">
         <el-icon>
@@ -130,7 +128,7 @@
     </template>
     <!-- 折叠双侧栏一级 -->
     <template #boxBottom>
-      <div :style="{ flexShrink: 0, padding: roundedTheme ? '4px 8px' : 0 }">
+      <div :style="{ flexShrink: 0, padding: '4px 8px' }">
         <layout-tool style="height: 32px" @click="updateCompact(!compact)">
           <el-icon style="transform: scale(1.05)">
             <MenuUnfoldOutlined v-if="compact" />
@@ -142,12 +140,6 @@
     <!-- 全局页脚 -->
     <template #footer>
       <page-footer />
-    </template>
-    <!-- 菜单图标 -->
-    <template #icon="{ icon, item }">
-      <el-icon v-if="icon" v-bind="item.meta?.props?.iconProps || {}">
-        <component :is="icon" :style="item.meta?.props?.iconStyle" />
-      </el-icon>
     </template>
     <!-- 页签标题 -->
     <template #tabTitle="{ label, item }">
@@ -163,7 +155,8 @@
       </span>
     </template>
   </ele-pro-layout>
-
+  <!-- 主题设置抽屉 -->
+  <setting-drawer v-model="settingVisible" />
 </template>
 
 <script setup>
@@ -211,12 +204,8 @@
   import I18nIcon from './components/i18n-icon.vue';
   import PageFooter from './components/page-footer.vue';
   import SettingDrawer from './components/setting-drawer.vue';
-  import * as MenuIcons from './menu-icons';
 
-  defineOptions({
-    name: 'Layout',
-    components: MenuIcons
-  });
+  defineOptions({ name: 'Layout' });
 
   const { push } = useRouter();
   const { t, locale } = useI18n();
@@ -260,11 +249,15 @@
     uniqueOpened,
     fixedHome,
     tabInHeader,
-    roundedTheme,
     menuItemTrigger,
-    responsive,
+    responsive
   } = storeToRefs(themeStore);
 
+  /** 是否全屏 */
+  const isFullscreen = ref(false);
+
+  /** 是否显示主题设置抽屉 */
+  const settingVisible = ref(false);
 
   /** 页签右键菜单 */
   const tabContext = computed(() => {
@@ -310,7 +303,7 @@
     const isMax = maximized.value;
     return [
       {
-        title: t(`layout.tabs.${isMax ? 'fullscreenExit' : 'fullscreen'}`),
+        title: isMax ? '退出内容全屏' : '内容区域全屏',
         command: 'fullscreen',
         icon: isMax ? markRaw(CompressOutlined) : markRaw(ExpandOutlined)
       },
@@ -347,9 +340,6 @@
     themeStore.setContentWidth(width ?? null);
     isFullscreen.value = checkFullscreen();
   };
-
-  /** 是否全屏 */
-  const isFullscreen = ref(false);
 
   /** 全屏切换 */
   const toggleFullscreen = () => {
@@ -426,80 +416,25 @@
     document
       .startViewTransition(() => themeStore.setDarkMode(isDark))
       .ready.then(() => {
-      const clipPath = [
-        `circle(0px at ${x}px ${y}px)`,
-        `circle(${endRadius}px at ${x}px ${y}px)`
-      ];
-      document.documentElement.animate(
-        { clipPath: isDark ? clipPath : [...clipPath].reverse() },
-        {
-          duration: 400,
-          easing: 'ease-in',
-          pseudoElement: isDark
-            ? '::view-transition-new(root)'
-            : '::view-transition-old(root)'
-        }
-      );
-    });
+        const clipPath = [
+          `circle(0px at ${x}px ${y}px)`,
+          `circle(${endRadius}px at ${x}px ${y}px)`
+        ];
+        document.documentElement.animate(
+          { clipPath: isDark ? clipPath : [...clipPath].reverse() },
+          {
+            duration: 400,
+            easing: 'ease-in',
+            pseudoElement: isDark
+              ? '::view-transition-new(root)'
+              : '::view-transition-old(root)'
+          }
+        );
+      });
   };
-
-  /** 是否显示主题设置抽屉 */
-  const settingVisible = ref(false);
 
   /** 打开主题设置抽屉 */
   const openSetting = () => {
     settingVisible.value = true;
   };
 </script>
-
-<script>
-  import * as MenuIcons from './menu-icons';
-
-  export default {
-    name: 'Layout',
-    components: MenuIcons
-  };
-</script>
-
-<style lang="scss" scoped>
-  .dark-switch {
-    padding: 0 6px;
-    position: relative;
-
-    :deep(.el-switch) {
-      height: 22px;
-      line-height: 22px;
-      position: static;
-
-      .el-switch__core {
-        --el-switch-off-color: var(--el-border-color-extra-light);
-        --el-switch-on-color: var(--el-border-color-extra-light);
-        height: 22px;
-        border-radius: 11px;
-        border: 1px solid var(--el-border-color);
-
-        .el-switch__action {
-          color: var(--el-text-color-regular);
-          background: var(--el-bg-color);
-          width: 18px;
-          height: 18px;
-          font-size: 12px;
-          left: 1.35px;
-        }
-      }
-
-      &.is-checked .el-switch__core .el-switch__action {
-        left: calc(100% - 19.35px);
-      }
-
-      &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-      }
-    }
-  }
-</style>

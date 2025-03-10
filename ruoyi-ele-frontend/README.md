@@ -127,4 +127,4 @@ VITE_API_URL=http://localhost:8080
 ## 💎LICENSE
 
 - [RuoYi](https://ruoyi.vip) 为开源项目，使用 MIT License 开源协议
-- [EleAdminPlus](https://eleadmin.com) 为商业项目，需要购买授权后使用
+- [EleAdminPlus](https://eleadmin.com) 为商业产品，需要购买授权后使用

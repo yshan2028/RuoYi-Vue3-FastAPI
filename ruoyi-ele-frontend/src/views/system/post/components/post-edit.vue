@@ -3,15 +3,20 @@
   <ele-modal
     form
     :width="460"
-    :model-value="modelValue"
+    v-model="visible"
     :title="isUpdate ? '修改岗位' : '添加岗位'"
-    @update:modelValue="updateModelValue"
+    @open="handleOpen"
   >
-    <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      label-width="80px"
+      @submit.prevent=""
+    >
       <el-form-item label="岗位名称" prop="postName">
         <el-input
           clearable
-          :maxlength="20"
           v-model="form.postName"
           placeholder="请输入岗位名称"
         />
@@ -19,7 +24,6 @@
       <el-form-item label="岗位编码" prop="postCode">
         <el-input
           clearable
-          :maxlength="20"
           v-model="form.postCode"
           placeholder="请输入岗位编码"
         />
@@ -51,7 +55,7 @@
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="updateModelValue(false)">取消</el-button>
+      <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" :loading="loading" @click="save">
         保存
       </el-button>
@@ -60,19 +64,20 @@
 </template>
 
 <script setup>
-  import { ref, reactive, watch } from 'vue';
+  import { ref, reactive, nextTick } from 'vue';
   import { EleMessage } from 'ele-admin-plus/es';
   import { useFormData } from '@/utils/use-form-data';
   import { addPost, updatePost } from '@/api/system/post';
 
-  const emit = defineEmits(['done', 'update:modelValue']);
-
   const props = defineProps({
-    /** 弹窗是否打开 */
-    modelValue: Boolean,
     /** 修改回显的数据 */
     data: Object
   });
+
+  const emit = defineEmits(['done']);
+
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   /** 是否是修改 */
   const isUpdate = ref(false);
@@ -84,7 +89,7 @@
   const formRef = ref(null);
 
   /** 表单数据 */
-  const { form, resetFields, assignFields } = useFormData({
+  const [form, resetFields, assignFields] = useFormData({
     postId: void 0,
     postName: '',
     postCode: '',
@@ -121,6 +126,11 @@
     ]
   });
 
+  /** 关闭弹窗 */
+  const handleCancel = () => {
+    visible.value = false;
+  };
+
   /** 保存编辑 */
   const save = () => {
     formRef.value?.validate?.((valid) => {
@@ -133,7 +143,7 @@
         .then((msg) => {
           loading.value = false;
           EleMessage.success(msg);
-          updateModelValue(false);
+          handleCancel();
           emit('done');
         })
         .catch((e) => {
@@ -143,25 +153,19 @@
     });
   };
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
-  };
-
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (modelValue) {
-        if (props.data) {
-          assignFields(props.data);
-          isUpdate.value = true;
-        } else {
-          isUpdate.value = false;
-        }
-      } else {
-        resetFields();
-        formRef.value?.clearValidate?.();
-      }
+  /** 弹窗打开事件 */
+  const handleOpen = () => {
+    if (props.data) {
+      assignFields(props.data);
+      isUpdate.value = true;
+    } else {
+      resetFields();
+      isUpdate.value = false;
     }
-  );
+    nextTick(() => {
+      nextTick(() => {
+        formRef.value?.clearValidate?.();
+      });
+    });
+  };
 </script>

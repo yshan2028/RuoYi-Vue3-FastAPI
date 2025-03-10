@@ -1,6 +1,6 @@
 <!-- 搜索表单 -->
 <template>
-  <el-form label-width="72px" @keyup.enter="search">
+  <el-form label-width="72px" @keyup.enter="search" @submit.prevent="">
     <el-row :gutter="8">
       <el-col :lg="6" :md="12" :sm="12" :xs="24">
         <el-form-item label="任务名称">
@@ -58,7 +58,7 @@
   });
 
   /** 表单数据 */
-  const { form, resetFields } = useFormData({
+  const [form, resetFields] = useFormData({
     jobName: props.data?.jobName || '',
     jobGroup: props.data?.jobGroup
   });
@@ -71,8 +71,10 @@
     const [d1, d2] = dateRange.value ?? [];
     emit('search', {
       ...form,
-      'params[beginTime]': d1 ? `${d1} 00:00:00` : '',
-      'params[endTime]': d2 ? `${d2} 23:59:59` : ''
+      params: {
+        beginTime: d1 ? `${d1} 00:00:00` : '',
+        endTime: d2 ? `${d2} 23:59:59` : ''
+      }
     });
   };
 

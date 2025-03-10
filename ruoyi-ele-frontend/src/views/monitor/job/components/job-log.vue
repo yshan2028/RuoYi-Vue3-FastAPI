@@ -5,8 +5,8 @@
     title="调度日志"
     :append-to-body="true"
     :destroy-on-close="true"
-    :model-value="modelValue"
-    @update:modelValue="updateModelValue"
+    v-model="visible"
+    @open="handleOpen"
   >
     <job-log-search :data="data" style="margin-bottom: -8px" @search="reload" />
     <ele-pro-table
@@ -17,13 +17,15 @@
       :show-overflow-tooltip="true"
       v-model:selections="selections"
       highlight-current-row
+      :export-config="{ fileName: '调度日志' }"
       cache-key="monitorJobLogTable"
     >
       <template #toolbar>
         <el-button
           type="danger"
           class="ele-btn-icon"
-          :icon="Delete"
+          :icon="DeleteOutlined"
+          v-permission="'monitor:job:remove'"
           @click="removeBatch()"
         >
           删除
@@ -32,12 +34,18 @@
           plain
           type="danger"
           class="ele-btn-icon"
-          :icon="Delete"
+          :icon="CloseCircleOutlined"
+          v-permission="'monitor:job:remove'"
           @click="removeAll"
         >
           清空
         </el-button>
-        <el-button class="ele-btn-icon" :icon="Download" @click="exportData">
+        <el-button
+          class="ele-btn-icon"
+          :icon="DownloadOutlined"
+          v-permission="'monitor:job:export'"
+          @click="exportData"
+        >
           导出
         </el-button>
       </template>
@@ -67,10 +75,15 @@
 </template>
 
 <script setup>
-  import { ref, watch, computed } from 'vue';
-  import { Delete, Download } from '@element-plus/icons-vue';
+  import { ref, computed } from 'vue';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
+  import {
+    DeleteOutlined,
+    CloseCircleOutlined,
+    DownloadOutlined
+  } from '@/components/icons';
+  import { usePermission } from '@/utils/use-permission';
   import { useDictData } from '@/utils/use-dict-data';
   import JobLogSearch from './job-log-search.vue';
   import JobLogDetail from './job-log-detail.vue';
@@ -81,14 +94,15 @@
     clearJoblogs
   } from '@/api/monitor/job-log';
 
-  const emit = defineEmits(['update:modelValue']);
-
   const props = defineProps({
-    /** 是否显示 */
-    modelValue: Boolean,
     /** 定时任务 */
     data: Object
   });
+
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
+
+  const { hasPermission } = usePermission();
 
   /** 字典数据 */
   const [statusDicts] = useDictData(['sys_common_status']);
@@ -98,7 +112,7 @@
 
   /** 表格列配置 */
   const columns = computed(() => {
-    return [
+    const cols = [
       {
         type: 'selection',
         columnKey: 'selection',
@@ -154,16 +168,21 @@
         label: '执行时间',
         align: 'center',
         minWidth: 110
-      },
-      {
+      }
+    ];
+    if (hasPermission('monitor:job:query')) {
+      cols.push({
         columnKey: 'action',
         label: '操作',
         width: 80,
         align: 'center',
         slot: 'action',
-        fixed: 'right'
-      }
-    ];
+        fixed: 'right',
+        hideInPrint: true,
+        hideInExport: true
+      });
+    }
+    return cols;
   });
 
   /** 表格选中数据 */
@@ -176,8 +195,8 @@
   const showInfo = ref(false);
 
   /** 表格数据源 */
-  const datasource = ({ page, limit, where, filters }) => {
-    const params = { ...where, ...filters, pageNum: page, pageSize: limit };
+  const datasource = ({ pages, where, filters }) => {
+    const params = { ...where, ...filters, ...pages };
     if (props.data) {
       params.jobName = props.data?.jobName;
       params.jobGroup = props.data?.jobGroup;
@@ -203,7 +222,10 @@
       { type: 'warning', draggable: true }
     )
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
         removeJobLogs(ids)
           .then(() => {
             loading.close();
@@ -220,7 +242,10 @@
 
   /** 导出数据 */
   const exportData = () => {
-    const loading = EleMessage.loading('请求中..');
+    const loading = EleMessage.loading({
+      message: '请求中..',
+      plain: true
+    });
     tableRef.value?.fetch?.(({ where, filters }) => {
       const params = { ...where, ...filters };
       if (props.data) {
@@ -245,7 +270,10 @@
       draggable: true
     })
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
         clearJoblogs()
           .then(() => {
             loading.close();
@@ -266,19 +294,9 @@
     showInfo.value = true;
   };
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
+  /** 弹窗打开事件 */
+  const handleOpen = () => {
+    selections.value = [];
+    reload();
   };
-
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (modelValue) {
-        reload();
-      } else {
-        selections.value = [];
-      }
-    }
-  );
 </script>

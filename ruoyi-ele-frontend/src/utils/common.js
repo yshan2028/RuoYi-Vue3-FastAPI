@@ -17,7 +17,7 @@ export function logout(route, from, push) {
   }
   // 这样跳转避免再次登录重复注册动态路由, hash 路由模式使用 location.reload();
   const BASE_URL = import.meta.env.BASE_URL;
-  const url = BASE_URL + 'login'; // hash 路由模式使用 '#/login'
+  const url = BASE_URL + 'login';
   location.replace(from ? `${url}?from=${encodeURIComponent(from)}` : url);
 }
 
@@ -83,7 +83,11 @@ export function transformParams(params) {
     Object.keys(params).forEach((key) => {
       const value = params[key];
       if (value != null && value !== '') {
-        if (typeof value === 'object' && !isBlobFile(value)) {
+        if (Array.isArray(value) && value.length && isBlobFile(value[0])) {
+          value.forEach((file) => {
+            result.push([key, file]);
+          });
+        } else if (typeof value === 'object' && !isBlobFile(value)) {
           getObjectParamsArray(value).forEach((item) => {
             result.push([`${key}${item[0]}`, item[1]]);
           });
@@ -127,13 +131,26 @@ export function isBlobFile(obj) {
 }
 
 /**
+ * 检查下载文件的请求结果
+ * @param res 请求结果
+ */
+export async function checkDownloadRes(res) {
+  if (res.headers['content-type'].startsWith('application/json')) {
+    const json = await res.data.text();
+    return Promise.reject(
+      new Error(JSON.parse(json).msg || '系统未知错误，请反馈给管理员')
+    );
+  }
+  return true;
+}
+
+/**
  * 切换主题过渡动画
  * @param callback 执行的方法
  * @param el 过渡动画触发元素
  * @param isOut 是否是退出方向
- * @param isBody 是否在 body 上执行动画
  */
-export function doWithTransition(callback, el, isOut, isBody) {
+export function doWithTransition(callback, el, isOut) {
   if (!el || typeof document.startViewTransition !== 'function') {
     callback().then(() => {});
     return;
@@ -141,9 +158,6 @@ export function doWithTransition(callback, el, isOut, isBody) {
   document.documentElement.classList.add('disabled-transition');
   el.classList.add('view-transition-trigger');
   el.style.setProperty('view-transition-name', 'view-transition-trigger');
-  if (isBody) {
-    document.body.style.setProperty('view-transition-name', 'body');
-  }
   const rect = el.getBoundingClientRect();
   const x = rect.left + rect.width / 2;
   const y = rect.top + rect.height / 2;
@@ -162,12 +176,11 @@ export function doWithTransition(callback, el, isOut, isBody) {
         duration: 400,
         easing: 'ease-in',
         pseudoElement: isOut
-          ? `::view-transition-old(${isBody ? 'body' : 'root'})`
-          : `::view-transition-new(${isBody ? 'body' : 'root'})`
+          ? `::view-transition-old(root)`
+          : `::view-transition-new(root)`
       }
     );
     anim.onfinish = () => {
-      document.body.style.removeProperty('view-transition-name');
       el.style.removeProperty('view-transition-name');
       el.classList.remove('view-transition-trigger');
       document.documentElement.classList.remove('disabled-transition');

@@ -11,9 +11,12 @@
         :datasource="datasource"
         :show-overflow-tooltip="true"
         :loading="loading"
-        :highlight-current-row="true"
-        :export-config="{ fileName: '在线用户信息', datasource: exportSource }"
-        :print-config="{ datasource: exportSource }"
+        highlight-current-row
+        :export-config="{
+          fileName: '在线用户',
+          datasource: async () => datasource
+        }"
+        :print-config="{ datasource: async () => datasource }"
         cache-key="monitorOnlineTable"
         @refresh="reload(getWhere())"
       >
@@ -28,12 +31,17 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue';
+  import { ref, computed } from 'vue';
   import dayjs from 'dayjs';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
+  import { usePermission } from '@/utils/use-permission';
   import OnlineSearch from './components/online-search.vue';
   import { pageOnlines, kickoutOnline } from '@/api/monitor/online';
+
+  defineOptions({ name: 'MonitorOnline' });
+
+  const { hasPermission } = usePermission();
 
   const searchRef = ref(null);
 
@@ -41,74 +49,79 @@
   const tableRef = ref(null);
 
   /** 表格列配置 */
-  const columns = ref([
-    {
-      type: 'index',
-      columnKey: 'index',
-      width: 50,
-      align: 'center',
-      fixed: 'left'
-    },
-    {
-      prop: 'tokenId',
-      label: '会话编号',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'userName',
-      label: '登录名称',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'deptName',
-      label: '部门名称',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'ipaddr',
-      label: '登录地址',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'loginLocation',
-      label: '登录地点',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'browser',
-      label: '浏览器',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'os',
-      label: '操作系统',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'loginTime',
-      label: '登录时间',
-      align: 'center',
-      minWidth: 110,
-      formatter: (row) => dayjs(row.loginTime).format('YYYY-MM-DD HH:mm:ss')
-    },
-    {
-      columnKey: 'action',
-      label: '操作',
-      width: 80,
-      align: 'center',
-      slot: 'action',
-      fixed: 'right',
-      hideInPrint: true,
-      hideInExport: true
+  const columns = computed(() => {
+    const cols = [
+      {
+        type: 'index',
+        columnKey: 'index',
+        width: 50,
+        align: 'center',
+        fixed: 'left'
+      },
+      {
+        prop: 'tokenId',
+        label: '会话编号',
+        align: 'center',
+        minWidth: 160
+      },
+      {
+        prop: 'userName',
+        label: '登录名称',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'deptName',
+        label: '部门名称',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'ipaddr',
+        label: '登录地址',
+        align: 'center',
+        minWidth: 140
+      },
+      {
+        prop: 'loginLocation',
+        label: '登录地点',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'browser',
+        label: '浏览器',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'os',
+        label: '操作系统',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'loginTime',
+        label: '登录时间',
+        align: 'center',
+        width: 180,
+        formatter: (row) => dayjs(row.loginTime).format('YYYY-MM-DD HH:mm:ss')
+      }
+    ];
+    if (hasPermission('monitor:online:forceLogout')) {
+      cols.push({
+        columnKey: 'action',
+        label: '操作',
+        width: 80,
+        align: 'center',
+        slot: 'action',
+        fixed: 'right',
+        hideInPrint: true,
+        hideInExport: true
+      });
     }
-  ]);
+    return cols;
+  });
 
   /** 表格数据源 */
   const datasource = ref([]);
@@ -139,7 +152,10 @@
       { type: 'warning', draggable: true }
     )
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
         kickoutOnline(row.tokenId)
           .then(() => {
             loading.close();
@@ -159,16 +175,5 @@
     return searchRef.value?.getWhere?.();
   };
 
-  /** 导出和打印全部数据的数据源 */
-  const exportSource = ({ where, orders }) => {
-    return pageOnlines({ ...where, ...orders });
-  };
-
   reload();
-</script>
-
-<script>
-  export default {
-    name: 'MonitorOnline'
-  };
 </script>

@@ -1,9 +1,7 @@
 <template>
   <ele-page>
-    <!-- 搜索表单 -->
     <menu-search @search="reload" />
     <ele-card :body-style="{ paddingTop: '8px' }">
-      <!-- 表格 -->
       <ele-pro-table
         sticky
         ref="tableRef"
@@ -12,8 +10,7 @@
         :datasource="datasource"
         :show-overflow-tooltip="true"
         :highlight-current-row="true"
-        :export-config="{ fileName: '菜单信息', datasource: exportSource }"
-        :print-config="{ datasource: exportSource }"
+        :export-config="{ fileName: '菜单数据' }"
         :default-expand-all="false"
         :pagination="false"
         cache-key="systemMenuTable"
@@ -22,7 +19,7 @@
           <el-button
             type="primary"
             class="ele-btn-icon"
-            :icon="Plus"
+            :icon="PlusOutlined"
             @click="openEdit()"
           >
             新建
@@ -42,19 +39,19 @@
             折叠全部
           </el-button>
         </template>
-        <template #menuName="{ row }">
+        <template #title="{ row }">
           <el-icon
-            v-if="row.icon && row.icon != '#'"
-            :size="16"
+            v-if="row.icon"
+            :size="15"
             style="margin-right: 8px; vertical-align: -2px"
           >
             <component :is="row.icon" />
           </el-icon>
-          <span>{{ row.menuName }}</span>
+          <span>{{ row.title }}</span>
         </template>
         <template #menuType="{ row }">
           <el-tag
-            v-if="row.isFrame == '0'"
+            v-if="isExternalLink(row.path)"
             size="small"
             type="danger"
             :disable-transitions="true"
@@ -62,14 +59,22 @@
             外链
           </el-tag>
           <el-tag
-            v-else-if="row.menuType === 'M'"
+            v-else-if="isExternalLink(row.component)"
+            size="small"
+            type="warning"
+            :disable-transitions="true"
+          >
+            内嵌
+          </el-tag>
+          <el-tag
+            v-else-if="isDirectory(row)"
             size="small"
             :disable-transitions="true"
           >
             目录
           </el-tag>
           <el-tag
-            v-else-if="row.menuType === 'C'"
+            v-else-if="row.menuType === 0"
             size="small"
             type="success"
             :disable-transitions="true"
@@ -77,7 +82,7 @@
             菜单
           </el-tag>
           <el-tag
-            v-else-if="row.menuType === 'F'"
+            v-else-if="row.menuType === 1"
             size="small"
             type="info"
             :disable-transitions="true"
@@ -85,40 +90,31 @@
             按钮
           </el-tag>
         </template>
-        <template #visible="{ row }">
-          <dict-data
-            code="sys_show_hide"
-            type="tag"
-            :model-value="row.visible"
-          />
-        </template>
         <template #action="{ row }">
-          <div style="display: inline-flex; align-items: center">
-            <el-link
-              type="primary"
-              :underline="false"
-              @click="openEdit(null, row.menuId)"
-            >
-              添加
-            </el-link>
-            <el-divider direction="vertical" style="margin: 0 8px" />
-            <el-link type="primary" :underline="false" @click="openEdit(row)">
-              修改
-            </el-link>
-            <el-divider direction="vertical" style="margin: 0 8px" />
-            <el-link type="danger" :underline="false" @click="remove(row)">
-              删除
-            </el-link>
-          </div>
+          <el-link
+            type="primary"
+            :underline="false"
+            @click="openEdit(null, row.menuId)"
+          >
+            添加
+          </el-link>
+          <el-divider direction="vertical" />
+          <el-link type="primary" :underline="false" @click="openEdit(row)">
+            修改
+          </el-link>
+          <el-divider direction="vertical" />
+          <el-link type="danger" :underline="false" @click="remove(row)">
+            删除
+          </el-link>
         </template>
       </ele-pro-table>
     </ele-card>
-    <!-- 编辑弹窗 -->
     <menu-edit
+      ref="menuEditRef"
       v-model="showEdit"
       :data="current"
       :parent-id="parentId"
-      @done="reload"
+      @done="handleMenuEditDone"
     />
   </ele-page>
 </template>
@@ -126,15 +122,17 @@
 <script setup>
   import { ref } from 'vue';
   import { ElMessageBox } from 'element-plus/es';
-  import { Plus } from '@element-plus/icons-vue';
-  import { EleMessage, toTree } from 'ele-admin-plus/es';
+  import { EleMessage, isExternalLink, toTree } from 'ele-admin-plus/es';
   import {
+    PlusOutlined,
     ColumnHeightOutlined,
     VerticalAlignMiddleOutlined
   } from '@/components/icons';
   import MenuSearch from './components/menu-search.vue';
   import MenuEdit from './components/menu-edit.vue';
   import { listMenus, removeMenu } from '@/api/system/menu';
+
+  defineOptions({ name: 'SystemMenu' });
 
   /** 表格实例 */
   const tableRef = ref(null);
@@ -149,44 +147,45 @@
       fixed: 'left'
     },
     {
-      prop: 'menuName',
+      prop: 'title',
       label: '菜单名称',
-      slot: 'menuName',
+      slot: 'title',
       minWidth: 160
     },
     {
       prop: 'path',
       label: '路由地址',
-      minWidth: 110
+      minWidth: 160
     },
     {
       prop: 'orderNum',
       label: '排序',
-      align: 'center',
-      width: 100
+      width: 100,
+      align: 'center'
     },
     {
-      prop: 'visible',
-      label: '状态',
-      align: 'center',
-      slot: 'visible',
+      prop: 'hide',
+      label: '可见',
       width: 100,
-      filters: [
-        { text: '显示', value: '0' },
-        { text: '隐藏', value: '1' }
-      ],
-      filterMultiple: false, // 只能选一个
-      filterMethod: (value, row) => {
-        if (value === '') return true; // 选 "全部" 显示所有数据
-        return row.status == value; // 选 "正常" 或 "停用" 进行筛选
-      }
+      align: 'center',
+      formatter: (row) => ['是', '否'][row.hide]
     },
     {
       prop: 'menuType',
       label: '类型',
+      width: 100,
       align: 'center',
       slot: 'menuType',
-      width: 100
+      formatter: (row) =>
+        ['菜单', '按钮', '外链', '内嵌', '目录'][
+          isExternalLink(row.path)
+            ? 2
+            : isExternalLink(row.component)
+              ? 3
+              : isDirectory(row)
+                ? 4
+                : row.menuType
+        ]
     },
     {
       columnKey: 'action',
@@ -207,6 +206,9 @@
 
   /** 上级菜单id */
   const parentId = ref();
+
+  /** 菜单编辑弹窗组件 */
+  const menuEditRef = ref(null);
 
   /** 表格数据源 */
   const datasource = async ({ where }) => {
@@ -230,20 +232,32 @@
     showEdit.value = true;
   };
 
+  /** 刷新菜单下拉选择数据 */
+  const reloadMenuSelectData = () => {
+    menuEditRef.value?.reloadMenuSelectData?.();
+  };
+
   /** 删除单个 */
   const remove = (row) => {
-    ElMessageBox.confirm(
-      `是否确认删除名称为“${row.menuName}”的数据项？`,
-      '系统提示',
-      { type: 'warning', draggable: true }
-    )
+    if (row.children?.length) {
+      EleMessage.error('请先删除子节点');
+      return;
+    }
+    ElMessageBox.confirm('确定要删除“' + row.title + '”吗?', '系统提示', {
+      type: 'warning',
+      draggable: true
+    })
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
         removeMenu(row.menuId)
-          .then(() => {
+          .then((msg) => {
             loading.close();
-            EleMessage.success('删除成功');
+            EleMessage.success(msg);
             reload();
+            reloadMenuSelectData();
           })
           .catch((e) => {
             loading.close();
@@ -263,17 +277,14 @@
     tableRef.value?.toggleRowExpansionAll?.(false);
   };
 
-  /** 导出和打印全部数据的数据源 */
-  const exportSource = ({ where, orders }) => {
-    return listMenus({ ...where, ...orders });
+  /** 判断是否是目录 */
+  const isDirectory = (d) => {
+    return !!d.children?.length && !d.component;
   };
-</script>
 
-<script>
-  import * as MenuIcons from '@/layout/menu-icons';
-
-  export default {
-    name: 'SystemMenu',
-    components: MenuIcons
+  /** 菜单编辑完成事件 */
+  const handleMenuEditDone = () => {
+    reload();
+    reloadMenuSelectData();
   };
 </script>

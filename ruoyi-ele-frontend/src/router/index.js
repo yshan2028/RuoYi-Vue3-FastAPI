@@ -7,7 +7,6 @@ import { WHITE_LIST, REDIRECT_PATH, LAYOUT_PATH } from '@/config/setting';
 import { useUserStore } from '@/store/modules/user';
 import { getToken } from '@/utils/token-util';
 import { setPageTitle } from '@/utils/page-title-util';
-import { getRouteTitle } from '@/i18n/use-locale';
 import { routes, getMenuRoutes } from './routes';
 
 NProgress.configure({
@@ -31,7 +30,7 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   if (!to.path.includes(REDIRECT_PATH)) {
     NProgress.start();
-    setPageTitle(getRouteTitle(to));
+    setPageTitle(to.meta?.title);
   }
   if (!getToken()) {
     // 未登录跳转登录界面

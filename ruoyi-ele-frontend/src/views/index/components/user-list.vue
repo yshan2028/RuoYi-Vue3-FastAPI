@@ -5,7 +5,7 @@
     :body-style="{ padding: '8px 0px', height: '370px' }"
   >
     <template #extra>
-      <more-icon @command="onCommand" />
+      <more-icon @command="handleCommand" />
     </template>
     <div v-for="item in userList" :key="item.id" class="user-list-item">
       <el-avatar :size="46" :src="item.avatar" style="flex-shrink: 0" />
@@ -91,7 +91,7 @@
     ];
   };
 
-  const onCommand = (command) => {
+  const handleCommand = (command) => {
     emit('command', command);
   };
 

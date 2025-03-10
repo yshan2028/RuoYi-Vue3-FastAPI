@@ -13,7 +13,7 @@
         <component
           :is="item.name"
           :title="item.title"
-          @command="(command) => onCommand(command, index)"
+          @command="(command) => handleCommand(command, index)"
         />
       </el-col>
     </el-row>
@@ -21,7 +21,7 @@
       <div class="workplace-bottom">
         <el-link
           type="primary"
-          :icon="CirclePlus"
+          :icon="PlusCircleOutlined"
           :underline="false"
           class="workplace-button"
           @click="add"
@@ -31,7 +31,7 @@
         <el-divider direction="vertical" style="margin: 0" />
         <el-link
           type="primary"
-          :icon="RefreshLeft"
+          :icon="UndoOutlined"
           :underline="false"
           class="workplace-button"
           @click="reset"
@@ -81,10 +81,28 @@
 <script setup>
   import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
   import SortableJs from 'sortablejs';
+  import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
-  import { CirclePlus, RefreshLeft } from '@element-plus/icons-vue';
+  import { PlusCircleOutlined, UndoOutlined } from '@/components/icons';
   import ProfileCard from './components/profile-card.vue';
   import LinkCard from './components/link-card.vue';
+  import ActivitiesCard from './components/activities-card.vue';
+  import TaskCard from './components/task-card.vue';
+  import GoalCard from './components/goal-card.vue';
+  import ProjectCard from './components/project-card.vue';
+  import UserList from './components/user-list.vue';
+
+  defineOptions({
+    name: 'Index',
+    components: {
+      ActivitiesCard,
+      TaskCard,
+      GoalCard,
+      ProjectCard,
+      UserList
+    }
+  });
+
   const CACHE_KEY = 'workplace-layout';
 
   /** 默认布局 */
@@ -175,14 +193,25 @@
   };
 
   /** 编辑卡片 */
-  const onCommand = (command, index) => {
+  const handleCommand = (command, index) => {
     switch (command) {
+      case 'refresh': // 刷新
+        EleMessage.info({ message: '点击了刷新', plain: true });
+        break;
       case 'edit': // 编辑
-        EleMessage.info('点击了编辑');
+        EleMessage.info({ message: '点击了编辑', plain: true });
         break;
       case 'remove': // 删除
-        data.value = data.value.filter((_d, i) => i !== index);
-        cacheData();
+        ElMessageBox.confirm(
+          `确定要删除“${data.value[index].title}”卡片吗?`,
+          '系统提示',
+          { type: 'warning', draggable: true }
+        )
+          .then(() => {
+            data.value = data.value.filter((_d, i) => i !== index);
+            cacheData();
+          })
+          .catch(() => {});
         break;
     }
   };
@@ -200,7 +229,8 @@
       return;
     }
     sortableIns = new SortableJs(wrapRef.value?.$el, {
-      handle: '.el-card__header',
+      handle: '.ele-card-header',
+      filter: '.demo-more-icon',
       animation: 300,
       onUpdate: ({ oldIndex, newIndex }) => {
         if (typeof oldIndex === 'number' && typeof newIndex === 'number') {
@@ -221,33 +251,15 @@
   });
 </script>
 
-<script>
-  import ActivitiesCard from './components/activities-card.vue';
-  import TaskCard from './components/task-card.vue';
-  import GoalCard from './components/goal-card.vue';
-  import ProjectCard from './components/project-card.vue';
-  import UserList from './components/user-list.vue';
-
-  export default {
-    name: 'Index',
-    components: {
-      ActivitiesCard,
-      TaskCard,
-      GoalCard,
-      ProjectCard,
-      UserList
-    }
-  };
-</script>
-
 <style lang="scss" scoped>
   .workplace-page {
-    :deep(.el-card__header) {
+    :deep(.ele-card-header) {
+      user-select: none;
       cursor: move;
     }
 
     :deep(.el-col) {
-      &.sortable-chosen > .el-card {
+      &.sortable-chosen > .ele-card {
         box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.2);
       }
 
@@ -276,8 +288,8 @@
       }
 
       :deep(.el-icon) {
-        font-size: 16px;
-        margin: -2px 4px 0 0;
+        font-size: 15px;
+        margin: -1px 6px 0 0;
       }
     }
   }

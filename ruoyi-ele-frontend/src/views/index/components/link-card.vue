@@ -17,71 +17,108 @@
 <script setup>
   import { ref, onMounted, onBeforeUnmount } from 'vue';
   import SortableJs from 'sortablejs';
+  import {
+    UserOutlined,
+    AnalysisOutlined,
+    ShoppingOutlined,
+    LogOutlined,
+    CopyOutlined,
+    MailOutlined,
+    TagOutlined,
+    ControlOutlined
+  } from '@/components/icons';
+
+  defineOptions({
+    components: {
+      UserOutlined,
+      AnalysisOutlined,
+      ShoppingOutlined,
+      LogOutlined,
+      CopyOutlined,
+      MailOutlined,
+      TagOutlined,
+      ControlOutlined
+    }
+  });
+
   const CACHE_KEY = 'workplace-links';
 
   /** 默认顺序 */
   const DEFAULT = [
     {
-      icon: 'user',
+      id: 1,
+      icon: 'UserOutlined',
       title: '用户',
       url: '/system/user'
     },
     {
-      icon: 'data-line',
+      id: 2,
+      icon: 'AnalysisOutlined',
       title: '分析',
-      url: '/dashboard/analysis',
+      url: '/monitor/cache',
       color: '#95de64'
     },
     {
-      icon: 'handbag',
+      id: 3,
+      icon: 'ShoppingOutlined',
       title: '商品',
-      url: '/list/card/project',
+      url: '/system/dict',
       color: '#ff9c6e'
     },
     {
-      icon: 'tickets',
+      id: 4,
+      icon: 'LogOutlined',
       title: '订单',
-      url: '/list/basic',
+      url: '/system/log/logininfor',
       color: '#b37feb'
     },
     {
-      icon: 'wallet',
+      id: 5,
+      icon: 'CopyOutlined',
       title: '票据',
-      url: '/list/advanced',
+      url: '/monitor/online',
       color: '#ffd666'
     },
     {
-      icon: 'message',
+      id: 6,
+      icon: 'MailOutlined',
       title: '消息',
-      url: '/user/message',
+      url: '/system/notice',
       color: '#5cdbd3'
     },
     {
-      icon: 'price-tag',
+      id: 7,
+      icon: 'TagOutlined',
       title: '标签',
-      url: '/extension/tag',
+      url: '/system/role',
       color: '#ff85c0'
     },
     {
-      icon: 'operation',
+      id: 8,
+      icon: 'ControlOutlined',
       title: '配置',
-      url: '/user/profile',
+      url: '/system/config',
       color: '#ffc069'
     }
   ];
 
-  /** 获取缓存的顺序 */
-  const cache = (() => {
-    const str = localStorage.getItem(CACHE_KEY);
-    try {
-      return str ? JSON.parse(str) : null;
-    } catch (e) {
-      return null;
-    }
-  })();
-
   /** 数据 */
-  const data = ref([...(cache ?? DEFAULT)]);
+  const data = ref(
+    (() => {
+      try {
+        const str = localStorage.getItem(CACHE_KEY);
+        const temp = str ? JSON.parse(str) : null;
+        if (temp) {
+          const result = [...DEFAULT];
+          result.sort((a, b) => temp.indexOf(a.id) - temp.indexOf(b.id));
+          return result;
+        }
+      } catch (_e) {
+        //
+      }
+      return [...DEFAULT];
+    })()
+  );
 
   /** 根节点 */
   const wrapRef = ref(null);
@@ -92,12 +129,15 @@
   /** 重置布局 */
   const reset = () => {
     data.value = [...DEFAULT];
-    cacheData();
+    localStorage.removeItem(CACHE_KEY);
   };
 
   /** 缓存布局 */
   const cacheData = () => {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(data.value));
+    localStorage.setItem(
+      CACHE_KEY,
+      JSON.stringify(data.value.map((d) => d.id))
+    );
   };
 
   onMounted(() => {
@@ -128,44 +168,23 @@
   defineExpose({ reset });
 </script>
 
-<script>
-  import {
-    User,
-    DataLine,
-    Handbag,
-    Tickets,
-    Wallet,
-    Message,
-    PriceTag,
-    Operation
-  } from '@element-plus/icons-vue';
-
-  export default {
-    components: {
-      User,
-      DataLine,
-      Handbag,
-      Tickets,
-      Wallet,
-      Message,
-      PriceTag,
-      Operation
-    }
-  };
-</script>
-
 <style lang="scss" scoped>
   .app-link {
     padding: 12px;
     display: block;
     text-align: center;
     text-decoration: none;
+    user-select: none;
     color: inherit;
 
-    .app-link-icon {
+    :deep(.app-link-icon) {
       font-size: 30px;
       color: #69c0ff;
       margin: 6px 0 10px 0;
+
+      & > svg {
+        stroke-width: 3;
+      }
     }
   }
 

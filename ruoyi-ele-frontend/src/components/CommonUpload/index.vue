@@ -18,6 +18,7 @@
     :listType="listType"
     :beforeUploadClick="beforeUploadClick"
     :beforeItemEdit="beforeItemEdit"
+    :beforePreview="beforePreview"
     :locale="locale"
     @upload="handleItemUpload"
     @retry="(item) => handleItemUpload(item, true)"
@@ -95,6 +96,8 @@
     beforeUploadClick: Function,
     /** 修改按钮点击前的钩子 */
     beforeItemEdit: Function,
+    /** 预览按钮点击前的钩子 */
+    beforePreview: Function,
     /** 国际化 */
     locale: Object
   });

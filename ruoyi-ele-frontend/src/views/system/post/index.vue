@@ -11,16 +11,16 @@
         :datasource="datasource"
         :show-overflow-tooltip="true"
         v-model:selections="selections"
-        :highlight-current-row="true"
-        :export-config="{ fileName: '岗位信息', datasource: exportSource }"
-        :print-config="{ datasource: exportSource }"
+        highlight-current-row
+        :export-config="{ fileName: '岗位数据' }"
         cache-key="systemPostTable"
       >
         <template #toolbar>
           <el-button
             type="primary"
             class="ele-btn-icon"
-            :icon="Plus"
+            :icon="PlusOutlined"
+            v-permission="'system:post:add'"
             @click="openEdit()"
           >
             新建
@@ -28,12 +28,18 @@
           <el-button
             type="danger"
             class="ele-btn-icon"
-            :icon="Delete"
+            :icon="DeleteOutlined"
+            v-permission="'system:post:remove'"
             @click="removeBatch()"
           >
             删除
           </el-button>
-          <el-button class="ele-btn-icon" :icon="Download" @click="exportData">
+          <el-button
+            class="ele-btn-icon"
+            :icon="DownloadOutlined"
+            v-permission="'system:post:export'"
+            @click="exportData"
+          >
             导出
           </el-button>
         </template>
@@ -45,11 +51,24 @@
           />
         </template>
         <template #action="{ row }">
-          <el-link type="primary" :underline="false" @click="openEdit(row)">
+          <el-link
+            v-permission="'system:post:edit'"
+            type="primary"
+            :underline="false"
+            @click="openEdit(row)"
+          >
             修改
           </el-link>
-          <el-divider direction="vertical" />
-          <el-link type="danger" :underline="false" @click="removeBatch(row)">
+          <el-divider
+            v-permission="['system:post:edit', 'system:post:remove']"
+            direction="vertical"
+          />
+          <el-link
+            v-permission="'system:post:remove'"
+            type="danger"
+            :underline="false"
+            @click="removeBatch(row)"
+          >
             删除
           </el-link>
         </template>
@@ -62,12 +81,22 @@
 
 <script setup>
   import { ref } from 'vue';
-  import { Plus, Delete, Download } from '@element-plus/icons-vue';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
+  import {
+    PlusOutlined,
+    DeleteOutlined,
+    DownloadOutlined
+  } from '@/components/icons';
+  import { useDictData } from '@/utils/use-dict-data';
   import PostSearch from './components/post-search.vue';
   import PostEdit from './components/post-edit.vue';
   import { pagePosts, removePosts, exportPosts } from '@/api/system/post';
+
+  defineOptions({ name: 'SystemPost' });
+
+  /** 字典数据 */
+  const [statusDicts] = useDictData(['sys_normal_disable']);
 
   /** 表格实例 */
   const tableRef = ref(null);
@@ -111,22 +140,16 @@
       label: '状态',
       width: 90,
       align: 'center',
+      minWidth: 110,
       slot: 'status',
-      filters: [
-        { text: '正常', value: '0' },
-        { text: '停用', value: '1' }
-      ],
-      filterMultiple: false, // 只能选一个
-      filterMethod: (value, row) => {
-        if (value === '') return true; // 选 "全部" 显示所有数据
-        return row.status == value; // 选 "正常" 或 "停用" 进行筛选
-      }
+      formatter: (row) =>
+        statusDicts.value.find((d) => d.dictValue == row.status)?.dictLabel
     },
     {
       prop: 'createTime',
       label: '创建时间',
       align: 'center',
-      minWidth: 110
+      width: 180
     },
     {
       columnKey: 'action',
@@ -149,8 +172,8 @@
   const showEdit = ref(false);
 
   /** 表格数据源 */
-  const datasource = ({ page, limit, where, orders }) => {
-    return pagePosts({ ...where, ...orders, pageNum: page, pageSize: limit });
+  const datasource = ({ pages, where, orders }) => {
+    return pagePosts({ ...where, ...orders, ...pages });
   };
 
   /** 搜索 */
@@ -177,7 +200,10 @@
       { type: 'warning', draggable: true }
     )
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
         removePosts(rows.map((d) => d.postId))
           .then(() => {
             loading.close();
@@ -194,7 +220,10 @@
 
   /** 导出数据 */
   const exportData = () => {
-    const loading = EleMessage.loading('请求中..');
+    const loading = EleMessage.loading({
+      message: '请求中..',
+      plain: true
+    });
     tableRef.value?.fetch?.(({ where, orders }) => {
       exportPosts({ ...where, ...orders })
         .then(() => {
@@ -205,16 +234,5 @@
           EleMessage.error(e.message);
         });
     });
-  };
-
-  /** 导出和打印全部数据的数据源 */
-  const exportSource = ({ where, orders }) => {
-    return pagePosts({ ...where, ...orders });
-  };
-</script>
-
-<script>
-  export default {
-    name: 'SystemPost'
   };
 </script>

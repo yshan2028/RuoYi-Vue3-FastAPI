@@ -45,6 +45,10 @@ export function getMenuRoutes(menus, homePath) {
   // 路由铺平处理
   eachTree(menuToRoutes(menus, getComponent, routes), (route) => {
     const temp = Object.assign({}, route, { children: void 0 });
+    // 重设redirect以兼容若依菜单数据
+    if (route.children?.length && !route.component) {
+      temp.redirect = route.children[0].path;
+    }
     if (route.meta?.layout === false) {
       layoutRoutes.push(temp); // 不需要外层布局的路由
     } else {

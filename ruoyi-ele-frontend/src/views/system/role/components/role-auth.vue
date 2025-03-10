@@ -3,10 +3,10 @@
     form
     :width="460"
     title="分配数据权限"
-    :model-value="modelValue"
-    @update:modelValue="updateModelValue"
+    v-model="visible"
+    @open="handleOpen"
   >
-    <el-form label-width="80px">
+    <el-form label-width="80px" @submit.prevent="">
       <el-form-item label="权限范围">
         <el-select
           v-model="dataScope"
@@ -56,7 +56,7 @@
               取消全选
             </el-button>
           </div>
-          <div style="height: 260px; overflow: auto">
+          <div style="height: 260px; overflow: auto; padding: 0 6px">
             <el-tree
               ref="treeRef"
               show-checkbox
@@ -70,7 +70,7 @@
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="updateModelValue(false)">取消</el-button>
+      <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" :loading="loading" @click="save">
         保存
       </el-button>
@@ -79,18 +79,19 @@
 </template>
 
 <script setup>
-  import { ref, watch } from 'vue';
+  import { ref } from 'vue';
   import { EleMessage, eachTree } from 'ele-admin-plus/es';
   import { setDataScope, listDataScope } from '@/api/system/role';
 
-  const emit = defineEmits(['done', 'update:modelValue']);
-
   const props = defineProps({
-    /** 弹窗是否打开 */
-    modelValue: Boolean,
     /** 修改回显的数据 */
     data: Object
   });
+
+  const emit = defineEmits(['done']);
+
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   /** 树组件 */
   const treeRef = ref(null);
@@ -120,6 +121,11 @@
     return ids.concat(ids2);
   };
 
+  /** 关闭弹窗 */
+  const handleCancel = () => {
+    visible.value = false;
+  };
+
   /** 保存编辑 */
   const save = () => {
     loading.value = true;
@@ -131,18 +137,13 @@
       .then(() => {
         loading.value = false;
         EleMessage.success('修改成功');
-        updateModelValue(false);
+        handleCancel();
         emit('done');
       })
       .catch((e) => {
         loading.value = false;
         EleMessage.error(e.message);
       });
-  };
-
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
   };
 
   /** 展开全部 */
@@ -198,17 +199,15 @@
       });
   };
 
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (modelValue && props.data) {
-        dataScope.value = props.data.dataScope;
-        query();
-      } else {
-        dataScope.value = '';
-      }
+  /** 弹窗打开事件 */
+  const handleOpen = () => {
+    if (props.data) {
+      dataScope.value = props.data.dataScope;
+      query();
+    } else {
+      dataScope.value = '';
     }
-  );
+  };
 </script>
 
 <style lang="scss" scoped>

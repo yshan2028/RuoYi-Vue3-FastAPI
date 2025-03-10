@@ -1,5 +1,5 @@
 import request from '@/utils/request';
-import { download, toFormData } from '@/utils/common';
+import { download, toFormData, checkDownloadRes } from '@/utils/common';
 
 /**
  * 分页查询用户
@@ -105,7 +105,8 @@ export async function exportUsers(params) {
     data: toFormData(params),
     responseType: 'blob'
   });
-  download(res.data, `user_${new Date().getTime()}.xlsx`);
+  await checkDownloadRes(res);
+  download(res.data, `user_${Date.now()}.xlsx`);
 }
 
 /**
@@ -117,7 +118,8 @@ export async function downloadTemplate() {
     method: 'POST',
     responseType: 'blob'
   });
-  download(res.data, `user_template_${new Date().getTime()}.xlsx`);
+  await checkDownloadRes(res);
+  download(res.data, `user_template_${Date.now()}.xlsx`);
 }
 
 /**

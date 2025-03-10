@@ -2,7 +2,7 @@
 <template>
   <ele-card :header="title" :body-style="{ padding: '6px 0', height: '370px' }">
     <template #extra>
-      <more-icon @command="onCommand" />
+      <more-icon @command="handleCommand" />
     </template>
     <el-scrollbar :view-style="{ padding: '20px 20px 0 20px' }">
       <el-timeline :reverse="false" class="demo-timeline">
@@ -105,7 +105,7 @@
     ];
   };
 
-  const onCommand = (command) => {
+  const handleCommand = (command) => {
     emit('command', command);
   };
 

@@ -13,6 +13,8 @@ export function useGlobalConfig() {
       countName: 'total'
     },
     request: {
+      pageName: 'pageNum',
+      limitName: 'pageSize',
       sortName: 'orderByColumn',
       orderName: 'isAsc',
       ascValue: 'ascending',
@@ -66,7 +68,7 @@ export function getExportWorkbook(params) {
         alignment: {
           vertical: d.isTreeIndex && d.rowspan !== 1 ? 'top' : 'middle',
           horizontal: d.isExpandCell ? 'left' : d.column?.align || 'left',
-          wrapText: !!d.isExpandCell,
+          wrapText: d.isExpandCell ? true : false,
           indent: d.isExpandCell ? 1 : 0
         },
         border: {
@@ -90,7 +92,7 @@ export function getExportWorkbook(params) {
     sheetStyles.push(rowStyles);
     // 行高
     const expandCell = item.find((d) => d.isExpandCell && d.colspan);
-    const lines = expandCell?.text?.split?.('\n')?.length || 1;
+    const lines = String(expandCell?.text ?? '').split('\n').length || 1;
     sheetRowHeight.push(lines * 20);
   });
   // 添加到表格

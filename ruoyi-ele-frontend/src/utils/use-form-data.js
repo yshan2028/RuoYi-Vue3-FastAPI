@@ -1,5 +1,5 @@
 import { reactive } from 'vue';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, set as setValue } from 'lodash-es';
 
 /**
  * 表单数据hook
@@ -40,7 +40,8 @@ export function useFormData(init) {
 
   /** 赋值某字段 */
   const setFieldValue = (field, value) => {
-    form[field] = value;
+    //form[field] = value;
+    setValue(form, field, value);
   };
 
   const result = [form, resetFields, assignFields, setFieldValue];

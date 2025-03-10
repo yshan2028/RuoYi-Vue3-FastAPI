@@ -2,7 +2,7 @@
 <template>
   <ele-card :header="title" :body-style="{ height: '370px' }">
     <template #extra>
-      <more-icon @command="onCommand" />
+      <more-icon @command="handleCommand" />
     </template>
     <div class="workplace-goal">
       <el-progress
@@ -16,10 +16,10 @@
         <el-tag
           size="large"
           :disable-transitions="true"
-          style="width: 36px; height: 36px; border-radius: 50%"
+          style="width: 36px; height: 36px; border-radius: 50%; line-height: 0"
         >
           <el-icon style="cursor: default; border-radius: 0">
-            <trophy-base />
+            <TrophyBase />
           </el-icon>
         </el-tag>
         <div style="font-size: 40px">285</div>
@@ -39,7 +39,7 @@
 
   const emit = defineEmits(['command']);
 
-  const onCommand = (command) => {
+  const handleCommand = (command) => {
     emit('command', command);
   };
 </script>

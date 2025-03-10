@@ -9,8 +9,8 @@
       <el-col :md="8" :sm="24" :xs="24" style="height: 100%">
         <ele-card flex-table style="height: 100%">
           <template #header>
-            <el-icon :size="17" style="vertical-align: -2px; margin-right: 8px">
-              <Coin />
+            <el-icon :size="16" style="vertical-align: -2px; margin-right: 8px">
+              <DatabaseOutlined />
             </el-icon>
             <span>缓存列表</span>
           </template>
@@ -18,7 +18,7 @@
             <ele-tooltip content="清空" placement="top" :offset="4">
               <ele-text
                 type="danger"
-                :icon="Delete"
+                :icon="DeleteOutlined"
                 :icon-props="{ size: 16 }"
                 style="cursor: pointer"
                 @click="clearAll"
@@ -53,8 +53,8 @@
       <el-col :md="8" :sm="24" :xs="24" style="height: 100%">
         <ele-card flex-table style="height: 100%">
           <template #header>
-            <el-icon :size="17" style="vertical-align: -3px; margin-right: 8px">
-              <Key />
+            <el-icon :size="16" style="vertical-align: -2px; margin-right: 8px">
+              <LogOutlined />
             </el-icon>
             <span>键名列表</span>
           </template>
@@ -62,8 +62,8 @@
             <ele-tooltip content="刷新" placement="top" :offset="4">
               <ele-text
                 type="primary"
-                :icon="RefreshRight"
-                :icon-props="{ size: 17 }"
+                :icon="ReloadOutlined"
+                :icon-props="{ size: 16 }"
                 style="cursor: pointer"
                 @click="queryKeys"
               />
@@ -101,11 +101,8 @@
       <el-col :md="8" :sm="24" :xs="24" style="height: 100%">
         <ele-card flex-table style="height: 100%">
           <template #header>
-            <el-icon
-              :size="17"
-              style="vertical-align: -2.5px; margin-right: 8px"
-            >
-              <Document />
+            <el-icon :size="16" style="vertical-align: -2px; margin-right: 8px">
+              <FileOutlined />
             </el-icon>
             <span>缓存内容</span>
           </template>
@@ -113,8 +110,8 @@
             <ele-tooltip content="刷新" placement="top" :offset="4">
               <ele-text
                 type="primary"
-                :icon="RefreshRight"
-                :icon-props="{ size: 17 }"
+                :icon="ReloadOutlined"
+                :icon-props="{ size: 16 }"
                 style="cursor: pointer"
                 @click="query"
               />
@@ -141,15 +138,15 @@
 
 <script setup>
   import { ref, watch } from 'vue';
-  import {
-    Coin,
-    Key,
-    Document,
-    Delete,
-    RefreshRight
-  } from '@element-plus/icons-vue';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
+  import {
+    DatabaseOutlined,
+    LogOutlined,
+    FileOutlined,
+    DeleteOutlined,
+    ReloadOutlined
+  } from '@/components/icons';
   import {
     getCacheNames,
     getCacheKeys,
@@ -158,6 +155,8 @@
     clearCacheKey,
     clearCacheAll
   } from '@/api/monitor/cache';
+
+  defineOptions({ name: 'MonitorCacheList' });
 
   /** 表格实例 */
   const tableRef = ref(null);
@@ -246,7 +245,10 @@
       draggable: true
     })
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
         clearCacheName(row.cacheName)
           .then(() => {
             loading.close();
@@ -268,7 +270,10 @@
       draggable: true
     })
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
         clearCacheKey(row.cacheKey)
           .then(() => {
             loading.close();
@@ -290,7 +295,10 @@
       draggable: true
     })
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
         clearCacheAll()
           .then(() => {
             loading.close();
@@ -352,12 +360,6 @@
   watch(current2, () => {
     query();
   });
-</script>
-
-<script>
-  export default {
-    name: 'MonitorCacheList'
-  };
 </script>
 
 <style lang="scss" scoped>

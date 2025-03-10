@@ -1,5 +1,5 @@
 import request from '@/utils/request';
-import { download, toFormData } from '@/utils/common';
+import { download, toFormData, checkDownloadRes } from '@/utils/common';
 
 /**
  * 查询字典数据列表
@@ -77,5 +77,6 @@ export async function exportDictDatas(params) {
     data: toFormData(params),
     responseType: 'blob'
   });
-  download(res.data, `dict_data_${new Date().getTime()}.xlsx`);
+  await checkDownloadRes(res);
+  download(res.data, `dict_data_${Date.now()}.xlsx`);
 }

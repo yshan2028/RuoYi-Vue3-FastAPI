@@ -3,10 +3,9 @@
     :width="460"
     title="用户导入"
     :body-style="{ paddingTop: '8px' }"
-    :model-value="modelValue"
-    @update:modelValue="updateModelValue"
+    v-model="visible"
   >
-    <div v-loading="loading">
+    <div v-loading="loading" class="user-import-upload">
       <el-upload
         drag
         action=""
@@ -15,9 +14,10 @@
         :before-upload="doUpload"
       >
         <ele-text
-          type="placeholder"
-          :icon="UploadFilled"
-          :icon-props="{ size: 68, style: { opacity: 0.6 } }"
+          type="primary"
+          :icon="CloudUploadOutlined"
+          :icon-props="{ size: 52 }"
+          style="margin-bottom: 10px"
         />
         <ele-text type="placeholder">将文件拖到此处, 或点击上传</ele-text>
       </el-upload>
@@ -29,7 +29,7 @@
           type="primary"
           :underline="false"
           style="font-size: inherit; line-height: inherit; vertical-align: 0"
-          @click="onDownload"
+          @click="handleDownload"
         >
           下载模板
         </el-link>
@@ -43,17 +43,15 @@
 
 <script setup>
   import { ref, h } from 'vue';
-  import { UploadFilled } from '@element-plus/icons-vue';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
+  import { CloudUploadOutlined } from '@/components/icons';
   import { importUsers, downloadTemplate } from '@/api/system/user';
 
-  const emit = defineEmits(['done', 'update:modelValue']);
+  const emit = defineEmits(['done']);
 
-  defineProps({
-    /** 是否打开弹窗 */
-    modelValue: Boolean
-  });
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   /** 导入请求状态 */
   const loading = ref(false);
@@ -84,9 +82,12 @@
           type: 'success',
           title: '导入结果',
           message: h('div', { innerHTML: msg }),
-          customStyle: { maxWidth: '442px' }
-        });
-        updateModelValue(false);
+          customStyle: { maxWidth: '442px' },
+          draggable: true
+        })
+          .then(() => {})
+          .catch(() => {});
+        visible.value = false;
         emit('done');
       })
       .catch((e) => {
@@ -95,20 +96,21 @@
           type: 'error',
           title: '导入结果',
           message: h('div', { innerHTML: e.message }),
-          customStyle: { maxWidth: '442px' }
-        });
+          customStyle: { maxWidth: '442px' },
+          draggable: true
+        })
+          .then(() => {})
+          .catch(() => {});
       });
     return false;
   };
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
-  };
-
   /** 下载模板 */
-  const onDownload = () => {
-    const loading = EleMessage.loading('请求中..');
+  const handleDownload = () => {
+    const loading = EleMessage.loading({
+      message: '请求中..',
+      plain: true
+    });
     downloadTemplate()
       .then(() => {
         loading.close();
@@ -119,3 +121,32 @@
       });
   };
 </script>
+
+<style lang="scss" scoped>
+  .user-import-upload {
+    margin-bottom: 12px;
+
+    :deep(.el-upload > .el-upload-dragger) {
+      padding: 0;
+      height: 168px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: (border-color 0.2s, background-color 0.2s);
+
+      &:not(.is-dragover) {
+        background: var(--el-fill-color-light);
+      }
+    }
+
+    :deep(.el-upload-list) {
+      display: none;
+    }
+
+    :deep(.el-icon > svg) {
+      stroke-width: 3;
+    }
+  }
+</style>

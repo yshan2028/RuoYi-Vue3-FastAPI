@@ -1,5 +1,5 @@
 import request from '@/utils/request';
-import { download, toFormData } from '@/utils/common';
+import { download, toFormData, checkDownloadRes } from '@/utils/common';
 
 /**
  * 分页查询岗位
@@ -66,7 +66,8 @@ export async function exportPosts(params) {
     data: toFormData(params),
     responseType: 'blob'
   });
-  download(res.data, `post_${new Date().getTime()}.xlsx`);
+  await checkDownloadRes(res);
+  download(res.data, `post_${Date.now()}.xlsx`);
 }
 
 /**

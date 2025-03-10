@@ -4,8 +4,8 @@
       <el-col :md="12" :sm="24" :xs="24">
         <ele-card>
           <template #header>
-            <el-icon :size="17" style="vertical-align: -2px; margin-right: 8px">
-              <Cpu />
+            <el-icon :size="16" style="vertical-align: -2px; margin-right: 8px">
+              <CpuOutlined />
             </el-icon>
             <span>CPU</span>
           </template>
@@ -46,8 +46,8 @@
       <el-col :md="12" :sm="24" :xs="24">
         <ele-card>
           <template #header>
-            <el-icon :size="17" style="vertical-align: -3px; margin-right: 8px">
-              <Odometer />
+            <el-icon :size="16" style="vertical-align: -2px; margin-right: 8px">
+              <DashboardOutlined />
             </el-icon>
             <span>内存</span>
           </template>
@@ -102,8 +102,8 @@
     </el-row>
     <ele-card>
       <template #header>
-        <el-icon :size="17" style="vertical-align: -2.5px; margin-right: 8px">
-          <Monitor />
+        <el-icon :size="16" style="vertical-align: -2px; margin-right: 8px">
+          <DesktopOutlined />
         </el-icon>
         <span>服务器信息</span>
       </template>
@@ -132,10 +132,10 @@
     </ele-card>
     <ele-card>
       <template #header>
-        <el-icon :size="17" style="vertical-align: -2.5px; margin-right: 8px">
-          <CoffeeCup />
+        <el-icon :size="16" style="vertical-align: -2px; margin-right: 8px">
+          <DatabaseOutlined />
         </el-icon>
-        <span>Python 解释器信息</span>
+        <span>Java虚拟机信息</span>
       </template>
       <ele-loading :loading="loading">
         <el-descriptions
@@ -166,8 +166,8 @@
     </ele-card>
     <ele-card>
       <template #header>
-        <el-icon :size="17" style="vertical-align: -3px; margin-right: 8px">
-          <PieChart />
+        <el-icon :size="16" style="vertical-align: -3px; margin-right: 8px">
+          <PieChartOutlined />
         </el-icon>
         <span>磁盘状态</span>
       </template>
@@ -187,16 +187,18 @@
 
 <script setup>
   import { ref } from 'vue';
-  import {
-    Cpu,
-    Odometer,
-    Monitor,
-    CoffeeCup,
-    PieChart
-  } from '@element-plus/icons-vue';
   import { EleMessage } from 'ele-admin-plus/es';
+  import {
+    CpuOutlined,
+    DashboardOutlined,
+    DesktopOutlined,
+    DatabaseOutlined,
+    PieChartOutlined
+  } from '@/components/icons';
   import { useMobile } from '@/utils/use-mobile';
   import { getServer } from '@/api/monitor/server';
+
+  defineOptions({ name: 'MonitorServer' });
 
   const { mobile } = useMobile();
 
@@ -206,37 +208,44 @@
     {
       prop: 'dirName',
       label: '盘符路径',
-      align: 'center'
+      align: 'center',
+      minWidth: 110
     },
     {
       prop: 'sysTypeName',
       label: '文件系统',
-      align: 'center'
+      align: 'center',
+      minWidth: 110
     },
     {
       prop: 'typeName',
       label: '盘符类型',
-      align: 'center'
+      align: 'center',
+      minWidth: 110
     },
     {
       prop: 'total',
       label: '总大小',
-      align: 'center'
+      align: 'center',
+      minWidth: 110
     },
     {
       prop: 'free',
       label: '可用大小',
-      align: 'center'
+      align: 'center',
+      minWidth: 110
     },
     {
       prop: 'used',
       label: '已用大小',
-      align: 'center'
+      align: 'center',
+      minWidth: 110
     },
     {
       prop: 'usage',
       label: '已用百分比',
-      align: 'center'
+      align: 'center',
+      minWidth: 110
     }
   ]);
 
@@ -253,12 +262,6 @@
       loading.value = false;
       EleMessage.error(e.message);
     });
-</script>
-
-<script>
-  export default {
-    name: 'MonitorServer'
-  };
 </script>
 
 <style lang="scss" scoped>

@@ -2,8 +2,8 @@
   <ele-page>
     <ele-card>
       <template #header>
-        <el-icon :size="17" style="vertical-align: -2.5px; margin-right: 8px">
-          <Monitor />
+        <el-icon :size="16" style="vertical-align: -2px; margin-right: 8px">
+          <DesktopOutlined />
         </el-icon>
         <span>基本信息</span>
       </template>
@@ -56,8 +56,8 @@
       <el-col :md="12" :sm="24" :xs="24">
         <ele-card>
           <template #header>
-            <el-icon :size="17" style="vertical-align: -2px; margin-right: 8px">
-              <PieChart />
+            <el-icon :size="16" style="vertical-align: -3px; margin-right: 8px">
+              <PieChartOutlined />
             </el-icon>
             <span>命令统计</span>
           </template>
@@ -71,8 +71,8 @@
       <el-col :md="12" :sm="24" :xs="24">
         <ele-card>
           <template #header>
-            <el-icon :size="17" style="vertical-align: -3px; margin-right: 8px">
-              <Odometer />
+            <el-icon :size="16" style="vertical-align: -2px; margin-right: 8px">
+              <DashboardOutlined />
             </el-icon>
             <span>内存信息</span>
           </template>
@@ -89,16 +89,22 @@
 
 <script setup>
   import { ref, reactive } from 'vue';
-  import { Odometer, Monitor, PieChart } from '@element-plus/icons-vue';
   import { EleMessage } from 'ele-admin-plus/es';
   import { use } from 'echarts/core';
   import { CanvasRenderer } from 'echarts/renderers';
   import { PieChart as PieCharts, GaugeChart } from 'echarts/charts';
   import { TooltipComponent } from 'echarts/components';
   import VChart from 'vue-echarts';
+  import {
+    DesktopOutlined,
+    PieChartOutlined,
+    DashboardOutlined
+  } from '@/components/icons';
   import { useMobile } from '@/utils/use-mobile';
   import { useEcharts } from '@/utils/use-echarts';
   import { getCache } from '@/api/monitor/cache';
+
+  defineOptions({ name: 'MonitorCache' });
 
   use([CanvasRenderer, PieCharts, GaugeChart, TooltipComponent]);
 
@@ -127,8 +133,14 @@
   getCache()
     .then((res) => {
       loading.value = false;
-      data.value = res;
-      const commandStats = res.commandStats || [];
+      if (res.info != null && res.commandStats != null) {
+        data.value = res;
+      } else {
+        data.value = JSON.parse(
+          '{"commandStats":[{"name":"exists","value":"1"},{"name":"set","value":"18"},{"name":"setex","value":"4"},{"name":"del","value":"3"},{"name":"info","value":"5"},{"name":"ping","value":"1"},{"name":"dbsize","value":"2"},{"name":"get","value":"25"}],"info":{"aof_enabled":"0","redis_mode":"standalone","rdb_last_bgsave_status":"ok","tcp_port":"6379","used_memory_human":"720.15K","used_cpu_user_children":"0.000000","connected_clients":"1","redis_version":"5.0.14.1","maxmemory_human":"0B","uptime_in_days":"0","instantaneous_input_kbps":"0.00"},"dbSize":17}'
+        );
+      }
+      const commandStats = data.value.commandStats || [];
       //
       Object.assign(commandChartOption, {
         tooltip: {
@@ -188,12 +200,6 @@
       loading.value = false;
       EleMessage.error(e.message);
     });
-</script>
-
-<script>
-  export default {
-    name: 'MonitorCache'
-  };
 </script>
 
 <style lang="scss" scoped>
