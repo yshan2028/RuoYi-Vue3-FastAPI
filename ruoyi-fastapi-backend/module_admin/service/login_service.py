@@ -1,3 +1,5 @@
+import json
+
 import jwt
 import random
 import uuid
@@ -15,7 +17,7 @@ from exceptions.exception import LoginException, AuthException, ServiceException
 from module_admin.dao.login_dao import login_by_account
 from module_admin.dao.user_dao import UserDao
 from module_admin.entity.do.menu_do import SysMenu
-from module_admin.entity.vo.login_vo import MenuTreeModel, MetaModel, RouterModel, SmsCode, UserLogin, UserRegister
+from module_admin.entity.vo.login_vo import RouterModel, SmsCode, UserLogin, UserRegister, MenuTreeModel
 from module_admin.entity.vo.user_vo import AddUserModel, CurrentUserModel, ResetUserModel, TokenData, UserInfoModel
 from module_admin.service.user_service import UserService
 from utils.common_util import SqlalchemyUtil
@@ -259,115 +261,6 @@ class LoginService:
             raise AuthException(data='', message='用户token已失效，请重新登录')
 
     @classmethod
-    async def get_current_user_routers(cls, user_id: int, query_db: AsyncSession):
-        """
-        根据用户id获取当前用户路由信息
-
-        :param user_id: 用户id
-        :param query_db: orm对象
-        :return: 当前用户路由信息对象
-        """
-        query_user = await UserDao.get_user_by_id(query_db, user_id=user_id)
-        user_router_menu = sorted(
-            [
-                row
-                for row in query_user.get('user_menu_info')
-                if row.menu_type in [MenuConstant.TYPE_DIR, MenuConstant.TYPE_MENU]
-            ],
-            key=lambda x: x.order_num,
-        )
-        menus = cls.__generate_menus(0, user_router_menu)
-        user_router = cls.__generate_user_router_menu(menus)
-        return [router.model_dump(exclude_unset=True) for router in user_router]
-
-    @classmethod
-    def __generate_menus(cls, pid: int, permission_list: List[SysMenu]):
-        """
-        工具方法：根据菜单信息生成菜单信息树形嵌套数据
-
-        :param pid: 菜单id
-        :param permission_list: 菜单列表信息
-        :return: 菜单信息树形嵌套数据
-        """
-        menu_list: List[MenuTreeModel] = []
-        for permission in permission_list:
-            if permission.parent_id == pid:
-                children = cls.__generate_menus(permission.menu_id, permission_list)
-                menu_list_data = MenuTreeModel(**SqlalchemyUtil.serialize_result(permission))
-                if children:
-                    menu_list_data.children = children
-                menu_list.append(menu_list_data)
-
-        return menu_list
-
-    @classmethod
-    def __generate_user_router_menu(cls, permission_list: List[MenuTreeModel]):
-        """
-        工具方法：根据菜单树信息生成路由信息树形嵌套数据
-
-        :param permission_list: 菜单树列表信息
-        :return: 路由信息树形嵌套数据
-        """
-        router_list: List[RouterModel] = []
-        for permission in permission_list:
-            router = RouterModel(
-                hidden=True if permission.hide == '1' else False,
-                name=RouterUtil.get_router_name(permission),
-                path=RouterUtil.get_router_path(permission),
-                component=RouterUtil.get_component(permission),
-                query=permission.query,
-                meta=MetaModel(
-                    title=permission.title,
-                    icon=permission.icon,
-                    no_cache=True if permission.is_cache == 1 else False,
-                    link=permission.path if RouterUtil.is_http(permission.path) else None,
-                ),
-            )
-            c_menus = permission.children
-            if c_menus and permission.menu_type == MenuConstant.TYPE_DIR:
-                router.always_show = True
-                router.redirect = 'noRedirect'
-                router.children = cls.__generate_user_router_menu(c_menus)
-            elif RouterUtil.is_menu_frame(permission):
-                router.meta = None
-                children_list: List[RouterModel] = []
-                children = RouterModel(
-                    path=permission.path,
-                    component=permission.component,
-                    name=RouterUtil.get_route_name(permission.route_name, permission.path),
-                    meta=MetaModel(
-                        title=permission.title,
-                        icon=permission.icon,
-                        no_cache=True if permission.is_cache == 1 else False,
-                        link=permission.path if RouterUtil.is_http(permission.path) else None,
-                    ),
-                    query=permission.query,
-                )
-                children_list.append(children)
-                router.children = children_list
-            elif permission.parent_id == 0 and RouterUtil.is_inner_link(permission):
-                router.meta = MetaModel(title=permission.title, icon=permission.icon)
-                router.path = '/'
-                children_list: List[RouterModel] = []
-                router_path = RouterUtil.inner_link_replace_each(permission.path)
-                children = RouterModel(
-                    path=router_path,
-                    component=MenuConstant.INNER_LINK,
-                    name=RouterUtil.get_route_name(permission.route_name, permission.path),
-                    meta=MetaModel(
-                        title=permission.title,
-                        icon=permission.icon,
-                        link=permission.path if RouterUtil.is_http(permission.path) else None,
-                    ),
-                )
-                children_list.append(children)
-                router.children = children_list
-
-            router_list.append(router)
-
-        return router_list
-
-    @classmethod
     async def register_user_services(cls, request: Request, query_db: AsyncSession, user_register: UserRegister):
         """
         用户注册services
@@ -380,13 +273,13 @@ class LoginService:
         register_enabled = (
             True
             if await request.app.state.redis.get(f'{RedisInitKeyConfig.SYS_CONFIG.key}:sys.account.registerUser')
-            == 'true'
+               == 'true'
             else False
         )
         captcha_enabled = (
             True
             if await request.app.state.redis.get(f'{RedisInitKeyConfig.SYS_CONFIG.key}:sys.account.captchaEnabled')
-            == 'true'
+               == 'true'
             else False
         )
         if user_register.password == user_register.confirm_password:
@@ -476,125 +369,119 @@ class LoginService:
 
         return True
 
-
-class RouterUtil:
-    """
-    路由处理工具类
-    """
+    @classmethod
+    async def get_current_user_routers(cls, user_id: int, query_db: AsyncSession):
+        """
+        根据用户id获取当前用户路由信息（平铺列表，无children嵌套）
+        """
+        query_user = await UserDao.get_user_by_id(query_db, user_id=user_id)
+        user_router_menu = sorted(
+            [
+                row for row in query_user.get('user_menu_info')
+                if row.menu_type in [MenuConstant.TYPE_DIR, MenuConstant.TYPE_MENU]
+            ],
+            key=lambda x: x.order_num,
+        )
+        menus = cls.__generate_menus(user_router_menu)
+        user_router = cls.__generate_user_router_menu(menus)
+        return [router.model_dump(exclude_unset=True) for router in user_router]
 
     @classmethod
+    def __generate_menus(cls, permission_list: List[SysMenu]):
+        """
+        生成菜单信息数据 (平铺，不再使用树状嵌套)
+        """
+        return [
+            MenuTreeModel(**SqlalchemyUtil.serialize_result(permission))
+            for permission in permission_list
+        ]
+
+    @classmethod
+    def __generate_user_router_menu(cls, permission_list: List[MenuTreeModel]):
+        """
+        生成路由信息列表（平铺，无children嵌套）
+        """
+        router_list: List[RouterModel] = []
+        for permission in permission_list:
+            router = RouterModel(
+                menu_id=permission.menu_id,
+                parent_id=permission.parent_id,
+                title=permission.title,
+                path=RouterUtil.get_router_path(permission),
+                component=RouterUtil.get_component(permission),
+                menu_type=permission.menu_type,
+                order_num=permission.order_num,
+                authority=permission.authority or "",
+                icon=permission.icon or "#",
+                hide=permission.hide,
+                meta=json.dumps(permission.meta, ensure_ascii=False) if permission.meta else None,
+                deleted=permission.deleted,
+                tenant_id=permission.tenant_id,
+                create_time=permission.create_time.strftime("%Y-%m-%d %H:%M:%S") if permission.create_time else None,
+                update_time=permission.update_time.strftime("%Y-%m-%d %H:%M:%S") if permission.update_time else None,
+                children=None,
+                checked=None
+            )
+            router_list.append(router)
+
+        return router_list
+
+
+
+class RouterUtil:
+    @classmethod
     def get_router_name(cls, menu: MenuTreeModel):
-        """
-        获取路由名称
-
-        :param menu: 菜单数对象
-        :return: 路由名称
-        """
-        # 非外链并且是一级目录（类型为目录）
-        if cls.is_menu_frame(menu):
-            return ''
-
         return cls.get_route_name(menu.route_name, menu.path)
 
     @classmethod
     def get_route_name(cls, name: str, path: str):
-        """
-        获取路由名称，如没有配置路由名称则取路由地址
-
-        :param name: 路由名称
-        :param path: 路由地址
-        :return: 路由名称（驼峰格式）
-        """
-        router_name = name if name else path
-        return router_name.capitalize()
+        router_name = name or path or ""
+        return ''.join(word.capitalize() for word in router_name.replace('/', '-').split('-'))
 
     @classmethod
     def get_router_path(cls, menu: MenuTreeModel):
-        """
-        获取路由地址
-
-        :param menu: 菜单数对象
-        :return: 路由地址
-        """
-        # 内链打开外网方式
-        router_path = menu.path
         if menu.parent_id != 0 and cls.is_inner_link(menu):
-            router_path = cls.inner_link_replace_each(router_path)
-        # 非外链并且是一级目录（类型为目录）
+            return cls.inner_link_replace_each(menu.path or "")
         if menu.parent_id == 0 and menu.menu_type == MenuConstant.TYPE_DIR and menu.is_frame == MenuConstant.NO_FRAME:
-            router_path = f'/{menu.path}'
-        # 非外链并且是一级目录（类型为菜单）
-        elif cls.is_menu_frame(menu):
-            router_path = '/'
-        return router_path
+            return f'/{menu.path.strip("/")}'
+        if cls.is_menu_frame(menu):
+            return '/'
+        return f'/{menu.path.strip("/")}' if menu.parent_id == 0 else (menu.path or "")
 
     @classmethod
     def get_component(cls, menu: MenuTreeModel):
-        """
-        获取组件信息
-
-        :param menu: 菜单数对象
-        :return: 组件信息
-        """
-        component = MenuConstant.LAYOUT
-        if menu.component and not cls.is_menu_frame(menu):
-            component = menu.component
-        elif (menu.component is None or menu.component == '') and menu.parent_id != 0 and cls.is_inner_link(menu):
-            component = MenuConstant.INNER_LINK
-        elif (menu.component is None or menu.component == '') and cls.is_parent_view(menu):
-            component = MenuConstant.PARENT_VIEW
-        return component
+        if menu.component:
+            return menu.component
+        if menu.parent_id != 0 and cls.is_inner_link(menu):
+            return MenuConstant.INNER_LINK
+        if cls.is_parent_view(menu):
+            return MenuConstant.PARENT_VIEW
+        if menu.menu_type == MenuConstant.TYPE_DIR:
+            return MenuConstant.LAYOUT
+        return ''
 
     @classmethod
     def is_menu_frame(cls, menu: MenuTreeModel):
-        """
-        判断是否为菜单内部跳转
-
-        :param menu: 菜单数对象
-        :return: 是否为菜单内部跳转
-        """
         return (
-            menu.parent_id == 0 and menu.menu_type == MenuConstant.TYPE_MENU and menu.is_frame == MenuConstant.NO_FRAME
+            menu.parent_id == 0
+            and menu.menu_type == MenuConstant.TYPE_MENU
+            and menu.is_frame == MenuConstant.NO_FRAME
         )
 
     @classmethod
     def is_inner_link(cls, menu: MenuTreeModel):
-        """
-        判断是否为内链组件
-
-        :param menu: 菜单数对象
-        :return: 是否为内链组件
-        """
-        return menu.is_frame == MenuConstant.NO_FRAME and cls.is_http(menu.path)
+        return menu.is_frame == MenuConstant.NO_FRAME and cls.is_http(menu.path or "")
 
     @classmethod
     def is_parent_view(cls, menu: MenuTreeModel):
-        """
-        判断是否为parent_view组件
-
-        :param menu: 菜单数对象
-        :return: 是否为parent_view组件
-        """
         return menu.parent_id != 0 and menu.menu_type == MenuConstant.TYPE_DIR
 
     @classmethod
     def is_http(cls, link: str):
-        """
-        判断是否为http(s)://开头
-
-        :param link: 链接
-        :return: 是否为http(s)://开头
-        """
         return link.startswith(CommonConstant.HTTP) or link.startswith(CommonConstant.HTTPS)
 
     @classmethod
     def inner_link_replace_each(cls, path: str):
-        """
-        内链域名特殊字符替换
-
-        :param path: 内链域名
-        :return: 替换后的内链域名
-        """
         old_values = [CommonConstant.HTTP, CommonConstant.HTTPS, CommonConstant.WWW, '.', ':']
         new_values = ['', '', '', '/', '/']
         for old, new in zip(old_values, new_values):

@@ -21,7 +21,7 @@ class MenuModel(BaseModel):
     authority: Optional[str] = Field(default=None, max_length=100, description='权限标识')
     icon: Optional[str] = Field(default='#', max_length=100, description='菜单图标')
     hide: Optional[int] = Field(default=0, description='是否隐藏（0显示 1隐藏）')
-    meta: Optional[dict] = Field(default=None, description='额外信息（多语言、激活路径等）')
+    meta: Optional[str] = Field(default=None, description='额外信息（多语言、激活路径等）')
     deleted: Optional[int] = Field(default=0, description='是否删除（0否 1是）')
     tenant_id: Optional[int] = Field(default=0, description='租户ID')
     query: Optional[str] = Field(default=None, max_length=255, description='路由参数')

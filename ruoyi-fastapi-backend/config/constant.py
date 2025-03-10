@@ -145,11 +145,11 @@ class MenuConstant:
     INNER_LINK: InnerLink组件标识
     """
 
-    TYPE_DIR = 'M'
-    TYPE_MENU = 'C'
-    TYPE_BUTTON = 'F'
-    YES_FRAME = 0
-    NO_FRAME = 1
+    TYPE_DIR = 0
+    TYPE_MENU = 1
+    TYPE_BUTTON = 2
+    YES_FRAME = 0  # 是外链
+    NO_FRAME = 1  # 非外链
     LAYOUT = 'Layout'
     PARENT_VIEW = 'ParentView'
     INNER_LINK = 'InnerLink'

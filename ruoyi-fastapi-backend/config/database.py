@@ -17,7 +17,7 @@ if DataBaseConfig.db_type == 'postgresql':
 
 async_engine = create_async_engine(
     ASYNC_SQLALCHEMY_DATABASE_URL,
-    echo=DataBaseConfig.db_echo,
+    # echo=DataBaseConfig.db_echo,
     max_overflow=DataBaseConfig.db_max_overflow,
     pool_size=DataBaseConfig.db_pool_size,
     pool_recycle=DataBaseConfig.db_pool_recycle,

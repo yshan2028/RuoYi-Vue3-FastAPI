@@ -62,7 +62,7 @@ class MenuDao:
         role_id_list = [item.role_id for item in role]
         if 1 in role_id_list:
             menu_query_all = (
-                (await db.execute(select(SysMenu).where(SysMenu.deleted == '0').order_by(SysMenu.order_num).distinct()))
+                (await db.execute(select(SysMenu).where(SysMenu.deleted == 0).order_by(SysMenu.order_num).distinct()))
                 .scalars()
                 .all()
             )
@@ -82,7 +82,7 @@ class MenuDao:
                             isouter=True,
                         )
                         .join(SysRoleMenu, SysRole.role_id == SysRoleMenu.role_id, isouter=True)
-                        .join(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.deleted == '0'))
+                        .join(SysMenu, and_(SysRoleMenu.menu_id == SysMenu.menu_id, SysMenu.deleted == 0))
                         .order_by(SysMenu.order_num)
                         .distinct()
                     )
