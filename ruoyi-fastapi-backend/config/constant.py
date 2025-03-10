@@ -146,8 +146,8 @@ class MenuConstant:
     """
 
     TYPE_DIR = 0
-    TYPE_MENU = 1
-    TYPE_BUTTON = 2
+    TYPE_MENU = 0
+    TYPE_BUTTON = 1
     YES_FRAME = 0  # 是外链
     NO_FRAME = 1  # 非外链
     LAYOUT = 'Layout'

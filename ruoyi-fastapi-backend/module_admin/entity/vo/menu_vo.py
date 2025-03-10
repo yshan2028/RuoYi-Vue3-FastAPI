@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic_validation_decorator import NotBlank, Size
@@ -16,7 +17,7 @@ class MenuModel(BaseModel):
     title: Optional[str] = Field(default=None, max_length=50, description='菜单名称')
     path: Optional[str] = Field(default=None, max_length=200, description='路由地址')
     component: Optional[str] = Field(default=None, max_length=255, description='组件路径')
-    menu_type: Optional[int] = Field(default=0, description='菜单类型（0目录 1菜单 2按钮）')
+    menu_type: Optional[int] = Field(default=0, description='菜单类型（0目录 0菜单 2按钮）')
     order_num: Optional[int] = Field(default=0, description='显示顺序')
     authority: Optional[str] = Field(default=None, max_length=100, description='权限标识')
     icon: Optional[str] = Field(default='#', max_length=100, description='菜单图标')
@@ -66,6 +67,31 @@ class MenuModel(BaseModel):
         self.get_component()
         self.get_menu_type()
         self.get_authority()
+
+    def get_meta_as_json_string(self) -> Optional[str]:
+        """
+        获取 `meta` 作为 JSON 字符串（带 `\` 转义的格式）
+        - 如果 `meta` 是 `None`，返回 `None`
+        - 如果 `meta` 是 `dict`，转换成 JSON 字符串
+        - 如果 `meta` 已经是字符串，返回原始字符串
+        """
+        if self.meta is None:
+            return None
+
+        if isinstance(self.meta, dict):
+            return json.dumps(self.meta, ensure_ascii=False)
+
+        return self.meta  # 确保直接返回字符串，不做解析
+
+    def set_meta_as_json(self):
+        """
+        存储 `meta` 时，确保以 JSON 字符串格式存入数据库
+        - 如果 `meta` 是 `dict`，转换成 JSON 字符串
+        - 如果 `meta` 是 `None`，保持 `None`
+        - 确保 `"` 被正确转义
+        """
+        if isinstance(self.meta, dict):
+            self.meta = json.dumps(self.meta, ensure_ascii=False)
 
 
 class MenuQueryModel(MenuModel):

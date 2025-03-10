@@ -18,6 +18,7 @@ from module_admin.dao.login_dao import login_by_account
 from module_admin.dao.user_dao import UserDao
 from module_admin.entity.do.menu_do import SysMenu
 from module_admin.entity.vo.login_vo import RouterModel, SmsCode, UserLogin, UserRegister, MenuTreeModel
+from module_admin.entity.vo.menu_vo import MenuModel
 from module_admin.entity.vo.user_vo import AddUserModel, CurrentUserModel, ResetUserModel, TokenData, UserInfoModel
 from module_admin.service.user_service import UserService
 from utils.common_util import SqlalchemyUtil
@@ -414,7 +415,7 @@ class LoginService:
                 authority=permission.authority or "",
                 icon=permission.icon or "#",
                 hide=permission.hide,
-                meta=json.dumps(permission.meta, ensure_ascii=False) if permission.meta else None,
+                meta=MenuModel(meta=permission.meta).get_meta_as_json_string(),
                 deleted=permission.deleted,
                 tenant_id=permission.tenant_id,
                 create_time=permission.create_time.strftime("%Y-%m-%d %H:%M:%S") if permission.create_time else None,

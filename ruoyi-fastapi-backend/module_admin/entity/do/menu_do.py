@@ -15,7 +15,7 @@ class SysMenu(Base):
     title = Column(String(50), nullable=False, default='', comment='菜单名称')
     path = Column(String(200), nullable=True, default='', comment='路由地址')
     component = Column(String(255), nullable=True, default=None, comment='组件路径')
-    menu_type = Column(Integer, nullable=False, default=0, comment='菜单类型（0目录 1菜单 2按钮）')
+    menu_type = Column(Integer, nullable=False, default=0, comment='菜单类型（0目录 0菜单 1按钮）')
     order_num = Column(Integer, default=0, comment='显示顺序')
     authority = Column(String(100), nullable=True, default=None, comment='权限标识')
     icon = Column(String(100), nullable=True, default='#', comment='菜单图标')

@@ -66,9 +66,7 @@ class MenuService:
         return result
 
     @classmethod
-    async def get_menu_list_services(
-        cls, query_db: AsyncSession, page_object: MenuQueryModel, current_user: Optional[CurrentUserModel] = None
-    ):
+    async def get_menu_list_services( cls, query_db: AsyncSession, page_object: MenuQueryModel, current_user: Optional[CurrentUserModel] = None):
         """
         获取菜单列表信息service
 
@@ -81,7 +79,12 @@ class MenuService:
             query_db, page_object, current_user.user.user_id, current_user.user.role
         )
 
-        return SqlalchemyUtil.serialize_result(menu_list_result)
+        menu_list = SqlalchemyUtil.serialize_result(menu_list_result)
+        for menu in menu_list:
+            if "meta" in menu:
+                menu["meta"] = MenuModel(meta=menu["meta"]).get_meta_as_json_string()
+
+        return menu_list
 
     @classmethod
     async def check_title_unique_services(cls, query_db: AsyncSession, page_object: MenuModel):
@@ -112,6 +115,8 @@ class MenuService:
 
         if page_object.is_frame == "1" and not StringUtil.is_http(page_object.component):
             raise ServiceException(message=f'新增菜单 "{page_object.title}" 失败，外链组件地址必须以 http(s):// 开头')
+
+        page_object.set_meta_as_json()
 
         try:
             await MenuDao.add_menu_dao(query_db, page_object)
@@ -144,6 +149,8 @@ class MenuService:
 
         if page_object.menu_id == page_object.parent_id:
             raise ServiceException(message=f'修改菜单 "{page_object.title}" 失败，上级菜单不能选择自己')
+
+        page_object.set_meta_as_json()
 
         try:
             await MenuDao.edit_menu_dao(query_db, edit_menu)
@@ -194,7 +201,12 @@ class MenuService:
         """
         menu = await MenuDao.get_menu_detail_by_id(query_db, menu_id=menu_id)
         if menu:
-            return MenuModel(**SqlalchemyUtil.serialize_result(menu))
+            menu_dict = SqlalchemyUtil.serialize_result(menu)
+
+            if "meta" in menu_dict:
+                menu_dict["meta"] = MenuModel(meta=menu_dict["meta"]).get_meta_as_json_string()
+
+            return MenuModel(**menu_dict)
         return MenuModel(**dict())
 
     @classmethod
