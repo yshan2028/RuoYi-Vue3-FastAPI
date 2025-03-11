@@ -222,8 +222,10 @@ class UserRoleQueryModel(UserModel):
     """
     用户角色关联管理不分页查询模型
     """
-
     role_id: Optional[int] = Field(default=None, description='角色ID')
+    role_name: Optional[str] = Field(default=None, description='角色名称')
+    role_key: Optional[str] = Field(default=None, description='角色权限字符串')
+
 
 
 class UserRolePageQueryModel(UserRoleQueryModel):
