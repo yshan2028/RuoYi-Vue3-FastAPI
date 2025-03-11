@@ -151,7 +151,7 @@ export async function getUserRole(id) {
  * 修改用户角色
  */
 export async function setUserRole(data) {
-  const res = await request.put('/system/user/authRole', toFormData(data));
+  const res = await request.put('/system/user/authRole', data);
   if (res.data.code === 200) {
     return res.data.msg;
   }

@@ -164,11 +164,8 @@ export async function removeRoleUser(data) {
 /**
  * 批量取消角色用户
  */
-export async function removeRoleUsers(params) {
-  const res = await request.put(
-    '/system/role/authUser/cancelAll',
-    toFormData(params)
-  );
+export async function removeRoleUsers(data) {
+  const res = await request.put('/system/role/authUser/cancelAll', data);
   if (res.data.code === 200) {
     return res.data.msg;
   }
@@ -191,11 +188,8 @@ export async function listUnallocatedUsers(params) {
 /**
  * 添加角色用户
  */
-export async function addRoleUsers(params) {
-  const res = await request.put(
-    '/system/role/authUser/selectAll',
-    toFormData(params)
-  );
+export async function addRoleUsers(data) {
+  const res = await request.put('/system/role/authUser/selectAll', data);
   if (res.data.code === 200) {
     return res.data.msg;
   }
