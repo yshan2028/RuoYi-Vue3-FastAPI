@@ -1,5 +1,7 @@
 import re
 from datetime import datetime
+
+from fastapi import Form
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pydantic_validation_decorator import Network, NotBlank, Size, Xss
 from typing import List, Literal, Optional, Union
@@ -263,3 +265,12 @@ class CrudUserRoleModel(BaseModel):
     user_ids: Optional[str] = Field(default=None, description='用户ID信息')
     role_id: Optional[int] = Field(default=None, description='角色ID')
     role_ids: Optional[str] = Field(default=None, description='角色ID信息')
+
+
+class UpdateRoleUser(BaseModel):
+    """
+    更新用户角色信息
+    """
+
+    user_id: Optional[int] = Field(default=None, description='用户ID')
+    role_ids: Optional[str] = Field(default=[], description='角色ID信息')

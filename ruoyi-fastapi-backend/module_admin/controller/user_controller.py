@@ -25,6 +25,7 @@ from module_admin.entity.vo.user_vo import (
     UserProfileModel,
     UserRoleQueryModel,
     UserRoleResponseModel,
+    UpdateRoleUser,
 )
 from module_admin.service.login_service import LoginService
 from module_admin.service.user_service import UserService
@@ -220,7 +221,7 @@ async def query_detail_system_user_profile(
 )
 async def query_detail_system_user(
     request: Request,
-    user_id: Optional[Union[int, Literal['']]] = '',
+    user_id: Optional[int] = None,
     query_db: AsyncSession = Depends(get_db),
     current_user: CurrentUserModel = Depends(LoginService.get_current_user),
     data_scope_sql: str = Depends(GetDataScope('SysUser')),
@@ -381,18 +382,17 @@ async def get_system_allocated_role_list(request: Request, user_id: int, query_d
 @Log(title='用户管理', business_type=BusinessType.GRANT)
 async def update_system_role_user(
     request: Request,
-    user_id: int = Query(),
-    role_ids: str = Query(),
+    update_role_user: UpdateRoleUser,
     query_db: AsyncSession = Depends(get_db),
     current_user: CurrentUserModel = Depends(LoginService.get_current_user),
     user_data_scope_sql: str = Depends(GetDataScope('SysUser')),
     role_data_scope_sql: str = Depends(GetDataScope('SysDept')),
 ):
     if not current_user.user.admin:
-        await UserService.check_user_data_scope_services(query_db, user_id, user_data_scope_sql)
-        await RoleService.check_role_data_scope_services(query_db, role_ids, role_data_scope_sql)
+        await UserService.check_user_data_scope_services(query_db, update_role_user.user_id, user_data_scope_sql)
+        await RoleService.check_role_data_scope_services(query_db, update_role_user.role_ids, role_data_scope_sql)
     add_user_role_result = await UserService.add_user_role_services(
-        query_db, CrudUserRoleModel(user_id=user_id, role_ids=role_ids)
+        query_db, CrudUserRoleModel(user_id=update_role_user.user_id, role_ids=update_role_user.role_ids)
     )
     logger.info(add_user_role_result.message)
 

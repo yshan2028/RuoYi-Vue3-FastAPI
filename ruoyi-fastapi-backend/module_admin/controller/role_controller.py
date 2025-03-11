@@ -254,7 +254,7 @@ async def get_system_unallocated_user_list(
 @Log(title='角色管理', business_type=BusinessType.GRANT)
 async def add_system_role_user(
     request: Request,
-    add_role_user: CrudUserRoleModel = Query(),
+    add_role_user: CrudUserRoleModel,
     query_db: AsyncSession = Depends(get_db),
     current_user: CurrentUserModel = Depends(LoginService.get_current_user),
     data_scope_sql: str = Depends(GetDataScope('SysDept')),
@@ -282,9 +282,10 @@ async def cancel_system_role_user(
 @Log(title='角色管理', business_type=BusinessType.GRANT)
 async def batch_cancel_system_role_user(
     request: Request,
-    batch_cancel_user_role: CrudUserRoleModel = Query(),
+    batch_cancel_user_role: CrudUserRoleModel,
     query_db: AsyncSession = Depends(get_db),
 ):
+    print(f"batch_cancel_user_role: {batch_cancel_user_role}")
     batch_cancel_user_role_result = await UserService.delete_user_role_services(query_db, batch_cancel_user_role)
     logger.info(batch_cancel_user_role_result.message)
 

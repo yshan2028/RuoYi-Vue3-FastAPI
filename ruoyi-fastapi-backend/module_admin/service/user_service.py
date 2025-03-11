@@ -561,7 +561,7 @@ class UserService:
                 )
                 for role_id in role_id_list:
                     await UserDao.add_user_role_dao(
-                        query_db, UserRoleModel(user_id=page_object.user_id, role_id=role_id)
+                        query_db, UserRoleModel(user_id=page_object.user_id, role_id=int(role_id))
                     )
                 await query_db.commit()
                 return CrudResponseModel(is_success=True, message='分配成功')
@@ -583,13 +583,13 @@ class UserService:
             try:
                 for user_id in user_id_list:
                     user_role = await cls.detail_user_role_services(
-                        query_db, UserRoleModel(user_id=user_id, role_id=page_object.role_id)
+                        query_db, UserRoleModel(user_id=int(user_id), role_id=page_object.role_id)
                     )
                     if user_role:
                         continue
                     else:
                         await UserDao.add_user_role_dao(
-                            query_db, UserRoleModel(user_id=user_id, role_id=page_object.role_id)
+                            query_db, UserRoleModel(user_id=int(user_id), role_id=page_object.role_id)
                         )
                 await query_db.commit()
                 return CrudResponseModel(is_success=True, message='新增成功')
@@ -624,7 +624,7 @@ class UserService:
                 try:
                     for user_id in user_id_list:
                         await UserDao.delete_user_role_by_user_and_role_dao(
-                            query_db, UserRoleModel(user_id=user_id, role_id=page_object.role_id)
+                            query_db, UserRoleModel(user_id=int(user_id), role_id=page_object.role_id)
                         )
                     await query_db.commit()
                     return CrudResponseModel(is_success=True, message='删除成功')
