@@ -1,18 +1,16 @@
-import json
-import traceback
-import threading
 import hashlib
+import importlib
+import json
+import threading
 import time
+import traceback
 from asyncio import iscoroutinefunction
 from datetime import datetime, timedelta
-from typing import Union, Callable, Any, Optional, Dict, Tuple
-import importlib
-import functools
-import sys
+from typing import Union, Any, Optional, Tuple
 
 # 第三方库导入
 import redis
-from apscheduler.events import EVENT_ALL, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
+from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 from apscheduler.executors.asyncio import AsyncIOExecutor
 from apscheduler.executors.pool import ProcessPoolExecutor
 from apscheduler.jobstores.memory import MemoryJobStore
@@ -21,9 +19,11 @@ from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from sqlalchemy.engine import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import sessionmaker
 
+# 引入动态任务模块
+import module_task  # noqa: F401
 # 本地导入
 from config.database import AsyncSessionLocal, quote_plus
 from config.env import DataBaseConfig, RedisConfig
@@ -31,9 +31,6 @@ from module_admin.dao.job_dao import JobDao
 from module_admin.entity.vo.job_vo import JobLogModel, JobModel
 from module_admin.service.job_log_service import JobLogService
 from utils.log_util import logger
-
-# 引入动态任务模块
-import module_task  # noqa: F401
 
 
 class MyCronTrigger(CronTrigger):
