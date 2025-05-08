@@ -4,12 +4,12 @@
     title="分配角色"
     :body-style="{ padding: '4px 16px 8px 16px' }"
     :destroy-on-close="true"
-    :model-value="modelValue"
-    @update:modelValue="updateModelValue"
+    v-model="visible"
+    @open="handleOpen"
   >
     <ele-pro-table
       ref="tableRef"
-      row-key="role_id"
+      row-key="roleId"
       :columns="columns"
       :datasource="datasource"
       :show-overflow-tooltip="true"
@@ -20,7 +20,7 @@
       :empty-props="false"
     />
     <template #footer>
-      <el-button @click="updateModelValue(false)">取消</el-button>
+      <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" :loading="loading" @click="save">
         保存
       </el-button>
@@ -29,18 +29,17 @@
 </template>
 
 <script setup>
-  import { ref, watch, nextTick } from 'vue';
+  import { ref, nextTick } from 'vue';
   import { EleMessage } from 'ele-admin-plus/es';
   import { getUserRole, setUserRole } from '@/api/system/user';
 
-  const emit = defineEmits(['update:modelValue']);
-
   const props = defineProps({
-    /** 是否显示 */
-    modelValue: Boolean,
     /** 用户 */
     data: Object
   });
+
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   /** 表格实例 */
   const tableRef = ref(null);
@@ -62,17 +61,17 @@
       fixed: 'left'
     },
     {
-      prop: 'role_name',
+      prop: 'roleName',
       label: '角色名称',
       minWidth: 110
     },
     {
-      prop: 'role_key',
+      prop: 'roleKey',
       label: '权限字符',
       minWidth: 110
     },
     {
-      prop: 'create_time',
+      prop: 'createTime',
       label: '创建时间',
       align: 'center',
       width: 180
@@ -88,20 +87,20 @@
   /** 提交状态 */
   const loading = ref(false);
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
+  /** 关闭弹窗 */
+  const handleCancel = () => {
+    visible.value = false;
   };
 
   /** 保存编辑 */
   const save = () => {
     loading.value = true;
-    const roleIds = selections.value.map((d) => d.role_id).join();
-    setUserRole({ user_id: props.data?.user_id, roleIds })
+    const roleIds = selections.value.map((d) => d.roleId).join();
+    setUserRole({ userId: props.data?.userId, roleIds })
       .then(() => {
         loading.value = false;
         EleMessage.success('授权成功');
-        updateModelValue(false);
+        handleCancel();
       })
       .catch((e) => {
         loading.value = false;
@@ -111,7 +110,7 @@
 
   /** 查询 */
   const query = () => {
-    getUserRole(props.data.user_id)
+    getUserRole(props.data.userId)
       .then((result) => {
         datasource.value = result.roles;
         nextTick(() => {
@@ -123,14 +122,12 @@
       });
   };
 
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (modelValue && props.data) {
-        query();
-      } else {
-        selections.value = [];
-      }
+  /** 弹窗打开事件 */
+  const handleOpen = () => {
+    if (props.data) {
+      query();
+    } else {
+      selections.value = [];
     }
-  );
+  };
 </script>

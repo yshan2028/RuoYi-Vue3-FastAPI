@@ -3,49 +3,52 @@
   <ele-modal
     form
     :width="460"
-    :model-value="modelValue"
+    v-model="visible"
     :title="isUpdate ? '修改字典数据' : '添加字典数据'"
-    @update:modelValue="updateModelValue"
+    @open="handleOpen"
   >
-    <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-      <el-form-item label="数据标签" prop="dict_label">
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      label-width="80px"
+      @submit.prevent=""
+    >
+      <el-form-item label="数据标签" prop="dictLabel">
         <el-input
           clearable
-          :maxlength="20"
-          v-model="form.dict_label"
+          v-model="form.dictLabel"
           placeholder="请输入数据标签"
         />
       </el-form-item>
-      <el-form-item label="数据键值" prop="dict_value">
+      <el-form-item label="数据键值" prop="dictValue">
         <el-input
           clearable
-          :maxlength="20"
-          v-model="form.dict_value"
+          v-model="form.dictValue"
           placeholder="请输入数据键值"
         />
       </el-form-item>
-      <el-form-item label="样式属性" prop="css_class">
+      <el-form-item label="样式属性" prop="cssClass">
         <el-input
           clearable
-          :maxlength="200"
-          v-model="form.css_class"
+          v-model="form.cssClass"
           placeholder="请输入样式属性"
         />
       </el-form-item>
-      <el-form-item label="显示排序" prop="dict_sort">
+      <el-form-item label="显示排序" prop="dictSort">
         <el-input-number
           :min="0"
           :max="9999"
-          v-model="form.dict_sort"
+          v-model="form.dictSort"
           placeholder="请输入显示排序"
           controls-position="right"
           class="ele-fluid"
         />
       </el-form-item>
-      <el-form-item label="回显样式" prop="list_class">
+      <el-form-item label="回显样式" prop="listClass">
         <el-select
           clearable
-          v-model="form.list_class"
+          v-model="form.listClass"
           placeholder="请选择回显样式"
           class="ele-fluid"
         >
@@ -68,14 +71,13 @@
         <el-input
           :rows="4"
           type="textarea"
-          :maxlength="200"
           v-model="form.remark"
           placeholder="请输入备注"
         />
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="updateModelValue(false)">取消</el-button>
+      <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" :loading="loading" @click="save">
         保存
       </el-button>
@@ -84,21 +86,22 @@
 </template>
 
 <script setup>
-  import { ref, reactive, watch } from 'vue';
+  import { ref, reactive, nextTick } from 'vue';
   import { EleMessage } from 'ele-admin-plus/es';
   import { useFormData } from '@/utils/use-form-data';
   import { addDictData, updateDictData } from '@/api/system/dict-data';
 
-  const emit = defineEmits(['done', 'update:modelValue']);
-
   const props = defineProps({
-    /** 弹窗是否打开 */
-    modelValue: Boolean,
     /** 修改回显的数据 */
     data: Object,
     /** 字典类型 */
-    dict_type: String
+    dictType: String
   });
+
+  const emit = defineEmits(['done']);
+
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   /** 是否是修改 */
   const isUpdate = ref(false);
@@ -110,20 +113,20 @@
   const formRef = ref(null);
 
   /** 表单数据 */
-  const { form, resetFields, assignFields } = useFormData({
-    dict_code: void 0,
-    dict_label: '',
-    dict_value: '',
-    css_class: '',
-    dict_sort: void 0,
-    list_class: '',
+  const [form, resetFields, assignFields] = useFormData({
+    dictCode: void 0,
+    dictLabel: '',
+    dictValue: '',
+    cssClass: '',
+    dictSort: void 0,
+    listClass: '',
     status: '0',
     remark: ''
   });
 
   /** 表单验证规则 */
   const rules = reactive({
-    dict_label: [
+    dictLabel: [
       {
         required: true,
         message: '请输入数据标签',
@@ -131,7 +134,7 @@
         trigger: 'blur'
       }
     ],
-    dict_value: [
+    dictValue: [
       {
         required: true,
         message: '请输入数据键值',
@@ -139,7 +142,7 @@
         trigger: 'blur'
       }
     ],
-    dict_sort: [
+    dictSort: [
       {
         required: true,
         message: '请输入显示排序',
@@ -148,6 +151,11 @@
       }
     ]
   });
+
+  /** 关闭弹窗 */
+  const handleCancel = () => {
+    visible.value = false;
+  };
 
   /** 保存编辑 */
   const save = () => {
@@ -159,12 +167,12 @@
       const saveOrUpdate = isUpdate.value ? updateDictData : addDictData;
       saveOrUpdate({
         ...form,
-        dict_type: props.dict_type
+        dictType: props.dictType
       })
         .then((msg) => {
           loading.value = false;
           EleMessage.success(msg);
-          updateModelValue(false);
+          handleCancel();
           emit('done');
         })
         .catch((e) => {
@@ -174,25 +182,19 @@
     });
   };
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
-  };
-
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (modelValue) {
-        if (props.data) {
-          assignFields(props.data);
-          isUpdate.value = true;
-        } else {
-          isUpdate.value = false;
-        }
-      } else {
-        resetFields();
-        formRef.value?.clearValidate?.();
-      }
+  /** 弹窗打开事件 */
+  const handleOpen = () => {
+    if (props.data) {
+      assignFields(props.data);
+      isUpdate.value = true;
+    } else {
+      resetFields();
+      isUpdate.value = false;
     }
-  );
+    nextTick(() => {
+      nextTick(() => {
+        formRef.value?.clearValidate?.();
+      });
+    });
+  };
 </script>

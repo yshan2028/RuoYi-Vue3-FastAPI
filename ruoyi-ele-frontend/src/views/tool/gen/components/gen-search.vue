@@ -1,13 +1,13 @@
 <!-- 搜索表单 -->
 <template>
   <ele-card :body-style="{ paddingBottom: '2px' }">
-    <el-form label-width="72px" @keyup.enter="search">
+    <el-form label-width="72px" @keyup.enter="search" @submit.prevent="">
       <el-row :gutter="8">
         <el-col :lg="6" :md="12" :sm="12" :xs="24">
           <el-form-item label="表名称">
             <el-input
               clearable
-              v-model.trim="form.table_name"
+              v-model.trim="form.tableName"
               placeholder="请输入"
             />
           </el-form-item>
@@ -16,7 +16,7 @@
           <el-form-item label="表描述">
             <el-input
               clearable
-              v-model.trim="form.table_comment"
+              v-model.trim="form.tableComment"
               placeholder="请输入"
             />
           </el-form-item>
@@ -53,9 +53,9 @@
   const emit = defineEmits(['search']);
 
   /** 表单数据 */
-  const { form, resetFields } = useFormData({
-    table_name: '',
-    table_comment: ''
+  const [form, resetFields] = useFormData({
+    tableName: '',
+    tableComment: ''
   });
 
   /** 日期范围 */
@@ -63,11 +63,13 @@
 
   /** 搜索 */
   const search = () => {
-    const [d1, d2] = dateRange.value ?? [];
+    const [d1, d2] = dateRange.value || [];
     emit('search', {
       ...form,
-      'params[beginTime]': d1 ? `${d1} 00:00:00` : '',
-      'params[endTime]': d2 ? `${d2} 23:59:59` : ''
+      params: {
+        beginTime: d1 ? `${d1} 00:00:00` : '',
+        endTime: d2 ? `${d2} 23:59:59` : ''
+      }
     });
   };
 

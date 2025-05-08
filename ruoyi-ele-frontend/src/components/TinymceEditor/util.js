@@ -1,4 +1,6 @@
+import { uploadFile } from '@/api/system/file';
 const BASE_URL = import.meta.env.BASE_URL;
+//const BASE_URL = location.protocol + '//' + location.host + import.meta.env.BASE_URL;
 
 /** 默认加载插件 */
 const PLUGINS = [
@@ -88,14 +90,23 @@ export const DEFAULT_CONFIG = {
   draggable_modal: true,
   toolbar_mode: 'sliding',
   quickbars_insert_toolbar: '',
+  convert_urls: false,
   images_upload_handler: (blobInfo, success, error) => {
-    if (blobInfo.blob().size / 1024 > 400) {
-      error('大小不能超过 400KB');
+    const file = blobInfo.blob();
+    /* if (file.size / 1024 / 1024 > 100) {
+      error('大小不能超过 100MB');
       return;
-    }
-    success('data:image/jpeg;base64,' + blobInfo.base64());
+    } */
+    uploadFile(file, void 0, file.name)
+      .then((res) => {
+        success(res.url);
+      })
+      .catch((e) => {
+        console.error(e);
+        error(e.message);
+      });
   },
-  file_picker_types: 'media',
+  file_picker_types: 'media image file',
   file_picker_callback: () => {}
 };
 

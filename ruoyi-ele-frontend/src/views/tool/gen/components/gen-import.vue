@@ -4,13 +4,13 @@
     title="导入表"
     :body-style="{ padding: '4px 16px' }"
     :destroy-on-close="true"
-    :model-value="modelValue"
-    @update:modelValue="updateModelValue"
+    v-model="visible"
+    @open="handleOpen"
   >
     <gen-import-search @search="reload" />
     <ele-pro-table
       ref="tableRef"
-      row-key="table_name"
+      row-key="tableName"
       :columns="columns"
       :datasource="datasource"
       :show-overflow-tooltip="true"
@@ -20,7 +20,7 @@
       :pagination="{ pageSize: 6, pageSizes: [6, 10, 20, 40, 100] }"
     />
     <template #footer>
-      <el-button @click="updateModelValue(false)">取消</el-button>
+      <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" :loading="loading" @click="save">
         保存
       </el-button>
@@ -29,17 +29,15 @@
 </template>
 
 <script setup>
-  import { ref, watch } from 'vue';
+  import { ref } from 'vue';
   import { EleMessage } from 'ele-admin-plus/es';
   import GenImportSearch from './gen-import-search.vue';
   import { pageGenDbs, importTables } from '@/api/tool/gen';
 
-  const emit = defineEmits(['update:modelValue', 'done']);
+  const emit = defineEmits(['done']);
 
-  const props = defineProps({
-    /** 是否显示 */
-    modelValue: Boolean
-  });
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   /** 提交状态 */
   const loading = ref(false);
@@ -64,25 +62,25 @@
       fixed: 'left'
     },
     {
-      prop: 'table_name',
+      prop: 'tableName',
       label: '表名称',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'table_comment',
+      prop: 'tableComment',
       label: '表描述',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'create_time',
+      prop: 'createTime',
       label: '创建时间',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'update_time',
+      prop: 'updateTime',
       label: '更新时间',
       align: 'center',
       minWidth: 110
@@ -93,8 +91,8 @@
   const selections = ref([]);
 
   /** 表格数据源 */
-  const datasource = ({ page, limit, where }) => {
-    return pageGenDbs({ ...where, pageNum: page, pageSize: limit });
+  const datasource = ({ pages, where }) => {
+    return pageGenDbs({ ...where, ...pages });
   };
 
   /** 搜索 */
@@ -102,9 +100,9 @@
     tableRef.value?.reload?.({ page: 1, where });
   };
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
+  /** 关闭弹窗 */
+  const handleCancel = () => {
+    visible.value = false;
   };
 
   /** 导入 */
@@ -114,12 +112,12 @@
       return;
     }
     loading.value = true;
-    const tables = selections.value.map((d) => d.table_name).join();
+    const tables = selections.value.map((d) => d.tableName).join();
     importTables({ tables })
       .then((msg) => {
         loading.value = false;
         EleMessage.success(msg);
-        updateModelValue(false);
+        handleCancel();
         emit('done');
       })
       .catch((e) => {
@@ -128,14 +126,9 @@
       });
   };
 
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (modelValue) {
-        reload();
-      } else {
-        selections.value = [];
-      }
-    }
-  );
+  /** 弹窗打开事件 */
+  const handleOpen = () => {
+    selections.value = [];
+    reload();
+  };
 </script>

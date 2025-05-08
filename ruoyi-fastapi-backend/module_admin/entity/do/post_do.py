@@ -15,6 +15,7 @@ class SysPost(Base):
     post_name = Column(String(50), nullable=False, comment='岗位名称')
     post_sort = Column(Integer, nullable=False, comment='显示顺序')
     status = Column(String(1), nullable=False, default='0', comment='状态（0正常 1停用）')
+    del_flag = Column(String(1), default='0', comment='删除标志（0代表存在 2代表删除）')
     create_by = Column(String(64), default='', comment='创建者')
     create_time = Column(DateTime, nullable=True, default=datetime.now(), comment='创建时间')
     update_by = Column(String(64), default='', comment='更新者')

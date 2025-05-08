@@ -1,91 +1,103 @@
 <template>
   <div class="login-wrapper">
-    <ele-card shadow="always" class="login-card">
-      <div class="login-cover">
-        <h1 class="login-title">RuoYi EleAdmin</h1>
-        <h4 class="login-subtitle">界面美观组件丰富的中后台前端解决方案</h4>
-      </div>
-      <div class="login-body">
-        <ele-text type="heading" style="font-size: 24px; margin-bottom: 18px">
-          用户登录
-        </ele-text>
-        <ele-segmented
-          v-model="tabActive"
-          :items="[
-            { label: '密码登录', value: 1 },
-            { label: '扫码登录', value: 2 }
-          ]"
-          style="margin-bottom: 18px"
-          @change="onTabChange"
-        />
-        <el-form
-          v-if="tabActive == 1"
-          ref="formRef"
-          size="large"
-          :model="form"
-          :rules="rules"
-          @keyup.enter="submit"
-        >
-          <el-form-item prop="username">
-            <el-input
-              clearable
-              v-model="form.username"
-              placeholder="请输入登录账号"
-              :prefix-icon="User"
-            />
-          </el-form-item>
-          <el-form-item prop="password">
-            <el-input
-              show-password
-              v-model="form.password"
-              placeholder="请输入登录密码"
-              :prefix-icon="Lock"
-            />
-          </el-form-item>
-          <el-form-item prop="code">
-            <div class="login-captcha-group">
+    <div class="login-main">
+      <ele-card shadow="always" class="login-card">
+        <div class="login-cover">
+          <h1 class="login-title">RuoYi EleAdmin</h1>
+          <h4 class="login-subtitle">界面美观组件丰富的中后台前端解决方案</h4>
+        </div>
+        <div class="login-body">
+          <ele-text type="heading" style="font-size: 24px; margin-bottom: 18px">
+            用户登录
+          </ele-text>
+          <ele-segmented
+            v-model="tabActive"
+            :items="[
+              { label: '密码登录', value: 1 },
+              { label: '扫码登录', value: 2 }
+            ]"
+            style="margin-bottom: 18px"
+            @change="handleTabChange"
+          />
+          <el-form
+            v-if="tabActive == 1"
+            ref="formRef"
+            size="large"
+            :model="form"
+            :rules="rules"
+            @keyup.enter="submit"
+            @submit.prevent=""
+          >
+            <el-form-item prop="username">
               <el-input
                 clearable
-                v-model="form.code"
-                placeholder="请输入验证码"
-                :prefix-icon="ProtectOutlined"
+                v-model="form.username"
+                placeholder="请输入登录账号"
+                :prefix-icon="UserOutlined"
               />
-              <div class="login-captcha" @click="changeCaptcha">
-                <img v-if="captcha" :src="captcha" />
+            </el-form-item>
+            <el-form-item prop="password">
+              <el-input
+                show-password
+                v-model="form.password"
+                placeholder="请输入登录密码"
+                :prefix-icon="LockOutlined"
+              />
+            </el-form-item>
+            <el-form-item prop="code">
+              <div class="login-captcha-group">
+                <el-input
+                  clearable
+                  v-model="form.code"
+                  placeholder="请输入验证码"
+                  :prefix-icon="ProtectOutlined"
+                />
+                <div class="login-captcha" @click="changeCaptcha">
+                  <img v-if="captcha" :src="captcha" :style="captchaStyle" />
+                </div>
               </div>
-            </div>
-          </el-form-item>
-          <el-form-item>
-            <el-checkbox v-model="form.remember">记住密码</el-checkbox>
-          </el-form-item>
-          <el-form-item>
-            <el-button
-              size="large"
+            </el-form-item>
+            <el-form-item>
+              <el-checkbox v-model="form.remember">记住密码</el-checkbox>
+            </el-form-item>
+            <el-form-item>
+              <el-button
+                size="large"
+                type="primary"
+                :loading="loading"
+                style="width: 100%"
+                @click="submit"
+              >
+                登录
+              </el-button>
+            </el-form-item>
+          </el-form>
+          <div v-else class="login-qrcode-group">
+            <ele-qr-code-svg
+              :size="180"
+              :margin="2"
+              :value="qrcode"
+              class="login-qrcode"
+            />
+            <el-link
               type="primary"
-              :loading="loading"
-              style="width: 100%"
-              @click="submit"
+              :underline="false"
+              style="margin-top: 16px; user-select: none"
+              @click="refreshQrCode"
             >
-              登录
-            </el-button>
-          </el-form-item>
-        </el-form>
-        <div v-else class="login-qrcode-group">
-          <ele-qr-code-svg
-            :size="180"
-            :margin="2"
-            :value="qrcode"
-            class="login-qrcode"
-          />
-          <div style="margin-top: 16px; cursor: pointer" @click="refreshQrCode">
-            <el-icon :size="17" style="vertical-align: -3px; margin-right: 6px">
-              <refresh-right />
-            </el-icon>
-            <span>刷新二维码</span>
+              <el-icon
+                :size="15"
+                style="transform: translateY(-1px); margin-right: 6px"
+              >
+                <ReloadOutlined />
+              </el-icon>
+              <span>刷新二维码</span>
+            </el-link>
           </div>
         </div>
-      </div>
-    </ele-card>
+      </ele-card>
+    </div>
+    <PageFooter style="padding-top: 0" />
   </div>
 </template>
 
@@ -93,11 +105,16 @@
   import { ref, reactive, unref } from 'vue';
   import { useRouter } from 'vue-router';
   import { EleMessage } from 'ele-admin-plus/es';
-  import { User, Lock, RefreshRight } from '@element-plus/icons-vue';
-  import { ProtectOutlined } from '@/components/icons';
+  import {
+    UserOutlined,
+    LockOutlined,
+    ProtectOutlined,
+    ReloadOutlined
+  } from '@/components/icons';
   import { getToken } from '@/utils/token-util';
   import { usePageTab } from '@/utils/use-page-tab';
   import { login, getCaptcha } from '@/api/login';
+  import PageFooter from '@/layout/components/page-footer.vue';
 
   const { currentRoute } = useRouter();
   const { goHomeRoute, cleanPageTabs } = usePageTab();
@@ -106,7 +123,7 @@
   const tabActive = ref(1);
 
   /** 表单 */
-  const formRef = ref();
+  const formRef = ref(null);
 
   /** 加载状态 */
   const loading = ref(false);
@@ -151,19 +168,22 @@
   /** 图形验证码 */
   const captcha = ref('');
 
+  /** 图形验证码样式 */
+  const captchaStyle = ref({});
+
   /** 二维码 */
   const qrcode = ref('');
 
   /** 提交 */
   const submit = () => {
-    formRef.value?.validate((valid) => {
+    formRef.value?.validate?.((valid) => {
       if (!valid) {
-        return false;
+        return;
       }
       loading.value = true;
       login(form)
-        .then(() => {
-          EleMessage.success('登录成功');
+        .then((msg) => {
+          EleMessage.success(msg);
           cleanPageTabs();
           goHome();
         })
@@ -180,8 +200,12 @@
     getCaptcha()
       .then((data) => {
         captcha.value = `data:image/gif;base64,${data.img}`;
+        captchaStyle.value = {
+          transform: `scaleX(1.${Math.floor(Math.random() * (0 - 5) + 5)}) skewX(-${Math.floor(Math.random() * (0 - 30) + 30)}deg)`,
+          filter: `contrast(200%) hue-rotate(${Math.floor(Math.random() * (0 - 360) + 360)}deg)`
+        };
         form.uuid = data.uuid;
-        formRef.value?.clearValidate();
+        formRef.value?.clearValidate?.();
       })
       .catch((e) => {
         EleMessage.error(e.message);
@@ -190,11 +214,11 @@
 
   /** 刷新二维码 */
   const refreshQrCode = () => {
-    qrcode.value = `https://api.eleadmin.com/v2/auth/login?code=${new Date().getTime()}`;
+    qrcode.value = `https://api.eleadmin.com/v2/auth/login?code=${Date.now()}`;
   };
 
   /** 选项卡切换事件 */
-  const onTabChange = (active) => {
+  const handleTabChange = (active) => {
     if (active === 2) {
       refreshQrCode();
     }
@@ -217,22 +241,30 @@
 <style lang="scss" scoped>
   .login-wrapper {
     min-height: 100vh;
+    min-height: 100dvh;
     box-sizing: border-box;
-    padding: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-image: url('/src/assets/login-bg.png');
+    background-image: url('@/assets/login-bg.png');
     background-repeat: no-repeat;
     background-size: 100% 100%;
+
+    .login-main {
+      flex: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      padding: 20px;
+    }
 
     .login-card {
       width: 920px;
       max-width: 100%;
       overflow: hidden;
 
-      :deep(.el-card__body) {
+      :deep(.ele-card-body) {
         display: flex;
         padding: 0;
         height: 462px;
@@ -242,10 +274,10 @@
 
   .login-cover {
     flex: 1;
-    padding: 36px 8px;
+    padding: 32px 8px;
     box-sizing: border-box;
     background-color: #1681fd;
-    background-image: url('/src/assets/login-img.png');
+    background-image: url('@/assets/login-img.png');
     background-repeat: no-repeat;
     background-position: bottom;
     background-size: contain;
@@ -268,7 +300,7 @@
 
     :deep(.el-input__prefix-inner > .el-icon) {
       margin-right: 12px;
-      transform: scale(1.26) translateY(-1px);
+      transform: scale(1.16);
     }
   }
 
@@ -283,11 +315,12 @@
     }
 
     .login-captcha {
+      flex-shrink: 0;
       width: 108px;
       height: 40px;
       margin-left: 8px;
-      border-radius: 4px;
-      border: 1px solid hsla(0, 0%, 60%, 0.46);
+      border-radius: var(--el-border-radius-base);
+      border: 1px solid var(--el-border-color);
       transition: border 0.2s;
       box-sizing: border-box;
       background: #fff;
@@ -295,30 +328,28 @@
       cursor: pointer;
 
       img {
-        width: calc(100% + 4px);
-        height: calc(100% + 4px);
-        margin: -2px 0 0 -2px;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
         display: block;
       }
 
       &:hover {
-        border-color: hsla(0, 0%, 60%, 0.8);
+        border-color: var(--el-color-primary);
       }
-    }
-
-    :deep(.el-input__prefix-inner > .el-icon) {
-      transform: scale(1.16);
     }
   }
 
   /* 标题 */
   .login-title {
     color: rgba(255, 255, 255, 0.98);
-    font-size: 26px;
+    font-size: 28px;
     margin: 0 0 6px 0;
     font-weight: normal;
-    font-family: 'AliPuHui';
     letter-spacing: 1.2px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+      'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji',
+      'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   }
 
   .login-subtitle {
@@ -326,21 +357,7 @@
     font-size: 16px;
     margin: 0;
     font-weight: normal;
-    font-family: 'AliPuHui';
     letter-spacing: 4px;
-  }
-
-  /* 阿里巴巴普惠体 */
-  @font-face {
-    font-family: 'AliPuHui';
-    font-weight: 300;
-    src: (
-      url('//at.alicdn.com/wf/webfont/jWZHcEP2lzge/5AfKUTWZEo8W.woff2')
-        format('woff2'),
-      url('//at.alicdn.com/wf/webfont/jWZHcEP2lzge/Dvhs41TtRdYF.woff')
-        format('woff')
-    );
-    font-display: swap;
   }
 
   /* 二维码 */
@@ -355,16 +372,19 @@
     font-size: 0;
     display: inline-block;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: var(--el-border-radius-base);
     overflow: hidden;
   }
 
   /* 小屏幕适应 */
   @media screen and (max-width: 680px) {
     .login-wrapper {
-      padding: 0;
-      display: block;
       background: #fff;
+
+      .login-main {
+        padding: 0;
+        display: block;
+      }
 
       .login-card {
         width: 100%;
@@ -372,7 +392,7 @@
         box-shadow: none;
         border-radius: 0;
 
-        :deep(.el-card__body) {
+        :deep(.ele-card-body) {
           display: block;
           height: auto;
         }
@@ -380,7 +400,7 @@
     }
 
     .login-cover {
-      padding: 24px 12px 100px 12px;
+      padding: 20px 12px 100px 12px;
       background-size: auto 100px;
     }
 

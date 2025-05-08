@@ -26,7 +26,7 @@ export const routes = [
  * @param homePath 主页地址
  */
 export function getMenuRoutes(menus, homePath) {
-  const childs = [
+  const childRoutes = [
     // 用于刷新的路由
     {
       path: REDIRECT_PATH + '/:path(.*)',
@@ -34,24 +34,28 @@ export function getMenuRoutes(menus, homePath) {
       meta: { hideFooter: true }
     }
   ];
-  const routes = [
+  const layoutRoutes = [
     {
       path: LAYOUT_PATH,
       component: Layout,
       redirect: HOME_PATH ?? homePath,
-      children: childs
+      children: childRoutes
     }
   ];
   // 路由铺平处理
-  eachTree(menuToRoutes(menus, getComponent), (route) => {
+  eachTree(menuToRoutes(menus, getComponent, routes), (route) => {
     const temp = Object.assign({}, route, { children: void 0 });
+    // 重设redirect以兼容若依菜单数据
+    if (route.children?.length && !route.component) {
+      temp.redirect = route.children[0].path;
+    }
     if (route.meta?.layout === false) {
-      routes.push(temp); // 不需要外层布局的路由
+      layoutRoutes.push(temp); // 不需要外层布局的路由
     } else {
-      childs.push(temp); // 需要外层布局的路由
+      childRoutes.push(temp); // 需要外层布局的路由
     }
   });
-  return routes;
+  return layoutRoutes;
 }
 
 /**

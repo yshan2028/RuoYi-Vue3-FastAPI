@@ -17,7 +17,6 @@ export const LAYOUT_PATH = '/';
 export const REDIRECT_PATH = '/redirect';
 
 /** 开启页签栏后是否缓存组件 */
-// export const TAB_KEEP_ALIVE = !import.meta.env.DEV;
 export const TAB_KEEP_ALIVE = true;
 
 /** token本地缓存的名称 */
@@ -25,6 +24,9 @@ export const TOKEN_CACHE_NAME = 'token';
 
 /** 主题配置本地缓存的名称 */
 export const THEME_CACHE_NAME = 'theme';
+
+/** i18n本地缓存的名称 */
+export const I18N_CACHE_NAME = 'i18n-lang';
 
 /** 高德地图key, 请到高德地图官网自行申请 */
 export const MAP_KEY = '006d995d433058322319fa797f2876f5';

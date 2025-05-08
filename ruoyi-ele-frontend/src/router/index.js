@@ -35,10 +35,8 @@ router.beforeEach(async (to) => {
   if (!getToken()) {
     // 未登录跳转登录界面
     if (!WHITE_LIST.includes(to.path)) {
-      return {
-        path: '/login',
-        query: to.path === LAYOUT_PATH ? {} : { from: to.path }
-      };
+      const query = { from: encodeURIComponent(to.fullPath) };
+      return { path: '/login', query: to.path === LAYOUT_PATH ? {} : query };
     }
     return;
   }

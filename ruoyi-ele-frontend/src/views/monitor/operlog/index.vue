@@ -6,19 +6,21 @@
       <!-- 表格 -->
       <ele-pro-table
         ref="tableRef"
-        row-key="oper_id"
+        row-key="operId"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
         v-model:selections="selections"
         highlight-current-row
+        :export-config="{ fileName: '操作日志' }"
         cache-key="systemLogOperlogTable"
       >
         <template #toolbar>
           <el-button
             type="danger"
             class="ele-btn-icon"
-            :icon="Delete"
+            :icon="DeleteOutlined"
+            v-permission="'monitor:operlog:remove'"
             @click="removeBatch()"
           >
             删除
@@ -27,12 +29,18 @@
             plain
             type="danger"
             class="ele-btn-icon"
-            :icon="Delete"
+            :icon="CloseCircleOutlined"
+            v-permission="'monitor:operlog:remove'"
             @click="removeAll"
           >
             清空
           </el-button>
-          <el-button class="ele-btn-icon" :icon="Download" @click="exportData">
+          <el-button
+            class="ele-btn-icon"
+            :icon="DownloadOutlined"
+            v-permission="'monitor:operlog:export'"
+            @click="exportData"
+          >
             导出
           </el-button>
         </template>
@@ -43,11 +51,11 @@
             :model-value="row.status"
           />
         </template>
-        <template #business_type="{ row }">
+        <template #businessType="{ row }">
           <dict-data
             code="sys_oper_type"
             type="tag"
-            :model-value="row.business_type"
+            :model-value="row.businessType"
           />
         </template>
         <template #action="{ row }">
@@ -64,9 +72,14 @@
 
 <script setup>
   import { ref, computed } from 'vue';
-  import { Delete, Download } from '@element-plus/icons-vue';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
+  import {
+    DeleteOutlined,
+    CloseCircleOutlined,
+    DownloadOutlined
+  } from '@/components/icons';
+  import { usePermission } from '@/utils/use-permission';
   import { useDictData } from '@/utils/use-dict-data';
   import OperlogSearch from './components/operlog-search.vue';
   import OperlogDetail from './components/operlog-detail.vue';
@@ -76,6 +89,10 @@
     removeOperlogs,
     clearOperlogs
   } from '@/api/monitor/operlog';
+
+  defineOptions({ name: 'SystemLogOperlog' });
+
+  const { hasPermission } = usePermission();
 
   /** 字典数据 */
   const [statusDicts, operTypeDicts] = useDictData([
@@ -88,7 +105,7 @@
 
   /** 表格列配置 */
   const columns = computed(() => {
-    return [
+    const cols = [
       {
         type: 'selection',
         columnKey: 'selection',
@@ -110,31 +127,34 @@
         minWidth: 110
       },
       {
-        prop: 'business_type',
+        prop: 'businessType',
         label: '操作类型',
         width: 110,
-        slot: 'business_type',
+        slot: 'businessType',
         align: 'center',
         filters: operTypeDicts.value.map((d) => {
-          return { text: d.dict_label, value: d.dict_value };
+          return { text: d.dictLabel, value: d.dictValue };
         }),
-        filterMultiple: false
+        filterMultiple: false,
+        formatter: (row) =>
+          operTypeDicts.value.find((d) => d.dictValue == row.businessType)
+            ?.dictLabel
       },
       {
-        prop: 'oper_name',
+        prop: 'operName',
         label: '操作人员',
         sortable: 'custom',
         align: 'center',
         minWidth: 110
       },
       {
-        prop: 'oper_ip',
+        prop: 'operIp',
         label: '操作地址',
         align: 'center',
         minWidth: 110
       },
       {
-        prop: 'oper_location',
+        prop: 'operLocation',
         label: '操作地点',
         align: 'center',
         minWidth: 110
@@ -146,34 +166,41 @@
         slot: 'status',
         align: 'center',
         filters: statusDicts.value.map((d) => {
-          return { text: d.dict_label, value: d.dict_value };
+          return { text: d.dictLabel, value: d.dictValue };
         }),
-        filterMultiple: false
+        filterMultiple: false,
+        formatter: (row) =>
+          statusDicts.value.find((d) => d.dictValue == row.status)?.dictLabel
       },
       {
-        prop: 'oper_time',
+        prop: 'operTime',
         label: '操作日期',
         sortable: 'custom',
         align: 'center',
         minWidth: 110
       },
       {
-        prop: 'cost_time',
+        prop: 'costTime',
         label: '消耗时间',
         sortable: 'custom',
         align: 'center',
-        formatter: (row) => `${row.cost_time}毫秒`,
+        formatter: (row) => `${row.costTime}毫秒`,
         width: 110
-      },
-      {
+      }
+    ];
+    if (hasPermission('monitor:operlog:query')) {
+      cols.push({
         columnKey: 'action',
         label: '操作',
         width: 80,
         align: 'center',
         slot: 'action',
-        fixed: 'right'
-      }
-    ];
+        fixed: 'right',
+        hideInPrint: true,
+        hideInExport: true
+      });
+    }
+    return cols;
   });
 
   /** 当前选中数据 */
@@ -186,14 +213,8 @@
   const selections = ref([]);
 
   /** 表格数据源 */
-  const datasource = ({ page, limit, where, orders, filters }) => {
-    return pageOperlogs({
-      ...where,
-      ...orders,
-      ...filters,
-      pageNum: page,
-      pageSize: limit
-    });
+  const datasource = ({ pages, where, orders, filters }) => {
+    return pageOperlogs({ ...where, ...orders, ...filters, ...pages });
   };
 
   /** 刷新表格 */
@@ -209,7 +230,10 @@
 
   /** 导出数据 */
   const exportData = () => {
-    const loading = EleMessage.loading('请求中..');
+    const loading = EleMessage.loading({
+      message: '请求中..',
+      plain: true
+    });
     tableRef.value?.fetch?.(({ where, orders, filters }) => {
       exportOperlogs({ ...where, ...orders, ...filters })
         .then(() => {
@@ -228,14 +252,17 @@
       EleMessage.error('请至少选择一条数据');
       return;
     }
-    const ids = selections.value.map((d) => d.oper_id);
+    const ids = selections.value.map((d) => d.operId);
     ElMessageBox.confirm(
       `是否确认删除日志编号为"${ids.join()}"的数据项?`,
       '系统提示',
       { type: 'warning', draggable: true, customStyle: { maxWidth: '442px' } }
     )
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
         removeOperlogs(ids)
           .then(() => {
             loading.close();
@@ -257,7 +284,10 @@
       draggable: true
     })
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
         clearOperlogs()
           .then(() => {
             loading.close();
@@ -270,11 +300,5 @@
           });
       })
       .catch(() => {});
-  };
-</script>
-
-<script>
-  export default {
-    name: 'SystemLogOperlog'
   };
 </script>

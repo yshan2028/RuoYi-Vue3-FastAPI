@@ -7,34 +7,53 @@
   <!-- 表格 -->
   <ele-pro-table
     ref="tableRef"
-    row-key="dict_code"
+    row-key="dictCode"
     :columns="columns"
     :datasource="datasource"
     :show-overflow-tooltip="true"
     v-model:selections="selections"
     highlight-current-row
+    :export-config="{ fileName: '字典数据' }"
+    :style="{ paddingBottom: '16px' }"
     cache-key="systemDictDataTable"
   >
     <template #toolbar>
-      <el-button
-        type="primary"
-        class="ele-btn-icon"
-        :icon="Plus"
-        @click="openEdit()"
-      >
-        新建
-      </el-button>
-      <el-button
-        type="danger"
-        class="ele-btn-icon"
-        :icon="Delete"
-        @click="removeBatch()"
-      >
-        删除
-      </el-button>
-      <el-button class="ele-btn-icon" :icon="Download" @click="exportData">
-        导出
-      </el-button>
+      <el-space :size="12" wrap>
+        <el-button
+          type="primary"
+          class="ele-btn-icon"
+          :icon="PlusOutlined"
+          v-permission="'system:dict:add'"
+          @click="openEdit()"
+        >
+          新建
+        </el-button>
+        <el-button
+          type="danger"
+          class="ele-btn-icon"
+          :icon="DeleteOutlined"
+          v-permission="'system:dict:remove'"
+          @click="removeBatch()"
+        >
+          删除
+        </el-button>
+        <el-button
+          class="ele-btn-icon"
+          :icon="DownloadOutlined"
+          v-permission="'system:dict:export'"
+          @click="exportData"
+        >
+          导出
+        </el-button>
+        <el-button
+          class="ele-btn-icon"
+          :icon="SyncOutlined"
+          v-permission="'system:dict:remove'"
+          @click="refreshCache"
+        >
+          刷新缓存
+        </el-button>
+      </el-space>
     </template>
     <template #status="{ row }">
       <dict-data
@@ -44,11 +63,24 @@
       />
     </template>
     <template #action="{ row }">
-      <el-link type="primary" :underline="false" @click="openEdit(row)">
+      <el-link
+        v-permission="'system:dict:edit'"
+        type="primary"
+        :underline="false"
+        @click="openEdit(row)"
+      >
         修改
       </el-link>
-      <el-divider direction="vertical" />
-      <el-link type="danger" :underline="false" @click="removeBatch(row)">
+      <el-divider
+        v-permission="['system:dict:edit', 'system:dict:remove']"
+        direction="vertical"
+      />
+      <el-link
+        v-permission="'system:dict:remove'"
+        type="danger"
+        :underline="false"
+        @click="removeBatch(row)"
+      >
         删除
       </el-link>
     </template>
@@ -57,16 +89,22 @@
   <dict-data-edit
     v-model="showEdit"
     :data="current"
-    :dict-type="dict_type"
+    :dict-type="dictType"
     @done="reload"
   />
 </template>
 
 <script setup>
   import { ref, watch } from 'vue';
-  import { Plus, Delete, Download } from '@element-plus/icons-vue';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
+  import {
+    PlusOutlined,
+    DeleteOutlined,
+    DownloadOutlined,
+    SyncOutlined
+  } from '@/components/icons';
+  import { useDictData } from '@/utils/use-dict-data';
   import DictDataSearch from './dict-data-search.vue';
   import DictDataEdit from './dict-data-edit.vue';
   import {
@@ -74,11 +112,18 @@
     removeDictDataBatch,
     exportDictDatas
   } from '@/api/system/dict-data';
+  import { refreshDicts } from '@/api/system/dict';
+  import { useUserStore } from '@/store/modules/user';
+
+  /** 字典数据 */
+  const [statusDicts] = useDictData(['sys_normal_disable']);
 
   const props = defineProps({
     /** 字典类型 */
-    dict_type: String
+    dictType: String
   });
+
+  const userStore = useUserStore();
 
   /** 搜索栏实例 */
   const searchRef = ref(null);
@@ -96,19 +141,19 @@
       fixed: 'left'
     },
     {
-      prop: 'dict_label',
+      prop: 'dictLabel',
       label: '数据标签',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'dict_value',
+      prop: 'dictValue',
       label: '数据键值',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'dict_sort',
+      prop: 'dictSort',
       label: '显示排序',
       width: 110,
       align: 'center'
@@ -118,7 +163,9 @@
       label: '状态',
       width: 90,
       align: 'center',
-      slot: 'status'
+      slot: 'status',
+      formatter: (row) =>
+        statusDicts.value.find((d) => d.dictValue == row.status)?.dictLabel
     },
     {
       prop: 'remark',
@@ -127,17 +174,19 @@
       minWidth: 110
     },
     {
-      prop: 'create_time',
+      prop: 'createTime',
       label: '创建时间',
       align: 'center',
-      minWidth: 110
+      width: 180
     },
     {
       columnKey: 'action',
       label: '操作',
       width: 130,
       align: 'center',
-      slot: 'action'
+      slot: 'action',
+      hideInPrint: true,
+      hideInExport: true
     }
   ]);
 
@@ -151,13 +200,12 @@
   const showEdit = ref(false);
 
   /** 表格数据源 */
-  const datasource = ({ page, limit, where, orders }) => {
+  const datasource = ({ pages, where, orders }) => {
     return pageDictDatas({
       ...where,
       ...orders,
-      pageNum: page,
-      pageSize: limit,
-      dict_type: props.dict_type
+      ...pages,
+      dictType: props.dictType
     });
   };
 
@@ -180,7 +228,7 @@
       return;
     }
     ElMessageBox.confirm(
-      `是否确认删除数据标签为"${rows.map((d) => d.dict_label).join()}"的数据项?`,
+      `是否确认删除数据标签为"${rows.map((d) => d.dictLabel).join()}"的数据项?`,
       '系统提示',
       {
         type: 'warning',
@@ -188,8 +236,11 @@
       }
     )
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
-        removeDictDataBatch(rows.map((d) => d.dict_code))
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
+        removeDictDataBatch(rows.map((d) => d.dictCode))
           .then(() => {
             loading.close();
             EleMessage.success('删除成功');
@@ -205,7 +256,10 @@
 
   /** 导出数据 */
   const exportData = () => {
-    const loading = EleMessage.loading('请求中..');
+    const loading = EleMessage.loading({
+      message: '请求中..',
+      plain: true
+    });
     tableRef.value?.fetch?.(({ where, orders }) => {
       exportDictDatas({ ...where, ...orders })
         .then(() => {
@@ -218,9 +272,27 @@
     });
   };
 
+  /** 刷新缓存 */
+  const refreshCache = () => {
+    const loading = EleMessage.loading({
+      message: '请求中..',
+      plain: true
+    });
+    refreshDicts()
+      .then(() => {
+        userStore.setDicts(null, {});
+        loading.close();
+        EleMessage.success('刷新成功');
+      })
+      .catch((e) => {
+        loading.close();
+        EleMessage.error(e.message);
+      });
+  };
+
   // 监听字典id变化
   watch(
-    () => props.dict_type,
+    () => props.dictType,
     () => {
       searchRef.value?.resetFields?.();
       reload({});

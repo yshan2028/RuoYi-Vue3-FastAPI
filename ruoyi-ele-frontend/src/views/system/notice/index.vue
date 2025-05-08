@@ -6,19 +6,21 @@
       <!-- 表格 -->
       <ele-pro-table
         ref="tableRef"
-        row-key="notice_id"
+        row-key="noticeId"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
         v-model:selections="selections"
         highlight-current-row
+        :export-config="{ fileName: '通知公告' }"
         cache-key="systemNoticeTable"
       >
         <template #toolbar>
           <el-button
             type="primary"
             class="ele-btn-icon"
-            :icon="Plus"
+            :icon="PlusOutlined"
+            v-permission="'system:notice:add'"
             @click="openEdit()"
           >
             新建
@@ -26,7 +28,8 @@
           <el-button
             type="danger"
             class="ele-btn-icon"
-            :icon="Delete"
+            :icon="DeleteOutlined"
+            v-permission="'system:notice:remove'"
             @click="removeBatch()"
           >
             删除
@@ -39,19 +42,32 @@
             :model-value="row.status"
           />
         </template>
-        <template #notice_type="{ row }">
+        <template #noticeType="{ row }">
           <dict-data
             code="sys_notice_type"
             type="tag"
-            :model-value="row.notice_type"
+            :model-value="row.noticeType"
           />
         </template>
         <template #action="{ row }">
-          <el-link type="primary" :underline="false" @click="openEdit(row)">
+          <el-link
+            v-permission="'system:notice:edit'"
+            type="primary"
+            :underline="false"
+            @click="openEdit(row)"
+          >
             修改
           </el-link>
-          <el-divider direction="vertical" />
-          <el-link type="danger" :underline="false" @click="removeBatch(row)">
+          <el-divider
+            v-permission="['system:notice:edit', 'system:notice:remove']"
+            direction="vertical"
+          />
+          <el-link
+            v-permission="'system:notice:remove'"
+            type="danger"
+            :underline="false"
+            @click="removeBatch(row)"
+          >
             删除
           </el-link>
         </template>
@@ -64,12 +80,21 @@
 
 <script setup>
   import { ref } from 'vue';
-  import { Plus, Delete } from '@element-plus/icons-vue';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
+  import { PlusOutlined, DeleteOutlined } from '@/components/icons';
+  import { useDictData } from '@/utils/use-dict-data';
   import NoticeSearch from './components/notice-search.vue';
   import NoticeEdit from './components/notice-edit.vue';
   import { pageNotices, removeNotices } from '@/api/system/notice';
+
+  defineOptions({ name: 'SystemNotice' });
+
+  /** 字典数据 */
+  const [typeDicts, statusDicts] = useDictData([
+    'sys_notice_type',
+    'sys_notice_status'
+  ]);
 
   /** 表格实例 */
   const tableRef = ref(null);
@@ -91,34 +116,38 @@
       fixed: 'left'
     },
     {
-      prop: 'notice_title',
+      prop: 'noticeTitle',
       label: '公告标题',
       minWidth: 160
     },
     {
-      prop: 'notice_type',
+      prop: 'noticeType',
       label: '公告类型',
       width: 90,
       align: 'center',
-      slot: 'notice_type'
+      slot: 'noticeType',
+      formatter: (row) =>
+        typeDicts.value.find((d) => d.dictValue == row.noticeType)?.dictLabel
     },
     {
       prop: 'status',
       label: '状态',
       width: 90,
       align: 'center',
-      slot: 'status'
+      slot: 'status',
+      formatter: (row) =>
+        statusDicts.value.find((d) => d.dictValue == row.status)?.dictLabel
     },
     {
-      prop: 'create_by',
+      prop: 'createBy',
       label: '创建者',
       width: 100,
       align: 'center'
     },
     {
-      prop: 'create_time',
+      prop: 'createTime',
       label: '创建时间',
-      width: 160,
+      width: 180,
       align: 'center'
     },
     {
@@ -126,7 +155,9 @@
       label: '操作',
       width: 120,
       align: 'center',
-      slot: 'action'
+      slot: 'action',
+      hideInPrint: true,
+      hideInExport: true
     }
   ]);
 
@@ -140,8 +171,8 @@
   const showEdit = ref(false);
 
   /** 表格数据源 */
-  const datasource = ({ page, limit, where, orders }) => {
-    return pageNotices({ ...where, ...orders, pageNum: page, pageSize: limit });
+  const datasource = ({ pages, where, orders }) => {
+    return pageNotices({ ...where, ...orders, ...pages });
   };
 
   /** 搜索 */
@@ -162,14 +193,17 @@
       EleMessage.error('请至少选择一条数据');
       return;
     }
-    const ids = rows.map((d) => d.notice_id);
+    const ids = rows.map((d) => d.noticeId);
     ElMessageBox.confirm(
       `是否确认删除公告编号为"${ids.join()}"的数据项?`,
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
         removeNotices(ids)
           .then(() => {
             loading.close();
@@ -182,11 +216,5 @@
           });
       })
       .catch(() => {});
-  };
-</script>
-
-<script>
-  export default {
-    name: 'SystemNotice'
   };
 </script>

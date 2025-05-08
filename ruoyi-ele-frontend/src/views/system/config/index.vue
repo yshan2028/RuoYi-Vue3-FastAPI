@@ -6,19 +6,21 @@
       <!-- 表格 -->
       <ele-pro-table
         ref="tableRef"
-        row-key="config_id"
+        row-key="configId"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
         v-model:selections="selections"
         highlight-current-row
+        :export-config="{ fileName: '参数设置' }"
         cache-key="systemConfigTable"
       >
         <template #toolbar>
           <el-button
             type="primary"
             class="ele-btn-icon"
-            :icon="Plus"
+            :icon="PlusOutlined"
+            v-permission="'system:config:add'"
             @click="openEdit()"
           >
             新建
@@ -26,31 +28,55 @@
           <el-button
             type="danger"
             class="ele-btn-icon hidden-sm-and-down"
-            :icon="Delete"
+            :icon="DeleteOutlined"
+            v-permission="'system:config:remove'"
             @click="removeBatch()"
           >
             删除
           </el-button>
-          <el-button class="ele-btn-icon" :icon="Download" @click="exportData">
+          <el-button
+            class="ele-btn-icon"
+            :icon="DownloadOutlined"
+            v-permission="'system:config:export'"
+            @click="exportData"
+          >
             导出
           </el-button>
-          <el-button class="ele-btn-icon" :icon="Refresh" @click="refreshCache">
+          <el-button
+            class="ele-btn-icon"
+            :icon="SyncOutlined"
+            v-permission="'system:config:remove'"
+            @click="refreshCache"
+          >
             刷新缓存
           </el-button>
         </template>
-        <template #config_type="{ row }">
+        <template #configType="{ row }">
           <dict-data
             code="sys_yes_no"
             type="tag"
-            :model-value="row.config_type"
+            :model-value="row.configType"
           />
         </template>
         <template #action="{ row }">
-          <el-link type="primary" :underline="false" @click="openEdit(row)">
+          <el-link
+            v-permission="'system:config:edit'"
+            type="primary"
+            :underline="false"
+            @click="openEdit(row)"
+          >
             修改
           </el-link>
-          <el-divider direction="vertical" />
-          <el-link type="danger" :underline="false" @click="removeBatch(row)">
+          <el-divider
+            v-permission="['system:config:edit', 'system:config:remove']"
+            direction="vertical"
+          />
+          <el-link
+            v-permission="'system:config:remove'"
+            type="danger"
+            :underline="false"
+            @click="removeBatch(row)"
+          >
             删除
           </el-link>
         </template>
@@ -62,10 +88,16 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue';
-  import { Plus, Delete, Download, Refresh } from '@element-plus/icons-vue';
+  import { ref, computed } from 'vue';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
+  import {
+    PlusOutlined,
+    DeleteOutlined,
+    DownloadOutlined,
+    SyncOutlined
+  } from '@/components/icons';
+  import { useDictData } from '@/utils/use-dict-data';
   import ConfigSearch from './components/config-search.vue';
   import ConfigEdit from './components/config-edit.vue';
   import {
@@ -75,70 +107,86 @@
     refreshConfigs
   } from '@/api/system/config';
 
+  defineOptions({ name: 'SystemConfig' });
+
+  /** 字典数据 */
+  const [configTypeDicts] = useDictData(['sys_yes_no']);
+
   /** 表格实例 */
   const tableRef = ref(null);
 
   /** 表格列配置 */
-  const columns = ref([
-    {
-      type: 'selection',
-      columnKey: 'selection',
-      width: 50,
-      align: 'center',
-      fixed: 'left'
-    },
-    {
-      type: 'index',
-      columnKey: 'index',
-      width: 50,
-      align: 'center',
-      fixed: 'left'
-    },
-    {
-      prop: 'config_name',
-      label: '参数名称',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'config_key',
-      label: '参数键名',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'config_value',
-      label: '参数键值',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'config_type',
-      label: '系统内置',
-      width: 90,
-      align: 'center',
-      slot: 'config_type'
-    },
-    {
-      prop: 'remark',
-      label: '备注',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'create_time',
-      label: '创建时间',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      columnKey: 'action',
-      label: '操作',
-      width: 120,
-      align: 'center',
-      slot: 'action'
-    }
-  ]);
+  const columns = computed(() => {
+    return [
+      {
+        type: 'selection',
+        columnKey: 'selection',
+        width: 50,
+        align: 'center',
+        fixed: 'left'
+      },
+      {
+        type: 'index',
+        columnKey: 'index',
+        width: 50,
+        align: 'center',
+        fixed: 'left'
+      },
+      {
+        prop: 'configName',
+        label: '参数名称',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'configKey',
+        label: '参数键名',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'configValue',
+        label: '参数键值',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'configType',
+        label: '系统内置',
+        width: 110,
+        align: 'center',
+        slot: 'configType',
+        filters: configTypeDicts.value.map((d) => {
+          return { text: d.dictLabel, value: d.dictValue };
+        }),
+        filterMultiple: false,
+        formatter: (row) =>
+          configTypeDicts.value.find((d) => d.dictValue == row.configType)
+            ?.dictLabel
+      },
+      {
+        prop: 'remark',
+        label: '备注',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'createTime',
+        label: '创建时间',
+        align: 'center',
+        width: 180
+      },
+      {
+        columnKey: 'action',
+        label: '操作',
+        width: 120,
+        align: 'center',
+        slot: 'action',
+        hideInPrint: true,
+        hideInExport: true
+      }
+    ];
+  });
 
   /** 表格选中数据 */
   const selections = ref([]);
@@ -150,8 +198,8 @@
   const showEdit = ref(false);
 
   /** 表格数据源 */
-  const datasource = ({ page, limit, where, orders }) => {
-    return pageConfigs({ ...where, ...orders, pageNum: page, pageSize: limit });
+  const datasource = ({ pages, where, filters }) => {
+    return pageConfigs({ ...where, ...filters, ...pages });
   };
 
   /** 搜索 */
@@ -173,13 +221,16 @@
       return;
     }
     ElMessageBox.confirm(
-      `是否确认删除参数键名为"${rows.map((d) => d.config_key).join()}"的数据项?`,
+      `是否确认删除参数键名为"${rows.map((d) => d.configKey).join()}"的数据项?`,
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
-        removeConfigs(rows.map((d) => d.config_id))
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
+        removeConfigs(rows.map((d) => d.configId))
           .then(() => {
             loading.close();
             EleMessage.success('删除成功');
@@ -195,7 +246,10 @@
 
   /** 导出数据 */
   const exportData = () => {
-    const loading = EleMessage.loading('请求中..');
+    const loading = EleMessage.loading({
+      message: '请求中..',
+      plain: true
+    });
     tableRef.value?.fetch?.(({ where, orders }) => {
       exportConfigs({ ...where, ...orders })
         .then(() => {
@@ -210,7 +264,10 @@
 
   /** 刷新缓存 */
   const refreshCache = () => {
-    const loading = EleMessage.loading('请求中..');
+    const loading = EleMessage.loading({
+      message: '请求中..',
+      plain: true
+    });
     refreshConfigs()
       .then(() => {
         loading.close();
@@ -220,11 +277,5 @@
         loading.close();
         EleMessage.error(e.message);
       });
-  };
-</script>
-
-<script>
-  export default {
-    name: 'SystemConfig'
   };
 </script>

@@ -1,21 +1,15 @@
-import { ref, onBeforeUnmount } from 'vue';
+import { watch } from 'vue';
+import { useMediaQuery } from '@vueuse/core';
 
 /**
  * 获取是否是移动端小屏幕hook
  * @param onChange 值改变回调
  */
 export function useMobile(onChange) {
-  const media = window.matchMedia('(max-width: 768px)');
-  const mobile = ref(media.matches);
+  const mobile = useMediaQuery('(max-width: 768px)');
 
-  const onMediaChangeListener = () => {
-    mobile.value = media.matches;
-    onChange && onChange(mobile.value);
-  };
-  media.addEventListener('change', onMediaChangeListener);
-
-  onBeforeUnmount(() => {
-    media.removeEventListener('change', onMediaChangeListener);
+  watch(mobile, (isMobile) => {
+    onChange && onChange(isMobile);
   });
 
   return { mobile };
@@ -26,17 +20,10 @@ export function useMobile(onChange) {
  * @param onChange 值改变回调
  */
 export function useMobileDevice(onChange) {
-  const media = window.matchMedia('(pointer: coarse)');
-  const mobileDevice = ref(media.matches);
+  const mobileDevice = useMediaQuery('(pointer: coarse)');
 
-  const onMediaChangeListener = () => {
-    mobileDevice.value = media.matches;
-    onChange && onChange(mobileDevice.value);
-  };
-  media.addEventListener('change', onMediaChangeListener);
-
-  onBeforeUnmount(() => {
-    media.removeEventListener('change', onMediaChangeListener);
+  watch(mobileDevice, (isMobile) => {
+    onChange && onChange(isMobile);
   });
 
   return { mobileDevice };

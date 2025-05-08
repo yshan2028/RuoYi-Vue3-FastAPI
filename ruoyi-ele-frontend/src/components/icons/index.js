@@ -1,10 +1,4 @@
-export { default as ColumnHeightOutlined } from './ColumnHeightOutlined.vue';
-export { default as CompressOutlined } from './CompressOutlined.vue';
-export { default as ExpandOutlined } from './ExpandOutlined.vue';
-export { default as MenuFoldOutlined } from './MenuFoldOutlined.vue';
-export { default as MenuUnfoldOutlined } from './MenuUnfoldOutlined.vue';
-export { default as MoonOutlined } from './MoonOutlined.vue';
-export { default as MoreOutlined } from './MoreOutlined.vue';
-export { default as ProtectOutlined } from './ProtectOutlined.vue';
-export { default as SunOutlined } from './SunOutlined.vue';
-export { default as VerticalAlignMiddleOutlined } from './VerticalAlignMiddleOutlined.vue';
+export * from 'ele-admin-plus/es/icons';
+export { default as AlipayFilled } from './AlipayFilled.vue';
+export { default as QqFilled } from './QqFilled.vue';
+export { default as WechatFilled } from './WechatFilled.vue';

@@ -43,7 +43,9 @@ export function useEcharts(refs) {
 
   /** 屏幕尺寸变化监听 */
   useBodyResize(() => {
-    resizeCharts();
+    if (!unref(deactivated)) {
+      resizeCharts();
+    }
   });
 
   /** 更改图表主题 */

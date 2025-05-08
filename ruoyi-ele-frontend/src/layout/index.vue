@@ -5,8 +5,8 @@
     :collapse="collapse"
     :compact="compact"
     :maximized="maximized"
-    :tab-bar="tabBar"
-    :breadcrumb="layout === 'side'"
+    :tab-bar="tabBar ? (tabInHeader ? 'header' : true) : false"
+    :breadcrumb="layout === 'side' && (!tabBar || !tabInHeader)"
     :layout="layout"
     :sidebar-layout="sidebarLayout"
     :header-style="headerStyle"
@@ -22,130 +22,169 @@
     :fixed-home="fixedHome"
     :home-path="HOME_PATH"
     :redirectPath="REDIRECT_PATH"
+    :locale="locale"
+    :i18n="i18n"
     :tab-sortable="!mobileDevice"
-    :tab-context-menu="!mobileDevice"
+    :tab-context-menu="{
+      iconProps: { size: 15 },
+      popperOptions: {
+        strategy: 'fixed',
+        modifiers: [{ name: 'offset', options: { offset: [0, 8] } }]
+      }
+    }"
     :tab-context-menus="tabContext"
+    :nav-trigger="layout === 'top' ? void 0 : menuItemTrigger"
+    :box-trigger="menuItemTrigger"
     :keep-alive="TAB_KEEP_ALIVE"
     :transition-name="transitionName"
+    :ellipsis-props="{ hideTimeout: 800 }"
+    :responsive="responsive"
     @update:collapse="updateCollapse"
     @update:maximized="updateMaximized"
     @tabAdd="addPageTab"
-    @tabClick="onTabClick"
+    @tabClick="handleTabClick"
     @tabRemove="removePageTab"
-    @tabContextMenu="onTabContextMenu"
+    @tabContextMenu="handleTabContextMenu"
     @tabSortChange="setPageTabs"
-    @bodySizeChange="onBodySizeChange"
+    @bodySizeChange="handleBodySizeChange"
   >
     <router-layout />
     <!-- logo -->
     <template #logo>
-      <img src="/src/assets/logo.png" style="width: 42px; height: 42px" />
-      <h1 style="font-size: 17px; letter-spacing: 1px">{{ PROJECT_NAME }}</h1>
+      <img src="@/assets/logo.png" style="width: 42px; height: 42px" />
+    </template>
+    <template #logoTitle>
+      <h1>{{ PROJECT_NAME }}</h1>
     </template>
     <!-- 顶栏左侧按钮 -->
     <template #left="{ sidebar }">
       <!-- 折叠侧栏 -->
-      <header-tool v-if="sidebar" @click="updateCollapse(!collapse)">
-        <el-icon style="transform: scale(1.15)">
-          <menu-unfold-outlined v-if="collapse" />
-          <menu-fold-outlined v-else />
+      <layout-tool v-if="sidebar" @click="updateCollapse(!collapse)">
+        <el-icon style="transform: scale(1.14)">
+          <MenuUnfoldOutlined v-if="collapse" />
+          <MenuFoldOutlined v-else />
         </el-icon>
-      </header-tool>
+      </layout-tool>
       <!-- 刷新 -->
-      <header-tool
-        v-if="layout === 'side'"
-        class="hidden-sm-and-down"
+      <layout-tool
+        :class="{ 'hidden-sm-and-down': tabBar && tabInHeader }"
         @click="reloadPageTab()"
       >
-        <el-icon style="transform: scale(1.25)">
-          <refresh-right />
+        <el-icon style="transform: scale(1.09)">
+          <ReloadOutlined />
         </el-icon>
-      </header-tool>
+      </layout-tool>
     </template>
     <!-- 顶栏右侧按钮 -->
     <template #right>
       <!-- 全屏切换 -->
-      <header-tool class="hidden-sm-and-down" @click="toggleFullscreen">
-        <el-icon style="transform: scale(1.02)">
-          <compress-outlined v-if="isFullscreen" />
-          <expand-outlined v-else />
+      <layout-tool class="hidden-sm-and-down" @click="toggleFullscreen">
+        <el-icon style="transform: scale(1.18)">
+          <CompressOutlined v-if="isFullscreen" style="stroke-width: 4" />
+          <ExpandOutlined v-else style="stroke-width: 4" />
         </el-icon>
-      </header-tool>
+      </layout-tool>
+      <!-- 语言切换 -->
+      <layout-tool :class="{ 'hidden-sm-and-down': tabBar && tabInHeader }">
+        <i18n-icon :icon-style="{ transform: 'scale(1.15)' }" />
+      </layout-tool>
       <!-- 消息通知 -->
-      <header-tool>
+      <layout-tool :class="{ 'hidden-sm-and-down': tabBar && tabInHeader }">
         <header-notice />
-      </header-tool>
+      </layout-tool>
       <!-- 用户信息 -->
-      <header-tool>
+      <layout-tool>
         <header-user />
-      </header-tool>
+      </layout-tool>
       <!-- 夜间模式 -->
-      <header-tool ref="darkSwitchRef" class="dark-switch">
+      <layout-tool ref="darkSwitchRef" class="dark-switch">
         <el-switch
           :active-action-icon="MoonOutlined"
           :inactive-action-icon="SunOutlined"
           :model-value="darkMode"
           @update:modelValue="updateDarkMode"
         />
-      </header-tool>
+      </layout-tool>
+      <!-- 主题设置 -->
+      <layout-tool @click="openSetting">
+        <el-icon>
+          <MoreOutlined />
+        </el-icon>
+      </layout-tool>
     </template>
     <!-- 页签栏右侧下拉菜单 -->
-    <template #tabExtra="{ active }">
+    <template v-if="tabBar && !tabInHeader" #tabExtra="{ active }">
       <tab-dropdown
         :items="tabExtra"
-        @menuClick="(key) => onTabDropdownMenu(key, active)"
+        :dropdown-props="{
+          iconProps: { size: 15 },
+          popperOptions: {
+            strategy: 'fixed',
+            modifiers: [{ name: 'offset', options: { offset: [12, 8] } }]
+          }
+        }"
+        @menuClick="(key) => handleTabDropdownMenu(key, active)"
       />
     </template>
     <!-- 折叠双侧栏一级 -->
     <template #boxBottom>
-      <div :style="{ flexShrink: 0, padding: roundedTheme ? '4px 8px' : 0 }">
-        <sidebar-tool @click="updateCompact(!compact)">
-          <el-icon style="transform: scale(1.15)">
-            <menu-unfold-outlined v-if="compact" />
-            <menu-fold-outlined v-else />
+      <div :style="{ flexShrink: 0, padding: '4px 8px' }">
+        <layout-tool style="height: 32px" @click="updateCompact(!compact)">
+          <el-icon style="transform: scale(1.05)">
+            <MenuUnfoldOutlined v-if="compact" />
+            <MenuFoldOutlined v-else />
           </el-icon>
-        </sidebar-tool>
+        </layout-tool>
       </div>
     </template>
     <!-- 全局页脚 -->
     <template #footer>
       <page-footer />
     </template>
-    <!-- 菜单图标 -->
-    <template #icon="{ icon, item }">
-      <el-icon v-if="icon" v-bind="item.meta?.props?.iconProps || {}">
-        <component :is="icon" :style="item.meta?.props?.iconStyle" />
+    <!-- 页签标题 -->
+    <template #tabTitle="{ label, item }">
+      <el-icon
+        v-if="item.meta?.icon"
+        class="ele-tab-icon"
+        v-bind="item.meta?.props?.iconProps || {}"
+      >
+        <component :is="item.meta.icon" :style="item.meta?.props?.iconStyle" />
       </el-icon>
+      <span :style="item.meta?.icon ? { paddingLeft: '4px' } : {}">
+        {{ label }}
+      </span>
     </template>
   </ele-pro-layout>
+  <!-- 主题设置抽屉 -->
+  <setting-drawer v-model="settingVisible" />
 </template>
 
 <script setup>
-  import { ref, computed, shallowRef } from 'vue';
+  import { ref, computed, markRaw } from 'vue';
   import { useRouter } from 'vue-router';
   import { storeToRefs } from 'pinia';
+  import { useI18n } from 'vue-i18n';
   import {
-    HeaderTool,
-    SidebarTool,
+    LayoutTool,
     TabDropdown,
     requestFullscreen,
     exitFullscreen,
     checkFullscreen,
-    EleMessage
+    EleMessage,
+    EleProLayout
   } from 'ele-admin-plus/es';
   import {
-    RefreshRight,
-    Close,
-    Back,
-    Right,
-    Remove,
-    CircleClose
-  } from '@element-plus/icons-vue';
-  import {
-    CompressOutlined,
-    ExpandOutlined,
     MenuFoldOutlined,
     MenuUnfoldOutlined,
+    ReloadOutlined,
+    ExpandOutlined,
+    CompressOutlined,
+    MoreOutlined,
+    CloseOutlined,
+    ArrowLeftOutlined,
+    ArrowRightOutlined,
+    MinusCircleOutlined,
+    CloseCircleOutlined,
     MoonOutlined,
     SunOutlined
   } from '@/components/icons';
@@ -162,9 +201,14 @@
   import RouterLayout from '@/components/RouterLayout/index.vue';
   import HeaderUser from './components/header-user.vue';
   import HeaderNotice from './components/header-notice.vue';
+  import I18nIcon from './components/i18n-icon.vue';
   import PageFooter from './components/page-footer.vue';
+  import SettingDrawer from './components/setting-drawer.vue';
+
+  defineOptions({ name: 'Layout' });
 
   const { push } = useRouter();
+  const { t, locale } = useI18n();
   const {
     addPageTab,
     removePageTab,
@@ -193,6 +237,7 @@
     sidebarLayout,
     headerStyle,
     sidebarStyle,
+    darkMode,
     tabStyle,
     fixedHeader,
     fixedSidebar,
@@ -203,48 +248,55 @@
     transitionName,
     uniqueOpened,
     fixedHome,
-    roundedTheme,
-    darkMode
+    tabInHeader,
+    menuItemTrigger,
+    responsive
   } = storeToRefs(themeStore);
 
   /** 是否全屏 */
   const isFullscreen = ref(false);
 
+  /** 是否显示主题设置抽屉 */
+  const settingVisible = ref(false);
+
   /** 页签右键菜单 */
-  const tabContext = shallowRef([
-    {
-      title: '刷新当前页签',
-      command: 'reload',
-      icon: RefreshRight
-    },
-    {
-      title: '关闭当前页签',
-      command: 'close',
-      icon: Close
-    },
-    {
-      title: '关闭左侧页签',
-      command: 'left',
-      icon: Back,
-      divided: true
-    },
-    {
-      title: '关闭右侧页签',
-      command: 'right',
-      icon: Right
-    },
-    {
-      title: '关闭其它页签',
-      command: 'other',
-      icon: Remove,
-      divided: true
-    },
-    {
-      title: '关闭全部页签',
-      command: 'all',
-      icon: CircleClose
-    }
-  ]);
+  const tabContext = computed(() => {
+    return [
+      {
+        title: t('layout.tabs.reload'),
+        command: 'reload',
+        icon: markRaw(ReloadOutlined),
+        iconStyle: { transform: 'scale(0.98)' }
+      },
+      {
+        title: t('layout.tabs.close'),
+        command: 'close',
+        icon: markRaw(CloseOutlined)
+      },
+      {
+        title: t('layout.tabs.closeLeft'),
+        command: 'left',
+        icon: markRaw(ArrowLeftOutlined),
+        divided: true
+      },
+      {
+        title: t('layout.tabs.closeRight'),
+        command: 'right',
+        icon: markRaw(ArrowRightOutlined)
+      },
+      {
+        title: t('layout.tabs.closeOther'),
+        command: 'other',
+        icon: markRaw(MinusCircleOutlined),
+        divided: true
+      },
+      {
+        title: t('layout.tabs.closeAll'),
+        command: 'all',
+        icon: markRaw(CloseCircleOutlined)
+      }
+    ];
+  });
 
   /** 页签栏右侧下拉菜单 */
   const tabExtra = computed(() => {
@@ -253,8 +305,7 @@
       {
         title: isMax ? '退出内容全屏' : '内容区域全屏',
         command: 'fullscreen',
-        icon: isMax ? CompressOutlined : ExpandOutlined,
-        iconStyle: { transform: 'scale(0.8)' }
+        icon: isMax ? markRaw(CompressOutlined) : markRaw(ExpandOutlined)
       },
       ...tabContext.value
     ];
@@ -276,7 +327,7 @@
   };
 
   /** 页签点击事件 */
-  const onTabClick = (option) => {
+  const handleTabClick = (option) => {
     const { key, active, item } = option;
     const path = item?.fullPath || key;
     if (key !== active && path) {
@@ -285,7 +336,7 @@
   };
 
   /** 内容区尺寸改变事件 */
-  const onBodySizeChange = ({ width }) => {
+  const handleBodySizeChange = ({ width }) => {
     themeStore.setContentWidth(width ?? null);
     isFullscreen.value = checkFullscreen();
   };
@@ -307,7 +358,7 @@
   };
 
   /** 页签右键菜单点击事件 */
-  const onTabContextMenu = (option) => {
+  const handleTabContextMenu = (option) => {
     const { command, key, item, active } = option;
     if (command === 'reload') {
       reloadPageTab({ fullPath: item?.fullPath || key });
@@ -325,14 +376,22 @@
   };
 
   /** 页签栏右侧下拉菜单点击事件 */
-  const onTabDropdownMenu = (command, active) => {
+  const handleTabDropdownMenu = (command, active) => {
     if (command === 'reload') {
       reloadPageTab();
     } else if (command === 'fullscreen') {
       updateMaximized(!maximized.value);
     } else {
-      onTabContextMenu({ command, key: active, active });
+      handleTabContextMenu({ command, key: active, active });
     }
+  };
+
+  /** 菜单标题国际化 */
+  const i18n = ({ menu, locale }) => {
+    if (locale && menu?.meta?.lang && menu.meta.lang[locale]) {
+      return menu.meta.lang[locale];
+    }
+    return menu?.component ? void 0 : menu?.meta?.title;
   };
 
   /** 暗黑主题切换开关 */
@@ -373,56 +432,9 @@
         );
       });
   };
-</script>
 
-<script>
-  import * as MenuIcons from './menu-icons';
-
-  export default {
-    name: 'Layout',
-    components: MenuIcons
+  /** 打开主题设置抽屉 */
+  const openSetting = () => {
+    settingVisible.value = true;
   };
 </script>
-
-<style lang="scss" scoped>
-  .dark-switch {
-    padding: 0 6px;
-    position: relative;
-
-    :deep(.el-switch) {
-      height: 22px;
-      line-height: 22px;
-      position: static;
-
-      .el-switch__core {
-        --el-switch-off-color: var(--el-border-color-extra-light);
-        --el-switch-on-color: var(--el-border-color-extra-light);
-        height: 22px;
-        border-radius: 11px;
-        border: 1px solid var(--el-border-color);
-
-        .el-switch__action {
-          color: var(--el-text-color-regular);
-          background: var(--el-bg-color);
-          width: 18px;
-          height: 18px;
-          font-size: 12px;
-          left: 1.35px;
-        }
-      }
-
-      &.is-checked .el-switch__core .el-switch__action {
-        left: calc(100% - 19.35px);
-      }
-
-      &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-      }
-    }
-  }
-</style>

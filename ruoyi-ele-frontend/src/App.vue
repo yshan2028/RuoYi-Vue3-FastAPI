@@ -1,9 +1,9 @@
 <template>
-  <el-config-provider :locale="zh_CN">
+  <el-config-provider :locale="elLocale">
     <ele-config-provider
-      :locale="eleZh_CN"
-      :map-key="MAP_KEY"
+      :locale="eleLocale"
       :table="tableConfig"
+      :map-key="MAP_KEY"
       :license="LICENSE_CODE"
     >
       <ele-app>
@@ -14,31 +14,18 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue';
-  import { useThemeStore } from '@/store/modules/theme';
   import { MAP_KEY, LICENSE_CODE } from '@/config/setting';
-  import zh_CN from 'element-plus/es/locale/lang/zh-cn';
-  import eleZh_CN from 'ele-admin-plus/es/lang/zh_CN';
-  import dayjs from 'dayjs';
-  import 'dayjs/locale/zh-cn';
+  import { useGlobalConfig } from '@/config/use-global-config';
+  import { useThemeStore } from '@/store/modules/theme';
+  import { useLocale } from '@/i18n/use-locale';
 
-  dayjs.locale('zh-cn');
+  /** 组件全局配置 */
+  const { tableConfig } = useGlobalConfig();
 
-  // 恢复主题
+  /** 恢复缓存主题 */
   const themeStore = useThemeStore();
   themeStore.recoverTheme();
 
-  // 高级表格全局配置
-  const tableConfig = ref({
-    response: {
-      dataName: 'rows',
-      countName: 'total'
-    },
-    request: {
-      sortName: 'orderByColumn',
-      orderName: 'isAsc',
-      ascValue: 'ascending',
-      descValue: 'descending'
-    }
-  });
+  /** 国际化配置 */
+  const { elLocale, eleLocale } = useLocale();
 </script>

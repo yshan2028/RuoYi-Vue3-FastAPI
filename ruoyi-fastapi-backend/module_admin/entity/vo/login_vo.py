@@ -1,6 +1,8 @@
 import re
+from datetime import datetime
+
 from pydantic import BaseModel, Field, model_validator
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict, Any
 from exceptions.exception import ModelValidatorException
 from module_admin.entity.vo.menu_vo import MenuModel
 
@@ -54,24 +56,22 @@ class MenuTreeModel(MenuModel):
     children: Optional[Union[List['MenuTreeModel'], None]] = Field(default=None, description='子菜单')
 
 
-class MetaModel(BaseModel):
-    title: Optional[str] = Field(default=None, description='设置路由在侧边栏和面包屑中展示的名字')
-    icon: Optional[str] = Field(default=None, description='设置路由的图标')
-    no_cache: Optional[bool] = Field(default=None, description='设置为true，则不会被 <keep-alive>缓存')
-    link: Optional[str] = Field(default=None, description='内链地址（http(s)://开头）')
-
-
 class RouterModel(BaseModel):
-    name: Optional[str] = Field(default=None, description='路由名称')
+    menu_id: Optional[int] = Field(default=None, description='菜单ID')
+    parent_id: Optional[int] = Field(default=0, description='父菜单ID')
+    title: Optional[str] = Field(default=None, description='菜单名称')
     path: Optional[str] = Field(default=None, description='路由地址')
-    hidden: Optional[bool] = Field(default=None, description='是否隐藏路由，当设置 true 的时候该路由不会再侧边栏出现')
-    redirect: Optional[str] = Field(
-        default=None, description='重定向地址，当设置 noRedirect 的时候该路由在面包屑导航中不可被点击'
-    )
     component: Optional[str] = Field(default=None, description='组件地址')
-    query: Optional[str] = Field(default=None, description='路由参数：如 {"id": 1, "name": "ry"}')
-    always_show: Optional[bool] = Field(
-        default=None, description='当你一个路由下面的children声明的路由大于1个时，自动会变成嵌套的模式--如组件页面'
-    )
-    meta: Optional[MetaModel] = Field(default=None, description='其他元素')
-    children: Optional[Union[List['RouterModel'], None]] = Field(default=None, description='子路由')
+    hidden: Optional[bool] = Field(default=None, description='是否隐藏路由，当设置 true 的时候该路由不会再侧边栏出现')
+    menu_type: Optional[int] = Field(default=0, description='菜单类型（0目录 0菜单 2按钮）')
+    order_num: Optional[int] = Field(default=0, description='显示顺序')
+    authority: Optional[str] = Field(default=None, description='权限标识')
+    icon: Optional[str] = Field(default=None, description='菜单图标')
+    hide: Optional[int] = Field(default=0, description='是否隐藏（0显示 1隐藏）')
+    meta: Optional[str] = Field(default_factory=dict, description='额外信息（多语言、激活路径等）')
+    deleted: Optional[int] = Field(default=0, description='是否删除（0否 1是）')
+    tenant_id: Optional[int] = Field(default=0, description='租户ID')
+    create_time: Optional[datetime] = Field(default=None, description='创建时间')
+    update_time: Optional[datetime] = Field(default=None, description='更新时间')
+    children: Optional[Union[List['RouterModel'], None]] = Field(default=None, description='子菜单')
+    checked: Optional[bool] = Field(default=None, description='是否选中')

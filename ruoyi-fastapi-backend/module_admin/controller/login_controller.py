@@ -17,6 +17,86 @@ from utils.log_util import logger
 from utils.response_util import ResponseUtil
 
 
+data = {"authorities": [
+                {
+                    "menuId": 336,
+                    "parentId": 0,
+                    "title": "Dashboard",
+                    "path": "/dashboard",
+                    "component": None,
+                    "menuType": 0,
+                    "sortNumber": 0,
+                    "authority": None,
+                    "icon": "IconProHomeOutlined",
+                    "hide": 0,
+                    "meta": None,
+                    "deleted": 0,
+                    "tenantId": 4,
+                    "createTime": "2021-02-02 20:00:34",
+                    "updateTime": "2025-01-10 13:35:07",
+                    "children": None,
+                    "checked": None
+                },
+                {
+                    "menuId": 302,
+                    "parentId": 301,
+                    "title": "用户管理",
+                    "path": "/system/user",
+                    "component": "/system/user/index",
+                    "menuType": 0,
+                    "sortNumber": 1,
+                    "authority": None,
+                    "icon": "IconProUserOutlined",
+                    "hide": 0,
+                    "meta": "{\"lang\": {\"zh_TW\": \"用戶管理\", \"en\": \"User\"}}",
+                    "deleted": 0,
+                    "tenantId": 4,
+                    "createTime": "2020-02-26 12:51:55",
+                    "updateTime": "2025-01-10 13:35:25",
+                    "children": None,
+                    "checked": None
+                },
+                {
+                    "menuId": 318,
+                    "parentId": 317,
+                    "title": "查询机构",
+                    "path": None,
+                    "component": None,
+                    "menuType": 1,
+                    "sortNumber": 1,
+                    "authority": "sys:org:list",
+                    "icon": None,
+                    "hide": 0,
+                    "meta": None,
+                    "deleted": 0,
+                    "tenantId": 4,
+                    "createTime": "2020-03-21 18:24:21",
+                    "updateTime": "2023-05-24 11:59:06",
+                    "children": None,
+                    "checked": None
+                },
+                {
+                    "menuId": 362,
+                    "parentId": 361,
+                    "title": "我的资料",
+                    "path": "profile",
+                    "component": "/user/profile/index",
+                    "menuType": 0,
+                    "sortNumber": 1,
+                    "authority": None,
+                    "icon": "IconProUserOutlined",
+                    "hide": 0,
+                    "meta": "{\"lang\": {\"zh_TW\": \"個人資料\", \"en\": \"Profile\"}}",
+                    "deleted": 0,
+                    "tenantId": 4,
+                    "createTime": "2021-02-02 20:09:58",
+                    "updateTime": "2025-01-10 13:34:19",
+                    "children": None,
+                    "checked": None
+                }
+            ]
+}
+
 loginController = APIRouter()
 
 

@@ -1,13 +1,13 @@
 <!-- 搜索表单 -->
 <template>
   <ele-card :body-style="{ paddingBottom: '2px' }">
-    <el-form label-width="72px" @keyup.enter="search">
+    <el-form label-width="72px" @keyup.enter="search" @submit.prevent="">
       <el-row :gutter="8">
         <el-col :lg="6" :md="12" :sm="12" :xs="24">
           <el-form-item label="任务名称">
             <el-input
               clearable
-              v-model.trim="form.job_name"
+              v-model.trim="form.jobName"
               placeholder="请输入"
             />
           </el-form-item>
@@ -16,7 +16,7 @@
           <el-form-item label="任务组名">
             <dict-data
               code="sys_job_group"
-              v-model="form.job_group"
+              v-model="form.jobGroup"
               placeholder="请选择"
             />
           </el-form-item>
@@ -47,15 +47,15 @@
   const emit = defineEmits(['search']);
 
   /** 表单数据 */
-  const { form, resetFields } = useFormData({
-    job_name: '',
-    job_group: '',
+  const [form, resetFields] = useFormData({
+    jobName: '',
+    jobGroup: '',
     status: void 0
   });
 
   /** 搜索 */
   const search = () => {
-    emit('search', form);
+    emit('search', { ...form });
   };
 
   /** 重置 */

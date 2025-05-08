@@ -5,50 +5,68 @@
     check-strictly
     default-expand-all
     :data="data"
-    node-key="dept_id"
-    :props="{ label: 'dept_name' }"
-    :model-value="modelValue"
+    node-key="deptId"
+    :props="{ label: 'deptName' }"
+    v-model="model"
     :placeholder="placeholder"
     class="ele-fluid"
-    @update:modelValue="updateValue"
+    :popper-options="{ strategy: 'fixed' }"
   />
 </template>
 
 <script setup>
-  import { ref } from 'vue';
+  import { ref, watch } from 'vue';
   import { EleMessage, toTree } from 'ele-admin-plus/es';
   import { listDepts } from '@/api/system/dept';
 
-  const emit = defineEmits(['update:modelValue']);
-
-  defineProps({
-    /** 选中的部门 */
-    modelValue: Number,
+  const props = defineProps({
     /** 提示信息 */
     placeholder: {
       type: String,
       default: '请选择归属部门'
-    }
+    },
+    /** 指定机构下拉数据 */
+    organizationData: Array
   });
+
+  /** 选中的部门 */
+  const model = defineModel({ type: [Number, String] });
 
   /** 部门数据 */
   const data = ref([]);
 
-  /** 更新选中数据 */
-  const updateValue = (value) => {
-    emit('update:modelValue', value);
-  };
+  watch(
+    () => props.organizationData,
+    (organizationData) => {
+      if (organizationData != null) {
+        data.value = organizationData;
+      }
+    },
+    {
+      immediate: true,
+      deep: true
+    }
+  );
 
   /** 获取部门数据 */
-  listDepts()
-    .then((list) => {
-      data.value = toTree({
-        data: list,
-        idField: 'dept_id',
-        parentIdField: 'parent_id'
+  const reload = () => {
+    if (props.organizationData != null) {
+      return;
+    }
+    listDepts()
+      .then((list) => {
+        data.value = toTree({
+          data: list,
+          idField: 'deptId',
+          parentIdField: 'parentId'
+        });
+      })
+      .catch((e) => {
+        EleMessage.error(e.message);
       });
-    })
-    .catch((e) => {
-      EleMessage.error(e.message);
-    });
+  };
+
+  reload();
+
+  defineExpose({ reload });
 </script>

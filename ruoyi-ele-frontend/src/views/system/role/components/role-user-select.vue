@@ -4,13 +4,13 @@
     title="选择用户"
     :body-style="{ padding: '4px 16px' }"
     :destroy-on-close="true"
-    :model-value="modelValue"
-    @update:modelValue="updateModelValue"
+    v-model="visible"
+    @open="handleOpen"
   >
     <role-user-search @search="reload" />
     <ele-pro-table
       ref="tableRef"
-      row-key="user_id"
+      row-key="userId"
       :columns="columns"
       :datasource="datasource"
       :show-overflow-tooltip="true"
@@ -28,7 +28,7 @@
       </template>
     </ele-pro-table>
     <template #footer>
-      <el-button @click="updateModelValue(false)">取消</el-button>
+      <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" :loading="loading" @click="save">
         保存
       </el-button>
@@ -37,19 +37,20 @@
 </template>
 
 <script setup>
-  import { ref, watch } from 'vue';
+  import { ref } from 'vue';
   import { EleMessage } from 'ele-admin-plus/es';
   import RoleUserSearch from './role-user-search.vue';
   import { listUnallocatedUsers, addRoleUsers } from '@/api/system/role';
 
-  const emit = defineEmits(['update:modelValue', 'done']);
-
   const props = defineProps({
-    /** 是否显示 */
-    modelValue: Boolean,
     /** 角色id */
-    role_id: Number
+    roleId: Number
   });
+
+  const emit = defineEmits(['done']);
+
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   /** 提交状态 */
   const loading = ref(false);
@@ -74,13 +75,13 @@
       fixed: 'left'
     },
     {
-      prop: 'user_name',
+      prop: 'userName',
       label: '用户名称',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'nick_name',
+      prop: 'nickName',
       label: '用户昵称',
       align: 'center',
       minWidth: 110
@@ -105,7 +106,7 @@
       slot: 'status'
     },
     {
-      prop: 'create_time',
+      prop: 'createTime',
       label: '创建时间',
       align: 'center',
       width: 168
@@ -116,13 +117,8 @@
   const selections = ref([]);
 
   /** 表格数据源 */
-  const datasource = ({ page, limit, where }) => {
-    return listUnallocatedUsers({
-      ...where,
-      pageNum: page,
-      pageSize: limit,
-      role_id: props.role_id
-    });
+  const datasource = ({ pages, where }) => {
+    return listUnallocatedUsers({ ...where, ...pages, roleId: props.roleId });
   };
 
   /** 搜索 */
@@ -130,9 +126,9 @@
     tableRef.value?.reload?.({ page: 1, where });
   };
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
+  /** 关闭弹窗 */
+  const handleCancel = () => {
+    visible.value = false;
   };
 
   /** 保存编辑 */
@@ -142,12 +138,12 @@
       return;
     }
     loading.value = true;
-    const userIds = selections.value.map((d) => d.user_id).join();
-    addRoleUsers({ role_id: props.role_id, userIds })
+    const userIds = selections.value.map((d) => d.userId).join();
+    addRoleUsers({ roleId: props.roleId, userIds })
       .then((msg) => {
         loading.value = false;
         EleMessage.success(msg);
-        updateModelValue(false);
+        handleCancel();
         emit('done');
       })
       .catch((e) => {
@@ -156,14 +152,12 @@
       });
   };
 
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (modelValue && props.data) {
-        reload();
-      } else {
-        selections.value = [];
-      }
+  /** 弹窗打开事件 */
+  const handleOpen = () => {
+    if (props.data) {
+      reload();
+    } else {
+      selections.value = [];
     }
-  );
+  };
 </script>

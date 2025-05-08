@@ -3,16 +3,15 @@
   <el-select
     multiple
     clearable
-    :model-value="modelValue"
+    v-model="model"
     :placeholder="placeholder"
     class="ele-fluid"
-    @update:modelValue="updateValue"
   >
     <el-option
       v-for="item in data"
-      :key="item.post_id"
-      :value="item.post_id"
-      :label="item.post_name"
+      :key="item.postId"
+      :value="item.postId"
+      :label="item.postName"
     />
   </el-select>
 </template>
@@ -22,11 +21,7 @@
   import { EleMessage } from 'ele-admin-plus/es';
   import { listPosts } from '@/api/system/post';
 
-  const emit = defineEmits(['update:modelValue']);
-
   defineProps({
-    /** 选中的岗位 */
-    modelValue: Array,
     /** 提示信息 */
     placeholder: {
       type: String,
@@ -34,13 +29,11 @@
     }
   });
 
-  /** 角色数据 */
-  const data = ref([]);
+  /** 选中的岗位 */
+  const model = defineModel({ type: Array });
 
-  /** 更新选中数据 */
-  const updateValue = (value) => {
-    emit('update:modelValue', value);
-  };
+  /** 岗位数据 */
+  const data = ref([]);
 
   /** 获取角色数据 */
   listPosts()

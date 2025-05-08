@@ -3,24 +3,28 @@
   <ele-modal
     form
     :width="460"
-    :model-value="modelValue"
+    v-model="visible"
     :title="isUpdate ? '修改字典类型' : '添加字典类型'"
-    @update:modelValue="updateModelValue"
+    @open="handleOpen"
   >
-    <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-      <el-form-item label="字典名称" prop="dict_name">
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      label-width="80px"
+      @submit.prevent=""
+    >
+      <el-form-item label="字典名称" prop="dictName">
         <el-input
           clearable
-          :maxlength="20"
-          v-model="form.dict_name"
+          v-model="form.dictName"
           placeholder="请输入字典名称"
         />
       </el-form-item>
-      <el-form-item label="字典类型" prop="dict_type">
+      <el-form-item label="字典类型" prop="dictType">
         <el-input
           clearable
-          :maxlength="20"
-          v-model="form.dict_type"
+          v-model="form.dictType"
           placeholder="请输入字典类型"
         />
       </el-form-item>
@@ -35,14 +39,13 @@
         <el-input
           :rows="4"
           type="textarea"
-          :maxlength="200"
           v-model="form.remark"
           placeholder="请输入备注"
         />
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="updateModelValue(false)">取消</el-button>
+      <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" :loading="loading" @click="save">
         保存
       </el-button>
@@ -51,19 +54,20 @@
 </template>
 
 <script setup>
-  import { ref, reactive, watch } from 'vue';
+  import { ref, reactive, nextTick } from 'vue';
   import { EleMessage } from 'ele-admin-plus/es';
   import { useFormData } from '@/utils/use-form-data';
   import { addDict, updateDict } from '@/api/system/dict';
 
-  const emit = defineEmits(['done', 'update:modelValue']);
-
   const props = defineProps({
-    /** 弹窗是否打开 */
-    modelValue: Boolean,
     /** 修改回显的数据 */
     data: Object
   });
+
+  const emit = defineEmits(['done']);
+
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   /** 是否是修改 */
   const isUpdate = ref(false);
@@ -75,17 +79,17 @@
   const formRef = ref(null);
 
   /** 表单数据 */
-  const { form, resetFields, assignFields } = useFormData({
-    dict_id: void 0,
-    dict_name: '',
-    dict_type: '',
+  const [form, resetFields, assignFields] = useFormData({
+    dictId: void 0,
+    dictName: '',
+    dictType: '',
     status: '0',
-    comments: ''
+    remark: ''
   });
 
   /** 表单验证规则 */
   const rules = reactive({
-    dict_name: [
+    dictName: [
       {
         required: true,
         message: '请输入字典名称',
@@ -93,7 +97,7 @@
         trigger: 'blur'
       }
     ],
-    dict_type: [
+    dictType: [
       {
         required: true,
         message: '请输入字典类型',
@@ -102,6 +106,11 @@
       }
     ]
   });
+
+  /** 关闭弹窗 */
+  const handleCancel = () => {
+    visible.value = false;
+  };
 
   /** 保存编辑 */
   const save = () => {
@@ -115,7 +124,7 @@
         .then((msg) => {
           loading.value = false;
           EleMessage.success(msg);
-          updateModelValue(false);
+          handleCancel();
           emit('done');
         })
         .catch((e) => {
@@ -125,25 +134,19 @@
     });
   };
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
-  };
-
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (modelValue) {
-        if (props.data) {
-          assignFields(props.data);
-          isUpdate.value = true;
-        } else {
-          isUpdate.value = false;
-        }
-      } else {
-        resetFields();
-        formRef.value?.clearValidate?.();
-      }
+  /** 弹窗打开事件 */
+  const handleOpen = () => {
+    if (props.data) {
+      assignFields(props.data);
+      isUpdate.value = true;
+    } else {
+      resetFields();
+      isUpdate.value = false;
     }
-  );
+    nextTick(() => {
+      nextTick(() => {
+        formRef.value?.clearValidate?.();
+      });
+    });
+  };
 </script>

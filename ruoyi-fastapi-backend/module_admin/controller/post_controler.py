@@ -19,6 +19,13 @@ from utils.response_util import ResponseUtil
 postController = APIRouter(prefix='/system/post', dependencies=[Depends(LoginService.get_current_user)])
 
 
+@postController.get('/optionselect', dependencies=[Depends(CheckUserInterfaceAuth('system:post:list'))])
+async def get_system_post_all(request: Request,query_db: AsyncSession = Depends(get_db),):
+    post_all_result = await PostService.get_post_all_services(query_db)
+    logger.info('获取成功')
+
+    return ResponseUtil.success(data=post_all_result)
+
 @postController.get(
     '/list', response_model=PageResponseModel, dependencies=[Depends(CheckUserInterfaceAuth('system:post:list'))]
 )

@@ -2,12 +2,14 @@
  * 登录用户状态管理
  */
 import { defineStore } from 'pinia';
-import { mapTree, isExternalLink } from 'ele-admin-plus/es';
+import { mapTree, isExternalLink, toTree } from 'ele-admin-plus/es';
 import { getUserInfo, getUserMenu } from '@/api/layout';
 import { API_BASE_URL } from '@/config/setting';
 
-export const useUserStore = defineStore({
-  id: 'user',
+/** 直接指定菜单数据 */
+const USER_MENUS = null;
+
+export const useUserStore = defineStore('user', {
   state: () => ({
     /** 当前登录用户的信息 */
     info: null,
@@ -37,10 +39,15 @@ export const useUserStore = defineStore({
       this.roles = result.roles;
       // 用户菜单
       const userMenu = await getUserMenu().catch((e) => console.error(e));
-      if (!userMenu) {
-        return {};
-      }
-      const { menus, homePath } = formatMenus(userMenu);
+
+      const { menus, homePath } = formatMenus(
+        USER_MENUS ??
+          toTree({
+            data: userMenu?.filter?.((d) => d.menuType !== 1),
+            idField: 'menuId',
+            parentIdField: 'parentId'
+          })
+      );
       this.setMenus(menus);
       return { menus, homePath };
     },
@@ -60,8 +67,32 @@ export const useUserStore = defineStore({
     /**
      * 更新菜单数据
      */
-    setMenus(value) {
-      this.menus = value;
+    setMenus(menus) {
+      this.menus = menus;
+    },
+    /**
+     * 更新菜单的徽章
+     * @param path 菜单地址
+     * @param value 徽章值
+     * @param type 徽章类型
+     */
+    setMenuBadge(path, value, type) {
+      this.menus = mapTree(this.menus, (m) => {
+        if (path === m.path) {
+          const meta = m.meta || {};
+          return {
+            ...m,
+            meta: {
+              ...meta,
+              props: {
+                ...meta.props,
+                badge: value == null ? void 0 : { value, type }
+              }
+            }
+          };
+        }
+        return m;
+      });
     },
     /**
      * 更新字典数据
@@ -86,22 +117,19 @@ function formatMenus(data, childField = 'children') {
   let homeTitle;
   const menus = mapTree(
     data,
-    (item, _index, parent) => {
-      const meta = item.meta;
-      const { path, rPath } = formatPath(item.path, parent?.path, item.query);
+    (item) => {
+      const meta =
+        typeof item.meta === 'string'
+          ? JSON.parse(item.meta || '{}')
+          : item.meta;
       const menu = {
-        path: path,
-        component: formatComponent(item.component),
-        meta: {
-          hide: !!item.hidden,
-          keepAlive: !meta.noCache,
-          routePath: rPath,
-          ...meta
-        }
+        path: item.path,
+        component: item.component,
+        meta: { title: item.title, icon: item.icon, hide: !!item.hide, ...meta }
       };
-      const children = item[childField]?.filter?.(
-        (d) => !(d.meta?.hide ?? d.hide)
-      );
+      const children = item[childField]
+        ? item[childField].filter((d) => !(d.meta?.hide ?? d.hide))
+        : void 0;
       if (!children?.length) {
         if (!homePath && menu.path && !isExternalLink(menu.path)) {
           homePath = menu.path;
@@ -127,49 +155,4 @@ function formatMenus(data, childField = 'children') {
     childField
   );
   return { menus, homePath, homeTitle };
-}
-
-/**
- * 组件路径处理以兼容若依默认数据
- * @param component 组件路径
- */
-function formatComponent(component) {
-  if (!component || isExternalLink(component)) {
-    return component;
-  }
-  // 修改内链格式
-  if ('tool/swagger/index' === component) {
-    return `${API_BASE_URL}/swagger-ui/index.html`;
-  }
-  if ('monitor/druid/index' === component) {
-    return `${API_BASE_URL}/druid/login.html`;
-  }
-  if ('tool/build/index' === component) {
-    return 'https://yupk.github.io/vue3-code-generator/';
-  }
-  return component.startsWith('/') ? component : `/${component}`;
-}
-
-/**
- * 菜单地址处理以兼容若依
- * @param mPath 菜单地址
- * @param pPath 父级菜单地址
- * @param query 路由参数
- */
-function formatPath(mPath, pPath, query) {
-  if (!mPath || isExternalLink(mPath)) {
-    return { path: mPath };
-  }
-  const path = !pPath || mPath.startsWith('/') ? mPath : `${pPath}/${mPath}`;
-  if (query) {
-    try {
-      const params = new URLSearchParams(JSON.parse(query)).toString();
-      if (params) {
-        return { path: `${path}?${params}`, rPath: path };
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
-  return { path };
 }

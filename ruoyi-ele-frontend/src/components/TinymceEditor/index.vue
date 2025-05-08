@@ -54,6 +54,8 @@
     openAlert
   } from './util';
 
+  defineOptions({ name: 'TinymceEditor' });
+
   const props = defineProps({
     /** 编辑器唯一id */
     id: String,
@@ -165,7 +167,7 @@
     () => props.modelValue,
     (val, prevVal) => {
       if (val !== prevVal) {
-        setContent(val);
+        setContent(val || '');
       }
     }
   );
@@ -219,16 +221,14 @@
   });
 </script>
 
-<script>
-  export default {
-    name: 'TinymceEditor'
-  };
-</script>
-
 <style>
   body .tox.tox-tinymce-aux,
   body.tox-fullscreen .tox.tox-tinymce-aux {
     z-index: 19990000;
+  }
+
+  .tox-menu.tox-collection.tox-collection--list {
+    max-height: 420px !important;
   }
 
   textarea[id^='tiny-vue'] {

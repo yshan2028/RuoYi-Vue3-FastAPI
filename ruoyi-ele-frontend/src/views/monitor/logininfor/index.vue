@@ -6,19 +6,21 @@
       <!-- 表格 -->
       <ele-pro-table
         ref="tableRef"
-        row-key="info_id"
+        row-key="infoId"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
         v-model:selections="selections"
         highlight-current-row
+        :export-config="{ fileName: '登录日志' }"
         cache-key="systemLogLogininforTable"
       >
         <template #toolbar>
           <el-button
             type="primary"
             class="ele-btn-icon"
-            :icon="Unlock"
+            :icon="UnlockOutlined"
+            v-permission="'monitor:logininfor:unlock'"
             @click="unlock"
           >
             解锁
@@ -26,7 +28,8 @@
           <el-button
             type="danger"
             class="ele-btn-icon"
-            :icon="Delete"
+            :icon="DeleteOutlined"
+            v-permission="'monitor:logininfor:remove'"
             @click="removeBatch()"
           >
             删除
@@ -35,12 +38,18 @@
             plain
             type="danger"
             class="ele-btn-icon hidden-sm-and-down"
-            :icon="Delete"
+            :icon="CloseCircleOutlined"
+            v-permission="'monitor:logininfor:remove'"
             @click="removeAll"
           >
             清空
           </el-button>
-          <el-button class="ele-btn-icon" :icon="Download" @click="exportData">
+          <el-button
+            class="ele-btn-icon"
+            :icon="DownloadOutlined"
+            v-permission="'monitor:logininfor:export'"
+            @click="exportData"
+          >
             导出
           </el-button>
         </template>
@@ -58,9 +67,14 @@
 
 <script setup>
   import { ref, computed } from 'vue';
-  import { Delete, Download, Unlock } from '@element-plus/icons-vue';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
+  import {
+    UnlockOutlined,
+    DeleteOutlined,
+    CloseCircleOutlined,
+    DownloadOutlined
+  } from '@/components/icons';
   import { useDictData } from '@/utils/use-dict-data';
   import LogininforSearch from './components/logininfor-search.vue';
   import {
@@ -70,6 +84,8 @@
     clearLogininfors,
     unlockLogininfors
   } from '@/api/monitor/logininfor';
+
+  defineOptions({ name: 'SystemLogLogininfor' });
 
   /** 字典数据 */
   const [statusDicts] = useDictData(['sys_common_status']);
@@ -95,7 +111,7 @@
         fixed: 'left'
       },
       {
-        prop: 'user_name',
+        prop: 'userName',
         label: '用户名称',
         sortable: 'custom',
         align: 'center',
@@ -108,7 +124,7 @@
         minWidth: 110
       },
       {
-        prop: 'login_location',
+        prop: 'loginLocation',
         label: '登录地点',
         align: 'center',
         minWidth: 110
@@ -132,9 +148,11 @@
         slot: 'status',
         align: 'center',
         filters: statusDicts.value.map((d) => {
-          return { text: d.dict_label, value: d.dict_value };
+          return { text: d.dictLabel, value: d.dictValue };
         }),
-        filterMultiple: false
+        filterMultiple: false,
+        formatter: (row) =>
+          statusDicts.value.find((d) => d.dictValue == row.status)?.dictLabel
       },
       {
         prop: 'msg',
@@ -143,11 +161,11 @@
         minWidth: 110
       },
       {
-        prop: 'login_time',
+        prop: 'loginTime',
         label: '登录日期',
         sortable: 'custom',
         align: 'center',
-        minWidth: 110
+        width: 180
       }
     ];
   });
@@ -156,14 +174,8 @@
   const selections = ref([]);
 
   /** 表格数据源 */
-  const datasource = ({ page, limit, where, orders, filters }) => {
-    return pageLogininfors({
-      ...where,
-      ...orders,
-      ...filters,
-      pageNum: page,
-      pageSize: limit
-    });
+  const datasource = ({ pages, where, orders, filters }) => {
+    return pageLogininfors({ ...where, ...orders, ...filters, ...pages });
   };
 
   /** 刷新表格 */
@@ -173,7 +185,10 @@
 
   /** 导出数据 */
   const exportData = () => {
-    const loading = EleMessage.loading('请求中..');
+    const loading = EleMessage.loading({
+      message: '请求中..',
+      plain: true
+    });
     tableRef.value?.fetch?.(({ where, orders, filters }) => {
       exportLogininfors({ ...where, ...orders, ...filters })
         .then(() => {
@@ -192,14 +207,17 @@
       EleMessage.error('请至少选择一条数据');
       return;
     }
-    const ids = selections.value.map((d) => d.info_id);
+    const ids = selections.value.map((d) => d.infoId);
     ElMessageBox.confirm(
       `是否确认删除访问编号为"${ids.join()}"的数据项?`,
       '系统提示',
       { type: 'warning', draggable: true, customStyle: { maxWidth: '442px' } }
     )
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
         removeLogininfors(ids)
           .then(() => {
             loading.close();
@@ -221,7 +239,10 @@
       draggable: true
     })
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
         clearLogininfors()
           .then(() => {
             loading.close();
@@ -246,17 +267,20 @@
       EleMessage.error('只能选择一条数据');
       return;
     }
-    const user_name = selections.value[0].user_name;
-    ElMessageBox.confirm(`是否确认解锁用户"${user_name}"数据项?`, '系统提示', {
+    const userName = selections.value[0].userName;
+    ElMessageBox.confirm(`是否确认解锁用户"${userName}"数据项?`, '系统提示', {
       type: 'warning',
       draggable: true
     })
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
-        unlockLogininfors(user_name)
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
+        unlockLogininfors(userName)
           .then(() => {
             loading.close();
-            EleMessage.success(`用户${user_name}解锁成功`);
+            EleMessage.success(`用户${userName}解锁成功`);
             reload();
           })
           .catch((e) => {
@@ -265,11 +289,5 @@
           });
       })
       .catch(() => {});
-  };
-</script>
-
-<script>
-  export default {
-    name: 'SystemLogLogininfor'
   };
 </script>

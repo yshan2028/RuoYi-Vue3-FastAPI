@@ -1,12 +1,12 @@
 <!-- 搜索表单 -->
 <template>
-  <el-form label-width="72px" @keyup.enter="search">
+  <el-form label-width="72px" @keyup.enter="search" @submit.prevent="">
     <el-row :gutter="8">
       <el-col :lg="8" :md="8" :sm="12" :xs="24">
         <el-form-item label="数据标签">
           <el-input
             clearable
-            v-model.trim="form.dict_label"
+            v-model.trim="form.dictLabel"
             placeholder="请输入"
           />
         </el-form-item>
@@ -36,14 +36,14 @@
   const emit = defineEmits(['search']);
 
   /** 表单数据 */
-  const { form, resetFields } = useFormData({
-    dict_label: '',
+  const [form, resetFields] = useFormData({
+    dictLabel: '',
     status: void 0
   });
 
   /** 搜索 */
   const search = () => {
-    emit('search', form);
+    emit('search', { ...form });
   };
 
   /** 重置 */

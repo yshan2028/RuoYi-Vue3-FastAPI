@@ -1,95 +1,105 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <ele-modal
-    :width="1000"
+    :width="1100"
     title="代码预览"
     position="center"
-    :body-style="{ padding: '0 16px 16px 16px', height: 'calc(100vh - 86px)' }"
-    :model-value="modelValue"
-    @update:modelValue="updateModelValue"
-    @opened="onOpened"
+    :header-style="{ paddingBottom: '8px' }"
+    :body-style="{
+      padding: '0 8px 8px 8px',
+      height: 'calc(100vh - 66px)',
+      maxHeight: 'calc(100dvh - 66px)'
+    }"
+    v-model="visible"
+    :style="{ '--ele-modal-mobile-space': '8px' }"
+    @opened="handleOpened"
+    @closed="handleClosed"
   >
-    <ele-loading :loading="loading" class="code-wrapper">
-      <ele-tabs
-        v-if="data.length"
-        :items="data"
-        v-model="active"
-        :mousewheel="true"
-      >
-        <template v-for="d in data" :key="d.name" #[d.name]="{ item }">
-          <div class="code-view">
-            <pre v-html="item.meta?.code"></pre>
-            <ele-copyable
-              :text="item.meta?.text"
-              :iconProps="{ style: { color: '#bdc3d0' } }"
-            />
-          </div>
-        </template>
-      </ele-tabs>
+    <ele-loading
+      :loading="loading"
+      :spinner-style="{ background: 'transparent' }"
+      class="code-wrapper"
+    >
+      <div class="code-menus" v-if="data.length">
+        <el-tree
+          ref="treeRef"
+          :data="data"
+          node-key="key"
+          :default-expand-all="true"
+          :style="{
+            '--ele-tree-item-height': '24px',
+            '--ele-tree-item-margin': '0px',
+            '--ele-tree-item-active-color': '#fff',
+            '--ele-tree-item-active-bg': '#707070',
+            '--ele-tree-item-active-hover-bg': '#707070',
+            '--el-tree-node-hover-bg-color': '#444444',
+            '--el-tree-expand-icon-color': '#e6edf3'
+          }"
+          @node-click="handleNodeClick"
+        >
+          <template #default="{ data: d }">
+            <div
+              :class="[
+                'el-tree-node__label',
+                { 'is-active': d.key === active }
+              ]"
+            >
+              {{ d.label }}
+            </div>
+          </template>
+        </el-tree>
+      </div>
+      <gen-code v-if="current" :data="current" />
     </ele-loading>
   </ele-modal>
 </template>
 
 <script setup>
-  import { ref, watch } from 'vue';
+  import { ref } from 'vue';
   import { EleMessage } from 'ele-admin-plus/es';
-  import { previewCode } from '@/api/tool/gen';
-  import hljs from 'highlight.js';
-  import 'highlight.js/styles/github-dark.css';
-  import java from 'highlight.js/lib/languages/java';
-  import xml from 'highlight.js/lib/languages/xml';
-  import sql from 'highlight.js/lib/languages/sql';
-
-  hljs.registerLanguage('java', java);
-  hljs.registerLanguage('xml', xml);
-  hljs.registerLanguage('sql', sql);
-  hljs.registerLanguage('vue', xml);
-
-  const emit = defineEmits(['update:modelValue']);
+  import { previewCodePro } from '@/api/tool/gen';
+  import GenCode from './gen-code.vue';
 
   const props = defineProps({
-    /** 是否显示 */
-    modelValue: Boolean,
     /** 代码生成id */
     id: Number
   });
 
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
+
+  /** 树组件 */
+  const treeRef = ref(null);
+
   /** 请求状态 */
   const loading = ref(true);
 
-  /** 数据 */
+  /** 树数据 */
   const data = ref([]);
 
-  /** 页签选中 */
+  /** 选中数据 */
+  const current = ref();
+
+  /** 树选中 */
   const active = ref();
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
+  /** 树点击事件 */
+  const handleNodeClick = (item) => {
+    if (!item.children?.length) {
+      current.value = item;
+      active.value = current.value.key;
+    }
   };
 
   /** 查询 */
   const query = () => {
     loading.value = true;
-    previewCode(props.id)
+    previewCodePro(props.id)
       .then((result) => {
         loading.value = false;
-        const temp = [];
-        Object.keys(result).forEach((k) => {
-          const name = k.substring(k.lastIndexOf('/') + 1, k.indexOf('.vm'));
-          const language = name.substring(name.indexOf('.') + 1, name.length);
-          temp.push({
-            name,
-            label: name,
-            meta: {
-              language,
-              code: hljs.highlight(result[k], { language }).value,
-              text: result[k]
-            }
-          });
-        });
-        active.value = temp[0]?.name;
-        data.value = temp;
+        data.value = result;
+        current.value = data.value[0].children[0].children[0];
+        active.value = current.value.key;
       })
       .catch((e) => {
         loading.value = false;
@@ -98,72 +108,90 @@
   };
 
   /** 查询数据 */
-  const onOpened = () => {
+  const handleOpened = () => {
     if (props.id) {
       query();
     }
   };
 
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (!modelValue) {
-        data.value = [];
-      }
-    }
-  );
+  /** 弹窗关闭事件 */
+  const handleClosed = () => {
+    current.value = void 0;
+    active.value = void 0;
+    data.value = [];
+  };
 </script>
 
 <style lang="scss" scoped>
-  .code-view {
+  .code-wrapper {
     height: 100%;
-    position: relative;
+    display: flex;
+    box-sizing: border-box;
+    border: 1px solid #000;
+    background: #272727;
+    border-radius: 8px;
+    overflow: hidden;
+  }
 
-    & > pre {
-      color: #e6edf3;
-      background: #282c34;
-      padding: 16px;
-      border-radius: 8px;
-      box-sizing: border-box;
-      margin: 0;
-      height: 100%;
-      overflow: auto;
+  .code-menus {
+    flex-shrink: 0;
+    width: 280px;
+    height: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border-right: 1px solid #000;
+    overflow: auto;
+    --ele-scrollbar-color: #5e5e5e;
+    --ele-scrollbar-hover-color: #707070;
+
+    :deep(.el-tree-node__content) {
+      position: relative;
+      z-index: 0;
+
+      & > .el-tree-node__label {
+        color: #e6edf3;
+        font-size: 13px;
+        font-family: monospace;
+
+        &::before {
+          content: '';
+          border-radius: var(--ele-tree-item-radius);
+          transition: background-color 0.2s;
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: -1;
+        }
+
+        &.is-active {
+          color: var(--ele-tree-item-active-color);
+
+          &::before {
+            background: var(--ele-tree-item-active-bg);
+          }
+        }
+      }
+
+      &:hover > .el-tree-node__label.is-active::before {
+        background: var(--ele-tree-item-active-hover-bg);
+      }
     }
 
-    & > .ele-copyable {
-      position: absolute;
-      top: 8px;
-      right: 12px;
-      background: #161b22;
-      border-radius: 4px;
+    :deep(.el-tree) {
+      background: none;
 
-      :deep(.ele-copyable-icon) {
-        padding: 6px;
+      .el-tree-node__content > .el-tree-node__expand-icon.is-leaf {
         margin: 0;
+        padding: 0;
       }
     }
   }
 
-  .code-wrapper {
-    height: 100%;
-
-    :deep(.ele-tabs) {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-
-      .el-tabs__header {
-        flex-shrink: 0;
-      }
-
-      .el-tabs__content {
-        flex: 1;
-        padding-top: 10px;
-      }
-
-      .el-tab-pane {
-        height: 100%;
-      }
+  @media screen and (max-width: 768px) {
+    .code-menus {
+      width: 168px;
     }
   }
 </style>

@@ -3,19 +3,21 @@
   <!-- 表格 -->
   <ele-pro-table
     ref="tableRef"
-    row-key="user_id"
+    row-key="userId"
     :columns="columns"
     :datasource="datasource"
     :show-overflow-tooltip="true"
     v-model:selections="selections"
     highlight-current-row
+    :export-config="{ fileName: '用户数据' }"
+    :style="{ paddingBottom: '16px' }"
     cache-key="systemUserTable"
   >
     <template #toolbar>
       <el-button
         type="primary"
         class="ele-btn-icon"
-        :icon="Plus"
+        :icon="PlusOutlined"
         v-permission="'system:user:add'"
         @click="openEdit()"
       >
@@ -24,7 +26,7 @@
       <el-button
         type="danger"
         class="ele-btn-icon hidden-sm-and-down"
-        :icon="Delete"
+        :icon="DeleteOutlined"
         v-permission="'system:user:remove'"
         @click="removeBatch()"
       >
@@ -32,7 +34,7 @@
       </el-button>
       <el-button
         class="ele-btn-icon"
-        :icon="Upload"
+        :icon="UploadOutlined"
         v-permission="'system:user:import'"
         @click="openImport"
       >
@@ -40,7 +42,7 @@
       </el-button>
       <el-button
         class="ele-btn-icon"
-        :icon="Download"
+        :icon="DownloadOutlined"
         v-permission="'system:user:export'"
         @click="exportData"
       >
@@ -55,39 +57,46 @@
       />
     </template>
     <template #action="{ row }">
-      <el-link
-        type="primary"
-        :underline="false"
-        v-permission="'system:user:edit'"
-        @click="openEdit(row)"
-      >
-        修改
-      </el-link>
-      <el-divider v-permission="'system:user:remove'" direction="vertical" />
-      <el-link type="danger" :underline="false" @click="removeBatch(row)">
-        删除
-      </el-link>
-      <el-divider v-if="moreItems.length" direction="vertical" />
-      <ele-dropdown
-        v-if="moreItems.length"
-        :items="moreItems"
-        style="display: inline"
-        @command="(key) => dropClick(key, row)"
-      >
-        <el-link type="primary" :underline="false">
-          <span>更多</span>
-          <el-icon :size="12" style="vertical-align: -1px; margin-left: 2px">
-            <arrow-down />
-          </el-icon>
+      <template v-if="row.userId !== 1">
+        <el-link
+          type="primary"
+          :underline="false"
+          v-permission="'system:user:edit'"
+          @click="openEdit(row)"
+        >
+          修改
         </el-link>
-      </ele-dropdown>
+        <el-divider v-permission="'system:user:remove'" direction="vertical" />
+        <el-link
+          v-permission="'system:user:remove'"
+          type="danger"
+          :underline="false"
+          @click="removeBatch(row)"
+        >
+          删除
+        </el-link>
+        <el-divider v-if="moreItems.length" direction="vertical" />
+        <ele-dropdown
+          v-if="moreItems.length"
+          :items="moreItems"
+          style="display: inline"
+          @command="(key) => dropClick(key, row)"
+        >
+          <el-link type="primary" :underline="false">
+            <span>更多</span>
+            <el-icon :size="12" style="vertical-align: -1px; margin-left: 2px">
+              <ArrowDown />
+            </el-icon>
+          </el-link>
+        </ele-dropdown>
+      </template>
     </template>
   </ele-pro-table>
   <!-- 编辑弹窗 -->
   <user-edit
     :data="current"
     v-model="showEdit"
-    :dept-id="dept_id"
+    :dept-id="deptId"
     @done="reload"
   />
   <!-- 导入弹窗 -->
@@ -98,16 +107,17 @@
 
 <script setup>
   import { ref, watch, computed } from 'vue';
-  import {
-    Plus,
-    Delete,
-    ArrowDown,
-    Upload,
-    Download
-  } from '@element-plus/icons-vue';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
+  import {
+    PlusOutlined,
+    DeleteOutlined,
+    UploadOutlined,
+    DownloadOutlined,
+    ArrowDown
+  } from '@/components/icons';
   import { usePermission } from '@/utils/use-permission';
+  import { useDictData } from '@/utils/use-dict-data';
   import UserSearch from './user-search.vue';
   import UserEdit from './user-edit.vue';
   import UserImport from './user-import.vue';
@@ -122,10 +132,13 @@
 
   const props = defineProps({
     /** 部门id */
-    dept_id: Number
+    deptId: Number
   });
 
   const { hasPermission } = usePermission();
+
+  /** 字典数据 */
+  const [statusDicts] = useDictData(['sys_normal_disable']);
 
   /** 搜索栏实例 */
   const searchRef = ref(null);
@@ -134,66 +147,77 @@
   const tableRef = ref(null);
 
   /** 表格列配置 */
-  const columns = ref([
-    {
-      type: 'selection',
-      columnKey: 'selection',
-      width: 50,
-      align: 'center',
-      fixed: 'left'
-    },
-    {
-      type: 'index',
-      columnKey: 'index',
-      width: 50,
-      align: 'center',
-      fixed: 'left'
-    },
-    {
-      prop: 'user_name',
-      label: '用户名称',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'nick_name',
-      label: '用户昵称',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'dept.dept_name',
-      label: '部门',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'phonenumber',
-      label: '手机号码',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'status',
-      label: '状态',
-      width: 90,
-      align: 'center',
-      slot: 'status'
-    },
-    {
-      prop: 'create_time',
-      label: '创建时间',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      columnKey: 'action',
-      label: '操作',
-      width: 180,
-      align: 'center',
-      slot: 'action'
-    }
-  ]);
+  const columns = computed(() => {
+    return [
+      {
+        type: 'selection',
+        columnKey: 'selection',
+        width: 48,
+        align: 'center',
+        fixed: 'left',
+        showOverflowTooltip: false
+      },
+      {
+        type: 'index',
+        columnKey: 'index',
+        width: 48,
+        align: 'center',
+        fixed: 'left'
+      },
+      {
+        prop: 'userName',
+        label: '用户名称',
+        align: 'center',
+        minWidth: 100
+      },
+      {
+        prop: 'nickName',
+        label: '用户昵称',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'dept.deptName',
+        label: '部门',
+        align: 'center',
+        minWidth: 100
+      },
+      {
+        prop: 'phonenumber',
+        label: '手机号码',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'status',
+        label: '状态',
+        width: 90,
+        align: 'center',
+        slot: 'status',
+        filters: statusDicts.value.map((d) => {
+          return { text: d.dictLabel, value: d.dictValue };
+        }),
+        filterMultiple: false,
+        formatter: (row) =>
+          statusDicts.value.find((d) => d.dictValue == row.status)?.dictLabel
+      },
+      {
+        prop: 'createTime',
+        label: '创建时间',
+        align: 'center',
+        width: 180
+      },
+      {
+        columnKey: 'action',
+        label: '操作',
+        width: 180,
+        align: 'center',
+        slot: 'action',
+        hideInPrint: true,
+        hideInExport: true
+      }
+    ];
+  });
 
   /** 表格选中数据 */
   const selections = ref([]);
@@ -223,14 +247,8 @@
   });
 
   /** 表格数据源 */
-  const datasource = ({ page, limit, where, orders }) => {
-    return pageUsers({
-      ...where,
-      ...orders,
-      pageNum: page,
-      pageSize: limit,
-      dept_id: props.dept_id
-    });
+  const datasource = ({ pages, where, filters }) => {
+    return pageUsers({ ...where, ...filters, ...pages, deptId: props.deptId });
   };
 
   /** 搜索 */
@@ -257,13 +275,16 @@
       return;
     }
     ElMessageBox.confirm(
-      `是否确认删除用户名称为"${rows.map((d) => d.user_name).join()}"的数据项？`,
+      `是否确认删除用户名称为"${rows.map((d) => d.userName).join()}"的数据项？`,
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
-        removeUsers(rows.map((d) => d.user_id))
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
+        removeUsers(rows.map((d) => d.userId))
           .then(() => {
             loading.close();
             EleMessage.success('删除成功');
@@ -280,7 +301,7 @@
   /** 修改用户状态 */
   const editStatus = (checked, row) => {
     const status = checked ? '0' : '1';
-    updateUserStatus(row.user_id, status)
+    updateUserStatus(row.userId, status)
       .then((msg) => {
         row.status = status;
         EleMessage.success(msg);
@@ -293,15 +314,14 @@
   /** 下拉菜单点击事件 */
   const dropClick = (key, row) => {
     if (key === 'password') {
-      ElMessageBox.prompt(`请输入"${row.user_name}"的新密码:`, '重置密码', {
+      ElMessageBox.prompt(`请输入"${row.userName}"的新密码:`, '重置密码', {
         inputPlaceholder: '请输入5-18位非空白字符',
         inputPattern: /^[\S]{5,18}$/,
         inputErrorMessage: '密码必须为5-18位非空白字符',
-        customStyle: { '--ele-message-box-body-padding': '4px 20px 0 20px' },
         draggable: true
       })
         .then(({ value }) => {
-          updateUserPassword(row.user_id, value)
+          updateUserPassword(row.userId, value)
             .then((msg) => {
               EleMessage.success(msg);
             })
@@ -318,7 +338,10 @@
 
   /** 导出数据 */
   const exportData = () => {
-    const loading = EleMessage.loading('请求中..');
+    const loading = EleMessage.loading({
+      message: '请求中..',
+      plain: true
+    });
     tableRef.value?.fetch?.(({ where, orders, filters }) => {
       exportUsers({ ...where, ...orders, ...filters })
         .then(() => {
@@ -333,7 +356,7 @@
 
   // 监听机构 id 变化
   watch(
-    () => props.dept_id,
+    () => props.deptId,
     () => {
       searchRef.value?.resetFields?.();
       reload({});

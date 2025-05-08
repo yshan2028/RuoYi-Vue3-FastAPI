@@ -1,11 +1,10 @@
 import request from '@/utils/request';
-import { toURLSearch } from '@/utils/common';
 
 /**
  * 分页查询在线用户
  */
 export async function pageOnlines(params) {
-  const res = await request.get('/monitor/online/list?' + toURLSearch(params));
+  const res = await request.get('/monitor/online/list', { params });
   if (res.data.code === 200) {
     return res.data;
   }

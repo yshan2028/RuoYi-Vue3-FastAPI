@@ -1,13 +1,11 @@
 import request from '@/utils/request';
-import { download, toFormData, toURLSearch } from '@/utils/common';
+import { download, toFormData, checkDownloadRes } from '@/utils/common';
 
 /**
  * 分页查询登录日志
  */
 export async function pageLogininfors(params) {
-  const res = await request.get(
-    '/monitor/logininfor/list?' + toURLSearch(params)
-  );
+  const res = await request.get('/monitor/logininfor/list', { params });
   if (res.data.code === 200) {
     return res.data;
   }
@@ -24,7 +22,8 @@ export async function exportLogininfors(params) {
     data: toFormData(params),
     responseType: 'blob'
   });
-  download(res.data, `logininfor_${new Date().getTime()}.xlsx`);
+  await checkDownloadRes(res);
+  download(res.data, `logininfor_${Date.now()}.xlsx`);
 }
 
 /**

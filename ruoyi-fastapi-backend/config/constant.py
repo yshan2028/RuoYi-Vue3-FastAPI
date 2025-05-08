@@ -145,11 +145,11 @@ class MenuConstant:
     INNER_LINK: InnerLink组件标识
     """
 
-    TYPE_DIR = 'M'
-    TYPE_MENU = 'C'
-    TYPE_BUTTON = 'F'
-    YES_FRAME = 0
-    NO_FRAME = 1
+    TYPE_DIR = 0
+    TYPE_MENU = 0
+    TYPE_BUTTON = 1
+    YES_FRAME = 0  # 是外链
+    NO_FRAME = 1  # 非外链
     LAYOUT = 'Layout'
     PARENT_VIEW = 'ParentView'
     INNER_LINK = 'InnerLink'
@@ -166,7 +166,7 @@ class GenConstant:
     TREE_PARENT_CODE: 树父编码字段
     TREE_NAME: 树名称字段
     PARENT_MENU_ID: 上级菜单ID字段
-    PARENT_MENU_NAME: 上级菜单名称字段
+    PARENT_TITLE: 上级菜单名称字段
     COLUMNTYPE_STR: 数据库字符串类型
     COLUMNTYPE_TEXT: 数据库文本类型
     COLUMNTYPE_TIME: 数据库时间类型
@@ -202,7 +202,7 @@ class GenConstant:
     TREE_PARENT_CODE = 'treeParentCode'
     TREE_NAME = 'treeName'
     PARENT_MENU_ID = 'parentMenuId'
-    PARENT_MENU_NAME = 'parentMenuName'
+    PARENT_TITLE = 'parentTitle'
     COLUMNTYPE_STR = (
         ['character varying', 'varchar', 'character', 'char']
         if DataBaseConfig.db_type == 'postgresql'

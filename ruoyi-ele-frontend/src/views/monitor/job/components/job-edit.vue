@@ -3,41 +3,51 @@
   <ele-modal
     form
     :width="640"
-    :model-value="modelValue"
+    v-model="visible"
     :body-style="{ paddingLeft: '8px' }"
     :title="isUpdate ? '修改定时任务' : '添加定时任务'"
-    @update:modelValue="updateModelValue"
+    @open="handleOpen"
   >
-    <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      label-width="100px"
+      @submit.prevent=""
+    >
       <el-row :gutter="16">
         <el-col :sm="12" :xs="24">
-          <el-form-item label="任务名称" prop="job_name">
+          <el-form-item label="任务名称" prop="jobName">
             <el-input
               clearable
-              :maxlength="20"
-              v-model="form.job_name"
+              v-model="form.jobName"
               placeholder="请输入任务名称"
             />
           </el-form-item>
         </el-col>
         <el-col :sm="12" :xs="24">
-          <el-form-item label="任务分组" prop="job_group">
+          <el-form-item label="任务分组" prop="jobGroup">
             <dict-data
               code="sys_job_group"
-              v-model="form.job_group"
+              v-model="form.jobGroup"
               placeholder="请选择任务分组"
             />
           </el-form-item>
         </el-col>
       </el-row>
-      <el-form-item prop="invoke_target">
+      <el-form-item prop="invokeTarget">
         <template #label>
-          <ele-tooltip>
+          <ele-tooltip
+            placement="top-start"
+            :popper-options="{
+              modifiers: [{ name: 'offset', options: { offset: [-12, 10] } }]
+            }"
+          >
             <el-icon
-              :size="16"
+              :size="15"
               style="align-self: center; margin-right: 2px; cursor: help"
             >
-              <warning style="opacity: 0.6" />
+              <QuestionCircleOutlined style="opacity: 0.6" />
             </el-icon>
             <template #content>
               <div>Bean调用示例: ryTask.ryParams('ry')</div>
@@ -51,39 +61,37 @@
         </template>
         <el-input
           clearable
-          :maxlength="200"
-          v-model="form.invoke_target"
+          v-model="form.invokeTarget"
           placeholder="请输入调用目标字符串"
         />
       </el-form-item>
-      <el-form-item label="cron表达式" prop="cron_expression">
+      <el-form-item label="cron表达式" prop="cronExpression">
         <el-input
           clearable
-          :maxlength="200"
-          v-model="form.cron_expression"
+          v-model="form.cronExpression"
           placeholder="请输入cron执行表达式"
         >
           <template #append>
             <el-button class="ele-btn-icon" @click="openCron">
               <span>生成表达式</span>
-              <el-icon style="margin: 0 -3px 0 4px">
-                <Clock />
+              <el-icon style="margin: -1px -4px 0 4px">
+                <ClockCircleOutlined />
               </el-icon>
             </el-button>
           </template>
         </el-input>
       </el-form-item>
-      <el-form-item label="执行策略" prop="misfire_policy">
-        <el-radio-group v-model="form.misfire_policy">
-          <el-radio-button label="1">立即执行</el-radio-button>
-          <el-radio-button label="2">执行一次</el-radio-button>
-          <el-radio-button label="3">放弃执行</el-radio-button>
+      <el-form-item label="执行策略" prop="misfirePolicy">
+        <el-radio-group v-model="form.misfirePolicy" class="policy-radio-group">
+          <el-radio-button value="1" label="立即执行" />
+          <el-radio-button value="2" label="执行一次" />
+          <el-radio-button value="3" label="放弃执行" />
         </el-radio-group>
       </el-form-item>
       <el-form-item label="是否并发" prop="concurrent">
         <el-radio-group v-model="form.concurrent">
-          <el-radio-button label="0">允许</el-radio-button>
-          <el-radio-button label="1">禁止</el-radio-button>
+          <el-radio-button value="0" label="允许" />
+          <el-radio-button value="1" label="禁止" />
         </el-radio-group>
       </el-form-item>
       <el-form-item label="状态">
@@ -91,29 +99,40 @@
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="updateModelValue(false)">取消</el-button>
+      <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" :loading="loading" @click="save">
         保存
       </el-button>
     </template>
   </ele-modal>
+  <!-- Cron 表达式生成器 -->
+  <cron-builder
+    :cron="form.cronExpression"
+    v-model="cronBuilderVisible"
+    @done="handleCronDone"
+  />
 </template>
 
 <script setup>
-  import { ref, reactive, watch } from 'vue';
-  import { Warning, Clock } from '@element-plus/icons-vue';
+  import { ref, reactive, nextTick } from 'vue';
   import { EleMessage } from 'ele-admin-plus/es';
+  import {
+    QuestionCircleOutlined,
+    ClockCircleOutlined
+  } from '@/components/icons';
   import { useFormData } from '@/utils/use-form-data';
+  import CronBuilder from '@/components/CronBuilder/index.vue';
   import { addJob, updateJob } from '@/api/monitor/job';
 
-  const emit = defineEmits(['done', 'update:modelValue']);
-
   const props = defineProps({
-    /** 弹窗是否打开 */
-    modelValue: Boolean,
     /** 修改回显的数据 */
     data: Object
   });
+
+  const emit = defineEmits(['done']);
+
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   /** 是否是修改 */
   const isUpdate = ref(false);
@@ -125,20 +144,20 @@
   const formRef = ref(null);
 
   /** 表单数据 */
-  const { form, resetFields, assignFields } = useFormData({
-    job_id: void 0,
-    job_name: '',
-    job_group: void 0,
-    invoke_target: '',
-    cron_expression: '',
-    misfire_policy: '1',
+  const [form, resetFields, assignFields] = useFormData({
+    jobId: void 0,
+    jobName: '',
+    jobGroup: void 0,
+    invokeTarget: '',
+    cronExpression: '',
+    misfirePolicy: '1',
     concurrent: '0',
     status: '0'
   });
 
   /** 表单验证规则 */
   const rules = reactive({
-    job_name: [
+    jobName: [
       {
         required: true,
         message: '请输入任务名称',
@@ -146,7 +165,7 @@
         trigger: 'blur'
       }
     ],
-    invoke_target: [
+    invokeTarget: [
       {
         required: true,
         message: '请输入调用目标字符串',
@@ -154,7 +173,7 @@
         trigger: 'blur'
       }
     ],
-    cron_expression: [
+    cronExpression: [
       {
         required: true,
         message: '请输入cron执行表达式',
@@ -163,6 +182,11 @@
       }
     ]
   });
+
+  /** 关闭弹窗 */
+  const handleCancel = () => {
+    visible.value = false;
+  };
 
   /** 保存编辑 */
   const save = () => {
@@ -176,7 +200,7 @@
         .then((msg) => {
           loading.value = false;
           EleMessage.success(msg);
-          updateModelValue(false);
+          handleCancel();
           emit('done');
         })
         .catch((e) => {
@@ -186,30 +210,43 @@
     });
   };
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
-  };
+  /** 是否打开cron表达式生成 */
+  const cronBuilderVisible = ref(false);
 
   /** 打开cron表达式生成 */
   const openCron = () => {
-    window.open('https://www.matools.com/app/cron?embed');
+    cronBuilderVisible.value = true;
   };
 
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (modelValue) {
-        if (props.data) {
-          assignFields(props.data);
-          isUpdate.value = true;
-        } else {
-          isUpdate.value = false;
-        }
-      } else {
-        resetFields();
-        formRef.value?.clearValidate?.();
-      }
+  /** cron表达式生成完成事件 */
+  const handleCronDone = (cron) => {
+    form.cronExpression = cron;
+    cronBuilderVisible.value = false;
+    formRef.value?.clearValidate?.();
+  };
+
+  /** 弹窗打开事件 */
+  const handleOpen = () => {
+    if (props.data) {
+      assignFields(props.data);
+      isUpdate.value = true;
+    } else {
+      resetFields();
+      isUpdate.value = false;
     }
-  );
+    nextTick(() => {
+      nextTick(() => {
+        formRef.value?.clearValidate?.();
+      });
+    });
+  };
 </script>
+
+<style lang="scss" scoped>
+  @media screen and (max-width: 460px) {
+    .policy-radio-group :deep(.el-radio-button__inner) {
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+  }
+</style>

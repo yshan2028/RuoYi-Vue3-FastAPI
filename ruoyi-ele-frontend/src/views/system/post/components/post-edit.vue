@@ -3,32 +3,36 @@
   <ele-modal
     form
     :width="460"
-    :model-value="modelValue"
+    v-model="visible"
     :title="isUpdate ? '修改岗位' : '添加岗位'"
-    @update:modelValue="updateModelValue"
+    @open="handleOpen"
   >
-    <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-      <el-form-item label="岗位名称" prop="post_name">
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      label-width="80px"
+      @submit.prevent=""
+    >
+      <el-form-item label="岗位名称" prop="postName">
         <el-input
           clearable
-          :maxlength="20"
-          v-model="form.post_name"
+          v-model="form.postName"
           placeholder="请输入岗位名称"
         />
       </el-form-item>
-      <el-form-item label="岗位编码" prop="post_code">
+      <el-form-item label="岗位编码" prop="postCode">
         <el-input
           clearable
-          :maxlength="20"
-          v-model="form.post_code"
+          v-model="form.postCode"
           placeholder="请输入岗位编码"
         />
       </el-form-item>
-      <el-form-item label="岗位排序" prop="post_sort">
+      <el-form-item label="岗位排序" prop="postSort">
         <el-input-number
           :min="0"
           :max="99999"
-          v-model="form.post_sort"
+          v-model="form.postSort"
           placeholder="请输入岗位排序"
           controls-position="right"
           class="ele-fluid"
@@ -51,7 +55,7 @@
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="updateModelValue(false)">取消</el-button>
+      <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" :loading="loading" @click="save">
         保存
       </el-button>
@@ -60,19 +64,20 @@
 </template>
 
 <script setup>
-  import { ref, reactive, watch } from 'vue';
+  import { ref, reactive, nextTick } from 'vue';
   import { EleMessage } from 'ele-admin-plus/es';
   import { useFormData } from '@/utils/use-form-data';
   import { addPost, updatePost } from '@/api/system/post';
 
-  const emit = defineEmits(['done', 'update:modelValue']);
-
   const props = defineProps({
-    /** 弹窗是否打开 */
-    modelValue: Boolean,
     /** 修改回显的数据 */
     data: Object
   });
+
+  const emit = defineEmits(['done']);
+
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   /** 是否是修改 */
   const isUpdate = ref(false);
@@ -84,18 +89,18 @@
   const formRef = ref(null);
 
   /** 表单数据 */
-  const { form, resetFields, assignFields } = useFormData({
-    post_id: void 0,
-    post_name: '',
-    post_code: '',
-    post_sort: 0,
+  const [form, resetFields, assignFields] = useFormData({
+    postId: void 0,
+    postName: '',
+    postCode: '',
+    postSort: 0,
     status: '0',
     remark: ''
   });
 
   /** 表单验证规则 */
   const rules = reactive({
-    post_name: [
+    postName: [
       {
         required: true,
         message: '请输入岗位名称',
@@ -103,7 +108,7 @@
         trigger: 'blur'
       }
     ],
-    post_code: [
+    postCode: [
       {
         required: true,
         message: '请输入岗位编码',
@@ -111,7 +116,7 @@
         trigger: 'blur'
       }
     ],
-    post_sort: [
+    postSort: [
       {
         required: true,
         message: '请输入岗位排序',
@@ -120,6 +125,11 @@
       }
     ]
   });
+
+  /** 关闭弹窗 */
+  const handleCancel = () => {
+    visible.value = false;
+  };
 
   /** 保存编辑 */
   const save = () => {
@@ -133,7 +143,7 @@
         .then((msg) => {
           loading.value = false;
           EleMessage.success(msg);
-          updateModelValue(false);
+          handleCancel();
           emit('done');
         })
         .catch((e) => {
@@ -143,25 +153,19 @@
     });
   };
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
-  };
-
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (modelValue) {
-        if (props.data) {
-          assignFields(props.data);
-          isUpdate.value = true;
-        } else {
-          isUpdate.value = false;
-        }
-      } else {
-        resetFields();
-        formRef.value?.clearValidate?.();
-      }
+  /** 弹窗打开事件 */
+  const handleOpen = () => {
+    if (props.data) {
+      assignFields(props.data);
+      isUpdate.value = true;
+    } else {
+      resetFields();
+      isUpdate.value = false;
     }
-  );
+    nextTick(() => {
+      nextTick(() => {
+        formRef.value?.clearValidate?.();
+      });
+    });
+  };
 </script>

@@ -2,10 +2,10 @@
 <template>
   <el-select
     clearable
-    :model-value="modelValue"
+    v-model="model"
     :placeholder="placeholder"
     class="ele-fluid"
-    @update:modelValue="updateValue"
+    :popper-options="{ strategy: 'fixed' }"
   >
     <el-option
       v-for="item in data"
@@ -17,11 +17,7 @@
 </template>
 
 <script setup>
-  const emit = defineEmits(['update:modelValue']);
-
   defineProps({
-    /** 选中的岗位 */
-    modelValue: String,
     /** 提示信息 */
     placeholder: {
       type: String,
@@ -31,8 +27,6 @@
     data: Array
   });
 
-  /** 更新选中数据 */
-  const updateValue = (value) => {
-    emit('update:modelValue', value);
-  };
+  /** 选中的数据 */
+  const model = defineModel({ type: String });
 </script>

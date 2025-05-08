@@ -2,15 +2,16 @@
 <template>
   <ele-icon-select
     clearable
+    filterable="popper"
     :data="iconData"
-    :model-value="modelValue"
+    v-model="model"
     :placeholder="placeholder"
     :disabled="disabled"
     :popper-width="420"
-    :popper-height="280"
+    :popper-height="294"
     :grid-style="{ gridTemplateColumns: 'repeat(6, 1fr)' }"
     :item-style="{ height: '52px' }"
-    @update:modelValue="updateValue"
+    :popper-options="{ strategy: 'fixed' }"
   >
     <template #icon="{ icon }">
       <el-icon>
@@ -21,11 +22,11 @@
 </template>
 
 <script setup>
-  const emit = defineEmits(['update:modelValue']);
+  import * as MenuIcons from '@/layout/menu-icons';
+
+  defineOptions({ components: MenuIcons });
 
   defineProps({
-    /** 选中的图标 */
-    modelValue: String,
     /** 是否禁用 */
     disabled: Boolean,
     /** 提示信息 */
@@ -35,21 +36,19 @@
     }
   });
 
-  /** 更新选中数据 */
-  const updateValue = (value) => {
-    emit('update:modelValue', value);
-  };
-</script>
+  /** 选中的图标 */
+  const model = defineModel({ type: String });
 
-<script>
-  import * as MenuIcons from '@/layout/menu-icons';
+  const iconNames = Object.keys(MenuIcons);
 
-  export default {
-    components: MenuIcons,
-    data() {
-      return {
-        iconData: Object.keys(MenuIcons)
-      };
+  const iconData = [
+    {
+      title: '线框风格',
+      icons: iconNames.filter((name) => !name.endsWith('Filled'))
+    },
+    {
+      title: '实底风格',
+      icons: iconNames.filter((name) => name.endsWith('Filled'))
     }
-  };
+  ];
 </script>

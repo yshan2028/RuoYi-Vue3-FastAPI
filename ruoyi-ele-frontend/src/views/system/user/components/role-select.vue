@@ -3,16 +3,15 @@
   <el-select
     multiple
     clearable
-    :model-value="modelValue"
+    v-model="model"
     :placeholder="placeholder"
     class="ele-fluid"
-    @update:modelValue="updateValue"
   >
     <el-option
       v-for="item in data"
-      :key="item.role_id"
-      :value="item.role_id"
-      :label="item.role_name"
+      :key="item.roleId"
+      :value="item.roleId"
+      :label="item.roleName"
     />
   </el-select>
 </template>
@@ -22,11 +21,7 @@
   import { EleMessage } from 'ele-admin-plus/es';
   import { listRoles } from '@/api/system/role';
 
-  const emit = defineEmits(['update:modelValue']);
-
   defineProps({
-    /** 选中的角色 */
-    modelValue: Array,
     /** 提示信息 */
     placeholder: {
       type: String,
@@ -34,13 +29,11 @@
     }
   });
 
+  /** 选中的角色 */
+  const model = defineModel({ type: Array });
+
   /** 角色数据 */
   const data = ref([]);
-
-  /** 更新选中数据 */
-  const updateValue = (value) => {
-    emit('update:modelValue', value);
-  };
 
   /** 获取角色数据 */
   listRoles()

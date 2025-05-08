@@ -1,5 +1,4 @@
-import { unref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { EleMessage } from 'ele-admin-plus/es';
 import { useThemeStore } from '@/store/modules/theme';
 import { HOME_PATH, LAYOUT_PATH, REDIRECT_PATH } from '@/config/setting';
@@ -9,24 +8,34 @@ import { HOME_PATH, LAYOUT_PATH, REDIRECT_PATH } from '@/config/setting';
  */
 export function usePageTab() {
   const HOME_ROUTE = HOME_PATH || LAYOUT_PATH;
-  const { push, replace, currentRoute } = useRouter();
+  const route = useRoute();
+  const { push, replace } = useRouter();
   const themeStore = useThemeStore();
+
+  /**
+   * 获取当前路由对应的页签key
+   */
+  const getRouteTabKey = () => {
+    const { path, fullPath, meta } = route;
+    return meta.tabUnique === false ? fullPath : path;
+  };
+
+  /**
+   * 当前路由对应的页签key
+   */
+  const routeTabKey = getRouteTabKey();
 
   /**
    * 刷新当前路由
    */
   const reloadPageTab = (option) => {
-    const { path, fullPath, query } = unref(currentRoute);
-    if (path.includes(REDIRECT_PATH)) {
+    if (route.path.includes(REDIRECT_PATH)) {
       return;
     }
-    if (!option) {
+    if (!option || !option.fullPath) {
       // 刷新当前路由
-      if (path.includes(REDIRECT_PATH)) {
-        return;
-      }
-      setPageTab({ fullPath, refresh: true });
-      replace({ path: REDIRECT_PATH + path, query });
+      setPageTab({ fullPath: route.fullPath, refresh: true });
+      replace({ path: REDIRECT_PATH + route.path, query: route.query });
     } else {
       // 刷新指定页签
       setPageTab({ fullPath: option.fullPath, refresh: true });
@@ -38,8 +47,7 @@ export function usePageTab() {
    * 关闭当前页签
    */
   const finishPageTab = () => {
-    const key = getRouteTabKey();
-    removePageTab({ key, active: key });
+    removePageTab({ key: routeTabKey, active: getRouteTabKey() });
   };
 
   /**
@@ -49,7 +57,7 @@ export function usePageTab() {
     themeStore
       .tabRemove(option)
       .then((result) => {
-        onRemoveDone(result);
+        handleRemoveDone(result);
       })
       .catch(() => {
         EleMessage.error('当前页签不可关闭');
@@ -63,7 +71,7 @@ export function usePageTab() {
     themeStore
       .tabRemoveLeft(option)
       .then((result) => {
-        onRemoveDone(result);
+        handleRemoveDone(result);
       })
       .catch(() => {
         EleMessage.error('左侧没有可关闭的页签');
@@ -77,7 +85,7 @@ export function usePageTab() {
     themeStore
       .tabRemoveRight(option)
       .then((result) => {
-        onRemoveDone(result);
+        handleRemoveDone(result);
       })
       .catch(() => {
         EleMessage.error('右侧没有可关闭的页签');
@@ -91,7 +99,7 @@ export function usePageTab() {
     themeStore
       .tabRemoveOther(option)
       .then((result) => {
-        onRemoveDone(result);
+        handleRemoveDone(result);
       })
       .catch(() => {
         EleMessage.error('没有可关闭的页签');
@@ -105,7 +113,7 @@ export function usePageTab() {
     themeStore
       .tabRemoveAll(option)
       .then((result) => {
-        onRemoveDone(result);
+        handleRemoveDone(result);
       })
       .catch(() => {
         EleMessage.error('没有可关闭的页签');
@@ -115,7 +123,7 @@ export function usePageTab() {
   /**
    * 页签移除方法完成操作
    */
-  const onRemoveDone = ({ path, home }) => {
+  const handleRemoveDone = ({ path, home }) => {
     if (path) {
       push(path);
     } else if (home) {
@@ -159,15 +167,7 @@ export function usePageTab() {
    * @param title 标题
    */
   const setPageTabTitle = (title) => {
-    setPageTab({ key: getRouteTabKey(), title });
-  };
-
-  /**
-   * 获取当前路由对应的页签key
-   */
-  const getRouteTabKey = () => {
-    const { path, fullPath, meta } = unref(currentRoute);
-    return meta.tabUnique === false ? fullPath : path;
+    setPageTab({ key: routeTabKey, title });
   };
 
   /**
@@ -192,6 +192,7 @@ export function usePageTab() {
     setPageTab,
     setPageTabTitle,
     getRouteTabKey,
-    goHomeRoute
+    goHomeRoute,
+    routeTabKey
   };
 }

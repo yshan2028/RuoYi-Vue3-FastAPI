@@ -6,12 +6,17 @@
       <!-- 表格 -->
       <ele-pro-table
         ref="tableRef"
-        row-key="token_id"
+        row-key="tokenId"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
         :loading="loading"
         highlight-current-row
+        :export-config="{
+          fileName: '在线用户',
+          datasource: async () => datasource
+        }"
+        :print-config="{ datasource: async () => datasource }"
         cache-key="monitorOnlineTable"
         @refresh="reload(getWhere())"
       >
@@ -26,12 +31,17 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue';
+  import { ref, computed } from 'vue';
   import dayjs from 'dayjs';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
+  import { usePermission } from '@/utils/use-permission';
   import OnlineSearch from './components/online-search.vue';
   import { pageOnlines, kickoutOnline } from '@/api/monitor/online';
+
+  defineOptions({ name: 'MonitorOnline' });
+
+  const { hasPermission } = usePermission();
 
   const searchRef = ref(null);
 
@@ -39,72 +49,79 @@
   const tableRef = ref(null);
 
   /** 表格列配置 */
-  const columns = ref([
-    {
-      type: 'index',
-      columnKey: 'index',
-      width: 50,
-      align: 'center',
-      fixed: 'left'
-    },
-    {
-      prop: 'token_id',
-      label: '会话编号',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'user_name',
-      label: '登录名称',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'dept_name',
-      label: '部门名称',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'ipaddr',
-      label: '登录地址',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'login_location',
-      label: '登录地点',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'browser',
-      label: '浏览器',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'os',
-      label: '操作系统',
-      align: 'center',
-      minWidth: 110
-    },
-    {
-      prop: 'login_time',
-      label: '登录时间',
-      align: 'center',
-      minWidth: 110,
-      formatter: (row) => dayjs(row.login_time).format('YYYY-MM-DD HH:mm:ss')
-    },
-    {
-      columnKey: 'action',
-      label: '操作',
-      width: 80,
-      align: 'center',
-      slot: 'action',
-      fixed: 'right'
+  const columns = computed(() => {
+    const cols = [
+      {
+        type: 'index',
+        columnKey: 'index',
+        width: 50,
+        align: 'center',
+        fixed: 'left'
+      },
+      {
+        prop: 'tokenId',
+        label: '会话编号',
+        align: 'center',
+        minWidth: 160
+      },
+      {
+        prop: 'userName',
+        label: '登录名称',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'deptName',
+        label: '部门名称',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'ipaddr',
+        label: '登录地址',
+        align: 'center',
+        minWidth: 140
+      },
+      {
+        prop: 'loginLocation',
+        label: '登录地点',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'browser',
+        label: '浏览器',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'os',
+        label: '操作系统',
+        align: 'center',
+        minWidth: 110
+      },
+      {
+        prop: 'loginTime',
+        label: '登录时间',
+        align: 'center',
+        width: 180,
+        formatter: (row) => dayjs(row.loginTime).format('YYYY-MM-DD HH:mm:ss')
+      }
+    ];
+    if (hasPermission('monitor:online:forceLogout')) {
+      cols.push({
+        columnKey: 'action',
+        label: '操作',
+        width: 80,
+        align: 'center',
+        slot: 'action',
+        fixed: 'right',
+        hideInPrint: true,
+        hideInExport: true
+      });
     }
-  ]);
+    return cols;
+  });
 
   /** 表格数据源 */
   const datasource = ref([]);
@@ -130,13 +147,16 @@
   /** 强退 */
   const kickout = (row) => {
     ElMessageBox.confirm(
-      '是否确认强退名称为“' + row.user_name + '”的用户？',
+      '是否确认强退名称为“' + row.userName + '”的用户？',
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
-        kickoutOnline(row.token_id)
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
+        kickoutOnline(row.tokenId)
           .then(() => {
             loading.close();
             EleMessage.success('强退成功');
@@ -156,10 +176,4 @@
   };
 
   reload();
-</script>
-
-<script>
-  export default {
-    name: 'MonitorOnline'
-  };
 </script>

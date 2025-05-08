@@ -4,25 +4,30 @@
     form
     :width="860"
     top="40px"
-    :model-value="modelValue"
+    v-model="visible"
     :title="isUpdate ? '修改公告' : '添加公告'"
-    @update:modelValue="updateModelValue"
+    @open="handleOpen"
   >
-    <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-      <el-form-item label="公告标题" prop="notice_title">
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      label-width="80px"
+      @submit.prevent=""
+    >
+      <el-form-item label="公告标题" prop="noticeTitle">
         <el-input
           clearable
-          :maxlength="100"
-          v-model="form.notice_title"
+          v-model="form.noticeTitle"
           placeholder="请输入公告标题"
         />
       </el-form-item>
       <el-row :gutter="16">
         <el-col :sm="12" :xs="24">
-          <el-form-item label="公告类型" prop="notice_type">
+          <el-form-item label="公告类型" prop="noticeType">
             <dict-data
               code="sys_notice_type"
-              v-model="form.notice_type"
+              v-model="form.noticeType"
               placeholder="请选择公告类型"
             />
           </el-form-item>
@@ -41,12 +46,12 @@
         <tinymce-editor
           ref="editorRef"
           :init="config"
-          v-model="form.notice_content"
+          v-model="form.noticeContent"
         />
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="updateModelValue(false)">取消</el-button>
+      <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" :loading="loading" @click="save">
         保存
       </el-button>
@@ -55,21 +60,23 @@
 </template>
 
 <script setup>
-  import { ref, reactive, watch } from 'vue';
+  import { ref, reactive, nextTick } from 'vue';
   import { EleMessage } from 'ele-admin-plus/es';
   import { useFormData } from '@/utils/use-form-data';
   import { addNotice, updateNotice } from '@/api/system/notice';
   import TinymceEditor from '@/components/TinymceEditor/index.vue';
 
-  const emit = defineEmits(['done', 'update:modelValue']);
-
   const props = defineProps({
-    /** 弹窗是否打开 */
-    modelValue: Boolean,
     /** 修改回显的数据 */
     data: Object
   });
 
+  const emit = defineEmits(['done']);
+
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
+
+  /** 编辑器 */
   const editorRef = ref(null);
 
   /** 编辑器配置 */
@@ -87,17 +94,17 @@
   const formRef = ref(null);
 
   /** 表单数据 */
-  const { form, resetFields, assignFields } = useFormData({
-    notice_id: void 0,
-    notice_title: '',
-    notice_type: void 0,
+  const [form, resetFields, assignFields] = useFormData({
+    noticeId: void 0,
+    noticeTitle: '',
+    noticeType: void 0,
     status: '0',
-    notice_content: ''
+    noticeContent: ''
   });
 
   /** 表单验证规则 */
   const rules = reactive({
-    notice_title: [
+    noticeTitle: [
       {
         required: true,
         message: '请输入公告标题',
@@ -105,15 +112,20 @@
         trigger: 'blur'
       }
     ],
-    notice_type: [
+    noticeType: [
       {
         required: true,
         message: '请选择公告类型',
         type: 'string',
-        trigger: 'blur'
+        trigger: 'change'
       }
     ]
   });
+
+  /** 关闭弹窗 */
+  const handleCancel = () => {
+    visible.value = false;
+  };
 
   /** 保存编辑 */
   const save = () => {
@@ -127,7 +139,7 @@
         .then((msg) => {
           loading.value = false;
           EleMessage.success(msg);
-          updateModelValue(false);
+          handleCancel();
           emit('done');
         })
         .catch((e) => {
@@ -137,25 +149,19 @@
     });
   };
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
-  };
-
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (modelValue) {
-        if (props.data) {
-          assignFields(props.data);
-          isUpdate.value = true;
-        } else {
-          isUpdate.value = false;
-        }
-      } else {
-        resetFields();
-        formRef.value?.clearValidate?.();
-      }
+  /** 弹窗打开事件 */
+  const handleOpen = () => {
+    if (props.data) {
+      assignFields(props.data);
+      isUpdate.value = true;
+    } else {
+      resetFields();
+      isUpdate.value = false;
     }
-  );
+    nextTick(() => {
+      nextTick(() => {
+        formRef.value?.clearValidate?.();
+      });
+    });
+  };
 </script>

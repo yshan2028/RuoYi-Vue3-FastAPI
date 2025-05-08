@@ -15,23 +15,23 @@
         size="256px"
         allow-collapse
         :custom-style="{ borderWidth: '0 1px 0 0', padding: '16px 0' }"
-        :body-style="{ padding: '16px 16px 16px 0', overflow: 'hidden' }"
+        :body-style="{ padding: '16px 16px 0 0', overflow: 'hidden' }"
         :style="{ height: '100%', overflow: 'visible' }"
       >
         <div style="padding: 0 16px 12px 0">
           <el-input
             clearable
-            :maxlength="20"
             v-model="keywords"
             placeholder="输入字典名称搜索"
-            :prefix-icon="Search"
+            :prefix-icon="SearchOutlined"
           />
         </div>
         <div style="margin-bottom: 12px">
           <el-button
             type="primary"
             class="ele-btn-icon"
-            :icon="Plus"
+            :icon="PlusOutlined"
+            v-permission="'system:dict:add'"
             @click="openEdit()"
           >
             新建
@@ -40,7 +40,8 @@
             type="warning"
             :disabled="!current"
             class="ele-btn-icon"
-            :icon="EditPen"
+            :icon="EditOutlined"
+            v-permission="'system:dict:edit'"
             @click="openEdit(current)"
           >
             修改
@@ -49,35 +50,53 @@
             type="danger"
             :disabled="!current"
             class="ele-btn-icon"
-            :icon="Delete"
+            :icon="DeleteOutlined"
+            v-permission="'system:dict:remove'"
             @click="remove"
           >
             删除
           </el-button>
         </div>
-        <ele-loading :loading="loading" class="dict-tree">
+        <ele-loading
+          :loading="loading"
+          :style="{ flex: 1, paddingRight: '16px', overflow: 'auto' }"
+        >
           <el-tree
             ref="treeRef"
             :data="data"
             highlight-current
-            node-key="dict_id"
+            node-key="dictId"
             :expand-on-click-node="false"
             :default-expand-all="true"
             :filter-node-method="filterNode"
-            @node-click="onNodeClick"
+            :style="{
+              '--ele-tree-item-height': '34px',
+              '--ele-tree-expand-padding': 0,
+              '--ele-tree-expand-margin': 0
+            }"
+            @node-click="handleNodeClick"
           >
             <template #default="{ data: d }">
-              <div>{{ d.dict_name }}</div>
-              <div style="font-size: 12px; opacity: 0.8; font-weight: normal">
-                &nbsp;({{ d.dict_type }})
+              <div
+                class="el-tree-node__label"
+                :style="{
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: d.status == 0 ? void 0 : 'red'
+                }"
+              >
+                <div style="margin-right: 4px">{{ d.dictName }}</div>
+                <div style="font-size: 12px; opacity: 0.8; font-weight: normal">
+                  ({{ d.dictType }})
+                </div>
               </div>
             </template>
           </el-tree>
         </ele-loading>
         <template #body>
           <dict-data-list
-            v-if="current && current.dict_type"
-            :dict-type="current.dict_type"
+            v-if="current && current.dictType"
+            :dict-type="current.dictType"
           />
         </template>
       </ele-split-panel>
@@ -89,13 +108,20 @@
 
 <script setup>
   import { ref, nextTick, watch } from 'vue';
-  import { Plus, Delete, EditPen, Search } from '@element-plus/icons-vue';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
+  import {
+    PlusOutlined,
+    EditOutlined,
+    DeleteOutlined,
+    SearchOutlined
+  } from '@/components/icons';
   import { useMobile } from '@/utils/use-mobile';
   import DictDataList from './components/dict-data-list.vue';
   import DictEdit from './components/dict-edit.vue';
   import { listDicts, removeDict } from '@/api/system/dict';
+
+  defineOptions({ name: 'SystemDict' });
 
   /** 是否是移动端 */
   const { mobile } = useMobile();
@@ -132,7 +158,7 @@
         loading.value = false;
         data.value = list ?? [];
         nextTick(() => {
-          onNodeClick(data.value[0]);
+          handleNodeClick(data.value[0]);
         });
       })
       .catch((e) => {
@@ -142,14 +168,14 @@
   };
 
   /** 选择数据 */
-  const onNodeClick = (row) => {
+  const handleNodeClick = (row) => {
     // 移动端自动收起左侧
     if (current.value != null && mobile.value) {
       splitRef.value?.toggleCollapse?.(true);
     }
-    if (row && row.dict_id) {
+    if (row && row.dictId) {
       current.value = row;
-      treeRef.value?.setCurrentKey?.(row.dict_id);
+      treeRef.value?.setCurrentKey?.(row.dictId);
     } else {
       current.value = null;
     }
@@ -163,15 +189,18 @@
 
   /** 删除 */
   const remove = () => {
-    const id = current.value?.dict_id;
-    const name = current.value?.dict_type;
+    const id = current.value?.dictId;
+    const name = current.value?.dictType;
     ElMessageBox.confirm(
       `是否确认删除字典类型为"${name}"的数据项？`,
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
         removeDict(id)
           .then(() => {
             loading.close();
@@ -189,7 +218,7 @@
   /** 树过滤方法 */
   const filterNode = (value, data) => {
     if (value) {
-      return data.dict_name && data.dict_name.includes(value);
+      return data.dictName && data.dictName.includes(value);
     }
     return true;
   };
@@ -201,33 +230,3 @@
 
   query();
 </script>
-
-<script>
-  export default {
-    name: 'SystemDict'
-  };
-</script>
-
-<style lang="scss" scoped>
-  .dict-tree {
-    flex: 1;
-    padding-right: 16px;
-    overflow: auto;
-
-    :deep(.el-tree-node__content) {
-      height: 36px;
-      line-height: 36px;
-      border-radius: calc((var(--el-border-radius-small) - 2px) * 3);
-      transition: all 0.2s;
-
-      & > .el-tree-node__expand-icon {
-        padding: 2px;
-      }
-    }
-
-    :deep(.el-tree-node.is-current > .el-tree-node__content) {
-      color: var(--el-color-primary);
-      font-weight: bold;
-    }
-  }
-</style>

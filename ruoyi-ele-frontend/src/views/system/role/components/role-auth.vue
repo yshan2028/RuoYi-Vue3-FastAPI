@@ -3,13 +3,13 @@
     form
     :width="460"
     title="分配数据权限"
-    :model-value="modelValue"
-    @update:modelValue="updateModelValue"
+    v-model="visible"
+    @open="handleOpen"
   >
-    <el-form label-width="80px">
+    <el-form label-width="80px" @submit.prevent="">
       <el-form-item label="权限范围">
         <el-select
-          v-model="data_scope"
+          v-model="dataScope"
           placeholder="请选择权限范围"
           class="ele-fluid"
         >
@@ -20,7 +20,7 @@
           <el-option value="5" label="仅本人数据权限" />
         </el-select>
       </el-form-item>
-      <el-form-item v-if="data_scope == 2" label="数据权限">
+      <el-form-item v-if="dataScope == 2" label="数据权限">
         <ele-loading :loading="treeLoading" class="role-auth-tree">
           <div style="line-height: 1; padding: 0 6px 0 0">
             <el-button
@@ -56,7 +56,7 @@
               取消全选
             </el-button>
           </div>
-          <div style="height: 260px; overflow: auto">
+          <div style="height: 260px; overflow: auto; padding: 0 6px">
             <el-tree
               ref="treeRef"
               show-checkbox
@@ -70,7 +70,7 @@
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="updateModelValue(false)">取消</el-button>
+      <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" :loading="loading" @click="save">
         保存
       </el-button>
@@ -79,18 +79,19 @@
 </template>
 
 <script setup>
-  import { ref, watch } from 'vue';
+  import { ref } from 'vue';
   import { EleMessage, eachTree } from 'ele-admin-plus/es';
   import { setDataScope, listDataScope } from '@/api/system/role';
 
-  const emit = defineEmits(['done', 'update:modelValue']);
-
   const props = defineProps({
-    /** 弹窗是否打开 */
-    modelValue: Boolean,
     /** 修改回显的数据 */
     data: Object
   });
+
+  const emit = defineEmits(['done']);
+
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   /** 树组件 */
   const treeRef = ref(null);
@@ -105,14 +106,14 @@
   const checkedKeys = ref([]);
 
   /** 权限范围 */
-  const data_scope = ref('');
+  const dataScope = ref('');
 
   /** 提交状态 */
   const loading = ref(false);
 
   /** 获取选中节点id */
   const getCheckedIds = () => {
-    if (data_scope.value != 2) {
+    if (dataScope.value != 2) {
       return [];
     }
     const ids = treeRef.value?.getCheckedKeys?.() ?? [];
@@ -120,29 +121,29 @@
     return ids.concat(ids2);
   };
 
+  /** 关闭弹窗 */
+  const handleCancel = () => {
+    visible.value = false;
+  };
+
   /** 保存编辑 */
   const save = () => {
     loading.value = true;
     setDataScope({
-      role_id: props.data?.role_id,
-      data_scope: data_scope.value,
+      roleId: props.data?.roleId,
+      dataScope: dataScope.value,
       deptIds: getCheckedIds()
     })
       .then(() => {
         loading.value = false;
         EleMessage.success('修改成功');
-        updateModelValue(false);
+        handleCancel();
         emit('done');
       })
       .catch((e) => {
         loading.value = false;
         EleMessage.error(e.message);
       });
-  };
-
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
   };
 
   /** 展开全部 */
@@ -180,7 +181,7 @@
     treeData.value = [];
     checkedKeys.value = [];
     treeLoading.value = true;
-    listDataScope(props.data?.role_id)
+    listDataScope(props.data?.roleId)
       .then((result) => {
         treeLoading.value = false;
         treeData.value = result.depts;
@@ -198,17 +199,15 @@
       });
   };
 
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (modelValue && props.data) {
-        data_scope.value = props.data.data_scope;
-        query();
-      } else {
-        data_scope.value = '';
-      }
+  /** 弹窗打开事件 */
+  const handleOpen = () => {
+    if (props.data) {
+      dataScope.value = props.data.dataScope;
+      query();
+    } else {
+      dataScope.value = '';
     }
-  );
+  };
 </script>
 
 <style lang="scss" scoped>

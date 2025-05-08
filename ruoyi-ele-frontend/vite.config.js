@@ -4,7 +4,7 @@ import { resolve } from 'path';
 import Compression from 'vite-plugin-compression';
 import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
-import { EleAdminResolver } from 'ele-admin-plus/lib/utils/resolvers';
+import { EleAdminResolver } from 'ele-admin-plus/es/utils/resolvers';
 
 export default defineConfig(({ command }) => {
   const isBuild = command === 'build';
@@ -57,8 +57,9 @@ export default defineConfig(({ command }) => {
         'echarts/renderers',
         'echarts/components',
         'vue-echarts',
-        'vuedraggable',
-        'sortablejs'
+        'echarts-wordcloud',
+        'sortablejs',
+        'vuedraggable'
       ]
     },
     build: {
@@ -67,7 +68,7 @@ export default defineConfig(({ command }) => {
     },
     server: {
       host: true, // 允许外部访问
-      port: 80, // 设置默认端口为 80
+      port: 3000, // 设置默认端口为 80
       strictPort: true, // 如果 80 端口被占用，就报错而不是换其他端口
       open: true // 启动后自动打开浏览器
     }

@@ -3,8 +3,7 @@
     title="任务详情"
     :width="720"
     :body-style="{ paddingTop: '6px' }"
-    :model-value="modelValue"
-    @update:modelValue="updateModelValue"
+    v-model="visible"
   >
     <el-descriptions
       v-if="data"
@@ -13,22 +12,22 @@
       class="detail-table"
     >
       <el-descriptions-item label="任务编号">
-        <div>{{ data.job_id }}</div>
+        <div>{{ data.jobId }}</div>
       </el-descriptions-item>
       <el-descriptions-item label="任务名称">
-        <div>{{ data.job_name }}</div>
+        <div>{{ data.jobName }}</div>
       </el-descriptions-item>
       <el-descriptions-item label="任务分组">
-        <div>{{ data.job_group }}</div>
+        <div>{{ data.jobGroup }}</div>
       </el-descriptions-item>
       <el-descriptions-item label="创建时间">
-        <div>{{ data.create_time }}</div>
+        <div>{{ data.createTime }}</div>
       </el-descriptions-item>
       <el-descriptions-item label="调用目标方法" :span="2">
-        <div>{{ data.invoke_target }}</div>
+        <div>{{ data.invokeTarget }}</div>
       </el-descriptions-item>
       <el-descriptions-item label="cron表达式" :span="2">
-        <div>{{ data.cron_expression }}</div>
+        <div>{{ data.cronExpression }}</div>
       </el-descriptions-item>
       <el-descriptions-item label="下次执行时间">
         <div>{{ data.nextValidTime }}</div>
@@ -45,10 +44,10 @@
         <div v-else-if="data.concurrent == 1">禁止</div>
       </el-descriptions-item>
       <el-descriptions-item label="执行策略">
-        <div v-if="data.misfire_policy == 0">默认策略</div>
-        <div v-else-if="data.misfire_policy == 1">立即执行</div>
-        <div v-else-if="data.misfire_policy == 2">执行一次</div>
-        <div v-else-if="data.misfire_policy == 3">放弃执行</div>
+        <div v-if="data.misfirePolicy == 0">默认策略</div>
+        <div v-else-if="data.misfirePolicy == 1">立即执行</div>
+        <div v-else-if="data.misfirePolicy == 2">执行一次</div>
+        <div v-else-if="data.misfirePolicy == 3">放弃执行</div>
       </el-descriptions-item>
     </el-descriptions>
   </ele-modal>
@@ -57,19 +56,13 @@
 <script setup>
   import { useMobile } from '@/utils/use-mobile';
 
-  const emit = defineEmits(['update:modelValue']);
-
   defineProps({
-    /** 弹窗是否打开 */
-    modelValue: Boolean,
     /** 修改回显的数据 */
     data: Object
   });
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
-  };
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   const { mobile } = useMobile();
 </script>

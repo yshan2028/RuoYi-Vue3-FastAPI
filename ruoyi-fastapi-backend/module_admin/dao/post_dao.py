@@ -66,6 +66,20 @@ class PostDao:
 
         return post_info
 
+    @staticmethod
+    async def get_post_all(db: AsyncSession):
+        """
+        获取所有岗位列表信息（无查询条件、无分页、无总数）
+
+        :param db: ORM对象
+        :return: 岗位列表信息
+        """
+        # 查询所有岗位信息，按 post_sort 排序
+        result = await db.execute(select(SysPost).where(SysPost.status == '0', SysPost.del_flag == '0').order_by(SysPost.post_sort))
+        post_all = result.scalars().all()
+
+        return post_all  # 直接返回岗位列表
+
     @classmethod
     async def get_post_list(cls, db: AsyncSession, query_object: PostPageQueryModel, is_page: bool = False):
         """

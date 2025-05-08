@@ -6,7 +6,7 @@
         <el-avatar :size="68" :src="loginUser.avatar" class="profile-avatar" />
         <div class="profile-body">
           <ele-text size="xl" type="heading" style="font-weight: normal">
-            早安, {{ loginUser.nick_name }}, 开始您一天的工作吧!
+            早安, {{ loginUser.nickName }}, 开始您一天的工作吧!
           </ele-text>
           <ele-text type="placeholder" :icon="PartlyCloudy">
             今日多云转阴, 18℃ ~ 22℃, 出门记得穿外套哦~
@@ -18,7 +18,7 @@
           <div class="profile-count-header">
             <el-tag size="large" :disable-transitions="true">
               <el-icon>
-                <briefcase />
+                <Briefcase />
               </el-icon>
             </el-tag>
             <span class="profile-count-name">项目数</span>
@@ -31,7 +31,7 @@
           <div class="profile-count-header">
             <el-tag size="large" type="warning" :disable-transitions="true">
               <el-icon>
-                <checked />
+                <Checked />
               </el-icon>
             </el-tag>
             <span class="profile-count-name">待办项</span>
@@ -44,7 +44,7 @@
           <div class="profile-count-header">
             <el-tag size="large" type="success" :disable-transitions="true">
               <el-icon>
-                <bell-filled />
+                <BellFilled />
               </el-icon>
             </el-tag>
             <span class="profile-count-name">消息</span>
@@ -114,11 +114,8 @@
         width: 26px;
         height: 26px;
         border-radius: 50%;
-
-        :deep(.el-icon) {
-          cursor: default;
-          border-radius: 0;
-        }
+        line-height: 0;
+        padding: 0;
       }
 
       .profile-count-name {

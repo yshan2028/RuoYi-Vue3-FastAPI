@@ -6,19 +6,21 @@
       <!-- 表格 -->
       <ele-pro-table
         ref="tableRef"
-        row-key="job_id"
+        row-key="jobId"
         :columns="columns"
         :datasource="datasource"
         :show-overflow-tooltip="true"
         v-model:selections="selections"
         highlight-current-row
+        :export-config="{ fileName: '定时任务' }"
         cache-key="monitorJobTable"
       >
         <template #toolbar>
           <el-button
             type="primary"
             class="ele-btn-icon"
-            :icon="Plus"
+            :icon="PlusOutlined"
+            v-permission="'monitor:job:add'"
             @click="openEdit()"
           >
             新建
@@ -26,15 +28,25 @@
           <el-button
             type="danger"
             class="ele-btn-icon hidden-sm-and-down"
-            :icon="Delete"
+            :icon="DeleteOutlined"
             @click="removeBatch()"
           >
             删除
           </el-button>
-          <el-button class="ele-btn-icon" :icon="Download" @click="exportData">
+          <el-button
+            class="ele-btn-icon"
+            :icon="DownloadOutlined"
+            v-permission="'monitor:job:export'"
+            @click="exportData"
+          >
             导出
           </el-button>
-          <el-button class="ele-btn-icon" :icon="Memo" @click="openLog()">
+          <el-button
+            class="ele-btn-icon"
+            :icon="LogOutlined"
+            v-permission="'monitor:job:query'"
+            @click="openLog()"
+          >
             日志
           </el-button>
         </template>
@@ -46,20 +58,30 @@
           />
         </template>
         <template #action="{ row }">
-          <el-link type="primary" :underline="false" @click="openEdit(row)">
+          <el-link
+            type="primary"
+            :underline="false"
+            v-permission="'monitor:job:edit'"
+            @click="openEdit(row)"
+          >
             修改
           </el-link>
-          <el-divider direction="vertical" />
-          <el-link type="danger" :underline="false" @click="removeBatch(row)">
+          <el-divider
+            v-permission="'monitor:job:remove'"
+            direction="vertical"
+          />
+          <el-link
+            type="danger"
+            :underline="false"
+            v-permission="'monitor:job:remove'"
+            @click="removeBatch(row)"
+          >
             删除
           </el-link>
-          <el-divider direction="vertical" />
+          <el-divider v-if="moreItems.length" direction="vertical" />
           <ele-dropdown
-            :items="[
-              { title: '执行一次', command: 'execute' },
-              { title: '查看详情', command: 'detail' },
-              { title: '调度日志', command: 'log' }
-            ]"
+            v-if="moreItems.length"
+            :items="moreItems"
             style="display: inline"
             @command="(key) => dropClick(key, row)"
           >
@@ -69,7 +91,7 @@
                 :size="12"
                 style="vertical-align: -1px; margin-left: 2px"
               >
-                <arrow-down />
+                <ArrowDown />
               </el-icon>
             </el-link>
           </ele-dropdown>
@@ -86,16 +108,17 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue';
-  import {
-    Plus,
-    Delete,
-    Download,
-    ArrowDown,
-    Memo
-  } from '@element-plus/icons-vue';
+  import { ref, computed } from 'vue';
   import { ElMessageBox } from 'element-plus/es';
   import { EleMessage } from 'ele-admin-plus/es';
+  import {
+    PlusOutlined,
+    DeleteOutlined,
+    DownloadOutlined,
+    LogOutlined,
+    ArrowDown
+  } from '@/components/icons';
+  import { usePermission } from '@/utils/use-permission';
   import JobSearch from './components/job-search.vue';
   import JobEdit from './components/job-edit.vue';
   import JobDetail from './components/job-detail.vue';
@@ -107,6 +130,10 @@
     exportJobs,
     runJob
   } from '@/api/monitor/job';
+
+  defineOptions({ name: 'MonitorJob' });
+
+  const { hasPermission } = usePermission();
 
   /** 表格实例 */
   const tableRef = ref(null);
@@ -128,25 +155,25 @@
       fixed: 'left'
     },
     {
-      prop: 'job_name',
+      prop: 'jobName',
       label: '任务名称',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'job_group',
+      prop: 'jobGroup',
       label: '任务组名',
       align: 'center',
       minWidth: 110
     },
     {
-      prop: 'invoke_target',
+      prop: 'invokeTarget',
       label: '调用目标字符串',
       align: 'center',
       minWidth: 140
     },
     {
-      prop: 'cron_expression',
+      prop: 'cronExpression',
       label: 'cron执行表达式',
       align: 'center',
       minWidth: 140
@@ -156,14 +183,17 @@
       label: '状态',
       width: 80,
       align: 'center',
-      slot: 'status'
+      slot: 'status',
+      formatter: (row) => (row.status == 0 ? '正常' : '暂停')
     },
     {
       columnKey: 'action',
       label: '操作',
       width: 180,
       align: 'center',
-      slot: 'action'
+      slot: 'action',
+      hideInPrint: true,
+      hideInExport: true
     }
   ]);
 
@@ -182,9 +212,24 @@
   /** 是否显示调度日志弹窗 */
   const showLog = ref(false);
 
+  /** 操作列更多下拉菜单 */
+  const moreItems = computed(() => {
+    const items = [];
+    if (hasPermission('monitor:job:changeStatus')) {
+      items.push({ title: '执行一次', command: 'execute' });
+    }
+    if (hasPermission('monitor:job:query')) {
+      items.push({ title: '查看详情', command: 'detail' });
+    }
+    if (hasPermission('monitor:job:query')) {
+      items.push({ title: '调度日志', command: 'log' });
+    }
+    return items;
+  });
+
   /** 表格数据源 */
-  const datasource = ({ page, limit, where }) => {
-    return pageJobs({ ...where, pageNum: page, pageSize: limit });
+  const datasource = ({ pages, where }) => {
+    return pageJobs({ ...where, ...pages });
   };
 
   /** 搜索 */
@@ -218,13 +263,16 @@
       return;
     }
     ElMessageBox.confirm(
-      `是否确认删除任务名称为"${rows.map((d) => d.job_name).join()}"的数据项?`,
+      `是否确认删除任务名称为"${rows.map((d) => d.jobName).join()}"的数据项?`,
       '系统提示',
       { type: 'warning', draggable: true }
     )
       .then(() => {
-        const loading = EleMessage.loading('请求中..');
-        removeJobs(rows.map((d) => d.job_id))
+        const loading = EleMessage.loading({
+          message: '请求中..',
+          plain: true
+        });
+        removeJobs(rows.map((d) => d.jobId))
           .then(() => {
             loading.close();
             EleMessage.success('删除成功');
@@ -241,7 +289,7 @@
   /** 修改状态 */
   const editStatus = (checked, row) => {
     const status = checked ? '0' : '1';
-    updateJobStatus(row.job_id, status)
+    updateJobStatus(row.jobId, status)
       .then((msg) => {
         row.status = status;
         EleMessage.success(msg);
@@ -253,7 +301,10 @@
 
   /** 导出数据 */
   const exportData = () => {
-    const loading = EleMessage.loading('请求中..');
+    const loading = EleMessage.loading({
+      message: '请求中..',
+      plain: true
+    });
     tableRef.value?.fetch?.(({ where, orders }) => {
       exportJobs({ ...where, ...orders })
         .then(() => {
@@ -270,13 +321,16 @@
   const dropClick = (key, row) => {
     if (key === 'execute') {
       ElMessageBox.confirm(
-        `确认要立即执行一次"${row.job_name}"任务吗?`,
+        `确认要立即执行一次"${row.jobName}"任务吗?`,
         '系统提示',
         { type: 'warning', draggable: true }
       )
         .then(() => {
-          const loading = EleMessage.loading('请求中..');
-          runJob(row.job_id, row.job_group)
+          const loading = EleMessage.loading({
+            message: '请求中..',
+            plain: true
+          });
+          runJob(row.jobId, row.jobGroup)
             .then(() => {
               loading.close();
               EleMessage.success('执行成功');
@@ -293,11 +347,5 @@
     } else if (key === 'log') {
       openLog(row);
     }
-  };
-</script>
-
-<script>
-  export default {
-    name: 'MonitorJob'
   };
 </script>

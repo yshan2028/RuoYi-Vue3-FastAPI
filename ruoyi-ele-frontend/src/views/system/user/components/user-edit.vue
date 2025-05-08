@@ -3,18 +3,24 @@
   <ele-modal
     form
     :width="640"
-    :model-value="modelValue"
+    v-model="visible"
     :title="isUpdate ? '修改用户' : '新建用户'"
-    @update:modelValue="updateModelValue"
+    @open="handleOpen"
   >
-    <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
+    <el-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      label-width="80px"
+      @submit.prevent=""
+    >
       <el-row :gutter="16">
         <el-col :sm="12" :xs="24">
-          <el-form-item label="用户昵称" prop="nick_name">
+          <el-form-item label="用户昵称" prop="nickName">
             <el-input
               clearable
-              :maxlength="20"
-              v-model="form.nick_name"
+              :maxlength="30"
+              v-model="form.nickName"
               placeholder="请输入用户名"
               autocomplete="off"
             />
@@ -27,11 +33,11 @@
               placeholder="请输入手机号码"
             />
           </el-form-item>
-          <el-form-item v-if="!isUpdate" label="用户名称" prop="user_name">
+          <el-form-item v-if="!isUpdate" label="用户名称" prop="userName">
             <el-input
               clearable
-              :maxlength="20"
-              v-model="form.user_name"
+              :maxlength="30"
+              v-model="form.userName"
               placeholder="请输入用户名称"
             />
           </el-form-item>
@@ -48,12 +54,12 @@
         </el-col>
         <el-col :sm="12" :xs="24">
           <el-form-item label="归属部门">
-            <dept-select v-model="form.dept_id" />
+            <dept-select v-model="form.deptId" />
           </el-form-item>
           <el-form-item label="邮箱" prop="email">
             <el-input
               clearable
-              :maxlength="100"
+              :maxlength="50"
               v-model="form.email"
               placeholder="请输入邮箱"
               autocomplete="off"
@@ -85,14 +91,13 @@
         <el-input
           type="textarea"
           :rows="3"
-          :maxlength="200"
           v-model="form.remark"
           placeholder="请输入内容"
         />
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="updateModelValue(false)">取消</el-button>
+      <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" :loading="loading" @click="save">
         保存
       </el-button>
@@ -101,7 +106,7 @@
 </template>
 
 <script setup>
-  import { ref, reactive, watch } from 'vue';
+  import { ref, reactive, nextTick } from 'vue';
   import { EleMessage, emailReg, phoneReg } from 'ele-admin-plus/es';
   import { useFormData } from '@/utils/use-form-data';
   import RoleSelect from './role-select.vue';
@@ -109,16 +114,17 @@
   import DeptSelect from '../../dept/components/dept-select.vue';
   import { addUser, updateUser, getUser } from '@/api/system/user';
 
-  const emit = defineEmits(['done', 'update:modelValue']);
-
   const props = defineProps({
-    /** 弹窗是否打开 */
-    modelValue: Boolean,
     /** 修改回显的数据 */
     data: Object,
     /** 部门id */
-    dept_id: Number
+    deptId: Number
   });
+
+  const emit = defineEmits(['done']);
+
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   /** 是否是修改 */
   const isUpdate = ref(false);
@@ -130,12 +136,12 @@
   const formRef = ref(null);
 
   /** 表单数据 */
-  const { form, resetFields, assignFields } = useFormData({
-    user_id: void 0,
-    dept_id: void 0,
-    nick_name: '',
+  const [form, resetFields, assignFields] = useFormData({
+    userId: void 0,
+    deptId: void 0,
+    nickName: '',
     phonenumber: '',
-    user_name: '',
+    userName: '',
     sex: void 0,
     email: '',
     password: '',
@@ -147,7 +153,7 @@
 
   /** 表单验证规则 */
   const rules = reactive({
-    nick_name: [
+    nickName: [
       {
         required: true,
         message: '请输入用户名',
@@ -163,7 +169,7 @@
         trigger: 'blur'
       }
     ],
-    user_name: [
+    userName: [
       {
         required: true,
         message: '请输入用户名称',
@@ -176,7 +182,7 @@
         required: true,
         message: '请选择性别',
         type: 'string',
-        trigger: 'blur'
+        trigger: 'change'
       }
     ],
     email: [
@@ -206,10 +212,15 @@
         required: true,
         message: '请选择角色',
         type: 'array',
-        trigger: 'blur'
+        trigger: 'change'
       }
     ]
   });
+
+  /** 关闭弹窗 */
+  const handleCancel = () => {
+    visible.value = false;
+  };
 
   /** 保存编辑 */
   const save = () => {
@@ -223,7 +234,7 @@
         .then((msg) => {
           loading.value = false;
           EleMessage.success(msg);
-          updateModelValue(false);
+          handleCancel();
           emit('done');
         })
         .catch((e) => {
@@ -233,38 +244,32 @@
     });
   };
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
-  };
-
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (modelValue) {
-        if (props.data) {
-          assignFields({ ...props.data, password: '' });
-          getUser(props.data.user_id)
-            .then((data) => {
-              assignFields({
-                ...props.data,
-                roleIds: data.roleIds,
-                postIds: data.postIds,
-                password: ''
-              });
-            })
-            .catch((e) => {
-              EleMessage.error(e.message);
-            });
-          isUpdate.value = true;
-        } else {
-          form.dept_id = props.dept_id;
-          isUpdate.value = false;
-        }
-      } else {
-        resetFields();
-        formRef.value?.clearValidate?.();
-      }
+  /** 弹窗打开事件 */
+  const handleOpen = () => {
+    if (props.data) {
+      assignFields({ ...props.data, password: '' });
+      getUser(props.data.userId)
+        .then((data) => {
+          assignFields({
+            ...props.data,
+            roleIds: data.roleIds,
+            postIds: data.postIds,
+            password: ''
+          });
+        })
+        .catch((e) => {
+          EleMessage.error(e.message);
+        });
+      isUpdate.value = true;
+    } else {
+      resetFields();
+      form.deptId = props.deptId;
+      isUpdate.value = false;
     }
-  );
+    nextTick(() => {
+      nextTick(() => {
+        formRef.value?.clearValidate?.();
+      });
+    });
+  };
 </script>

@@ -1,13 +1,13 @@
 <!-- 搜索表单 -->
 <template>
   <ele-card :body-style="{ paddingBottom: '2px' }">
-    <el-form label-width="72px" @keyup.enter="search">
+    <el-form label-width="72px" @keyup.enter="search" @submit.prevent="">
       <el-row :gutter="8">
         <el-col :lg="6" :md="12" :sm="12" :xs="24">
           <el-form-item label="参数名称">
             <el-input
               clearable
-              v-model.trim="form.config_name"
+              v-model.trim="form.configName"
               placeholder="请输入"
             />
           </el-form-item>
@@ -16,17 +16,22 @@
           <el-form-item label="参数键名">
             <el-input
               clearable
-              v-model.trim="form.config_key"
+              v-model.trim="form.configKey"
               placeholder="请输入"
             />
           </el-form-item>
         </el-col>
         <el-col :lg="6" :md="12" :sm="12" :xs="24">
-          <el-form-item label="系统内置">
-            <dict-data
-              code="sys_yes_no"
-              v-model="form.config_type"
-              placeholder="请选择"
+          <el-form-item label="创建时间">
+            <el-date-picker
+              unlink-panels
+              type="daterange"
+              v-model="dateRange"
+              range-separator="-"
+              value-format="YYYY-MM-DD"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              class="ele-fluid"
             />
           </el-form-item>
         </el-col>
@@ -42,25 +47,30 @@
 </template>
 
 <script setup>
+  import { ref } from 'vue';
   import { useFormData } from '@/utils/use-form-data';
 
   const emit = defineEmits(['search']);
 
   /** 表单数据 */
-  const { form, resetFields } = useFormData({
-    config_name: '',
-    config_key: '',
-    config_type: void 0
+  const [form, resetFields] = useFormData({
+    configName: '',
+    configKey: ''
   });
+
+  /** 日期范围 */
+  const dateRange = ref(['', '']);
 
   /** 搜索 */
   const search = () => {
-    emit('search', form);
+    const [d1, d2] = dateRange.value || [];
+    emit('search', { ...form, params: { beginTime: d1, endTime: d2 } });
   };
 
   /**  重置 */
   const reset = () => {
     resetFields();
+    dateRange.value = ['', ''];
     search();
   };
 </script>

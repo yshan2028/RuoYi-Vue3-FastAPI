@@ -1,11 +1,11 @@
 import request from '@/utils/request';
-import { download, toFormData, toURLSearch } from '@/utils/common';
+import { download, toFormData, checkDownloadRes } from '@/utils/common';
 
 /**
  * 分页查询定时任务
  */
 export async function pageJobs(params) {
-  const res = await request.get('/monitor/job/list?' + toURLSearch(params));
+  const res = await request.get('/monitor/job/list', { params });
   if (res.data.code === 200) {
     return res.data;
   }
@@ -59,9 +59,9 @@ export async function removeJobs(ids) {
 /**
  * 修改定时任务状态
  */
-export async function updateJobStatus(job_id, status) {
+export async function updateJobStatus(jobId, status) {
   const res = await request.put('/monitor/job/changeStatus', {
-    job_id,
+    jobId,
     status
   });
   if (res.data.code === 200) {
@@ -80,16 +80,17 @@ export async function exportJobs(params) {
     data: toFormData(params),
     responseType: 'blob'
   });
-  download(res.data, `job_${new Date().getTime()}.xlsx`);
+  await checkDownloadRes(res);
+  download(res.data, `job_${Date.now()}.xlsx`);
 }
 
 /**
  * 执行定时任务
  */
-export async function runJob(job_id, job_group) {
+export async function runJob(jobId, jobGroup) {
   const res = await request.put('/monitor/job/run', {
-    job_id,
-    job_group
+    jobId,
+    jobGroup
   });
   if (res.data.code === 200) {
     return res.data.msg;

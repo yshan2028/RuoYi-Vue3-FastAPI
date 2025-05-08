@@ -2,31 +2,45 @@
 <template>
   <ele-dropdown
     :items="[
-      { title: '个人中心', command: 'profile', icon: User },
-      { title: '修改密码', command: 'password', icon: Key },
       {
-        title: '退出登录',
+        title: t('layout.header.profile'),
+        command: 'profile',
+        icon: UserOutlined
+      },
+      {
+        title: t('layout.header.password'),
+        command: 'password',
+        icon: LockOutlined,
+        iconStyle: { transform: 'translateY(-1px)' }
+      },
+      {
+        title: t('layout.header.logout'),
         command: 'logout',
-        icon: SwitchButton,
+        icon: LogoutOutlined,
         divided: true
       }
     ]"
+    :icon-props="{ size: 15 }"
     :popper-options="{
       modifiers: [{ name: 'offset', options: { offset: [0, 5] } }]
     }"
-    @command="onUserDropClick"
+    @command="handleUserDropClick"
   >
     <div class="header-avatar">
       <el-avatar
         :size="28"
         :src="loginUser.avatar"
-        :icon="loginUser.avatar ? void 0 : User"
+        :icon="loginUser.avatar ? void 0 : UserOutlined"
+        style="transform: translateY(-1px)"
       />
-      <span class="hidden-sm-and-down" style="margin-left: 4px">
+      <div
+        class="hidden-sm-and-down"
+        style="margin-left: 4px; line-height: 1.5"
+      >
         {{ loginUser.nickName }}
-      </span>
-      <el-icon :size="14" style="margin-left: 2px">
-        <arrow-down />
+      </div>
+      <el-icon :size="13" style="margin: 0 -4px 0 2px">
+        <ArrowDown />
       </el-icon>
     </div>
   </ele-dropdown>
@@ -35,15 +49,22 @@
 </template>
 
 <script setup>
-  import { computed, ref, unref } from 'vue';
+  import { computed, ref } from 'vue';
   import { useRouter } from 'vue-router';
+  import { useI18n } from 'vue-i18n';
   import { ElMessageBox } from 'element-plus/es';
-  import { User, ArrowDown, Key, SwitchButton } from '@element-plus/icons-vue';
+  import {
+    ArrowDown,
+    UserOutlined,
+    LockOutlined,
+    LogoutOutlined
+  } from '@/components/icons';
   import { useUserStore } from '@/store/modules/user';
   import { logout } from '@/utils/common';
   import PasswordModal from './password-modal.vue';
 
-  const { push, currentRoute } = useRouter();
+  const { t } = useI18n();
+  const { push } = useRouter();
   const userStore = useUserStore();
 
   /** 是否显示修改密码弹窗 */
@@ -53,19 +74,20 @@
   const loginUser = computed(() => userStore.info ?? {});
 
   /** 用户信息下拉点击 */
-  const onUserDropClick = (command) => {
+  const handleUserDropClick = (command) => {
     if (command === 'password') {
       passwordVisible.value = true;
     } else if (command === 'profile') {
-      push('/profile');
+      push('/user/profile');
     } else if (command === 'logout') {
       // 退出登录
-      ElMessageBox.confirm('确定要退出登录吗?', '系统提示', {
-        type: 'warning',
-        draggable: true
-      })
+      ElMessageBox.confirm(
+        t('layout.logout.message'),
+        t('layout.logout.title'),
+        { type: 'warning', draggable: true }
+      )
         .then(() => {
-          logout(false, unref(currentRoute).fullPath);
+          logout(false);
         })
         .catch(() => {});
     }

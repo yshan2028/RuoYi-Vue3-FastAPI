@@ -14,9 +14,19 @@ class PostService:
     """
 
     @classmethod
-    async def get_post_list_services(
-        cls, query_db: AsyncSession, query_object: PostPageQueryModel, is_page: bool = False
-    ):
+    async def get_post_all_services(cls, query_db: AsyncSession):
+        """
+        获取岗位列表信息service, 不分页
+
+        :param query_db: orm对象
+        :return: 岗位列表信息
+        """
+        post_all_result = await PostDao.get_post_all(query_db)
+
+        return post_all_result
+
+    @classmethod
+    async def get_post_list_services(cls, query_db: AsyncSession, query_object: PostPageQueryModel, is_page: bool = False):
         """
         获取岗位列表信息service
 

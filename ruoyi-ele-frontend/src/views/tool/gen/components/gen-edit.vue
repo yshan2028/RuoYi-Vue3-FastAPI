@@ -7,105 +7,137 @@
     :destroy-on-close="true"
     :body-style="{ padding: '16px 10px' }"
     :footer-style="{ display: 'flex', alignItems: 'center' }"
-    :title="`修改[${data?.table_name}]生成配置`"
-    :model-value="modelValue"
-    @update:modelValue="updateModelValue"
-    @opened="onOpened"
+    :title="`修改[${data?.tableName}]生成配置`"
+    v-model="visible"
+    @opened="handleOpened"
+    @closed="handleClosed"
   >
-    <ele-loading :loading="initLoading">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="128px">
-        <el-row :gutter="16">
+    <ele-loading :loading="initLoading" style="padding-top: 2px">
+      <el-form
+        ref="formRef"
+        :model="form"
+        :rules="rules"
+        label-width="112px"
+        class="form-box"
+        @submit.prevent=""
+      >
+        <el-divider content-position="left" style="margin-top: 10px">
+          基本信息
+        </el-divider>
+        <el-row :gutter="18">
           <el-col :sm="8" :xs="24">
-            <el-form-item label="表名称" prop="table_name">
+            <el-form-item label="表名称" prop="tableName">
               <el-input
                 clearable
-                :maxlength="20"
-                v-model="form.table_name"
+                v-model="form.tableName"
                 placeholder="请输入表名称"
               />
             </el-form-item>
           </el-col>
           <el-col :sm="8" :xs="24">
-            <el-form-item label="表描述" prop="table_comment">
+            <el-form-item label="表描述" prop="tableComment">
               <el-input
                 clearable
-                :maxlength="100"
-                v-model="form.table_comment"
+                v-model="form.tableComment"
                 placeholder="请输入表描述"
               />
             </el-form-item>
           </el-col>
           <el-col :sm="8" :xs="24">
-            <el-form-item label="作者" prop="function_author">
+            <el-form-item label="实体类名称" prop="className">
               <el-input
                 clearable
-                :maxlength="20"
-                v-model="form.function_author"
-                placeholder="请输入作者"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :sm="8" :xs="24">
-            <el-form-item label="实体类名称" prop="class_name">
-              <el-input
-                clearable
-                :maxlength="20"
-                v-model="form.class_name"
+                v-model="form.className"
                 placeholder="请输入实体类名称"
               />
             </el-form-item>
           </el-col>
-          <el-col :sm="8" :xs="24">
-            <el-form-item label="生成功能名" prop="function_name">
+          <el-col :sm="24" :xs="24">
+            <el-form-item label="备注">
               <el-input
-                clearable
-                :maxlength="20"
-                v-model="form.function_name"
-                placeholder="请输入生成功能名"
+                :rows="2"
+                type="textarea"
+                v-model="form.remark"
+                placeholder="请输入备注"
               />
             </el-form-item>
           </el-col>
-          <el-col :sm="8" :xs="24">
-            <el-form-item label="生成业务名" prop="business_name">
-              <el-input
-                clearable
-                :maxlength="20"
-                v-model="form.business_name"
-                placeholder="请输入生成业务名"
-              />
-            </el-form-item>
+          <el-col :span="24">
+            <el-divider content-position="left">生成信息</el-divider>
           </el-col>
           <el-col :sm="8" :xs="24">
-            <el-form-item label="生成模块名" prop="module_name">
+            <el-form-item label="作者" prop="functionAuthor">
               <el-input
                 clearable
-                :maxlength="20"
-                v-model="form.module_name"
-                placeholder="请输入生成模块名"
+                v-model="form.functionAuthor"
+                placeholder="请输入作者"
               />
             </el-form-item>
           </el-col>
           <el-col :sm="16" :xs="24">
-            <el-form-item label="生成包路径" prop="package_name">
+            <el-form-item prop="packageName">
+              <template #label>
+                <gen-edit-tip
+                  tip="生成在哪个java包下，例如：com.ruoyi.system"
+                  label="生成包路径"
+                />
+              </template>
               <el-input
                 clearable
-                :maxlength="100"
-                v-model="form.package_name"
+                v-model="form.packageName"
                 placeholder="请输入生成包路径"
               />
             </el-form-item>
           </el-col>
           <el-col :sm="8" :xs="24">
-            <el-form-item label="上级菜单">
-              <menu-select v-model="form.parent_menuId" />
+            <el-form-item prop="moduleName">
+              <template #label>
+                <gen-edit-tip
+                  tip="可理解为子系统名，例如：system"
+                  label="生成模块名"
+                />
+              </template>
+              <el-input
+                clearable
+                v-model="form.moduleName"
+                placeholder="请输入生成模块名"
+              />
             </el-form-item>
           </el-col>
           <el-col :sm="8" :xs="24">
-            <el-form-item label="生成模板" prop="tpl_category">
+            <el-form-item prop="businessName">
+              <template #label>
+                <gen-edit-tip
+                  tip="可理解为功能英文名，例如：user"
+                  label="生成业务名"
+                />
+              </template>
+              <el-input
+                clearable
+                v-model="form.businessName"
+                placeholder="请输入生成业务名"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :sm="8" :xs="24">
+            <el-form-item prop="functionName">
+              <template #label>
+                <gen-edit-tip tip="用作类描述，例如：用户" label="生成功能名" />
+              </template>
+              <el-input
+                clearable
+                v-model="form.functionName"
+                placeholder="请输入生成功能名"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :sm="8" :xs="24">
+            <el-form-item label="生成模板" prop="tplCategory">
               <el-select
-                v-model="form.tpl_category"
+                v-model="form.tplCategory"
                 placeholder="请选择生成模板"
                 class="ele-fluid"
+                :popper-options="{ strategy: 'fixed' }"
               >
                 <el-option label="单表(增删改查)" value="crud" />
                 <el-option label="树表(增删改查)" value="tree" />
@@ -114,64 +146,145 @@
             </el-form-item>
           </el-col>
           <el-col :sm="8" :xs="24">
-            <el-form-item label="生成代码方式">
-              <el-radio-group v-model="form.gen_type">
-                <el-radio label="0">zip压缩包</el-radio>
-                <el-radio label="1">自定义路径</el-radio>
+            <el-form-item>
+              <template #label>
+                <gen-edit-tip
+                  tip="默认为zip压缩包下载，也可以自定义生成路径"
+                  label="生成代码方式"
+                />
+              </template>
+              <el-radio-group v-model="form.genType">
+                <el-radio value="0" label="zip压缩包" />
+                <el-radio value="1" label="自定义路径" />
               </el-radio-group>
             </el-form-item>
           </el-col>
-          <el-col v-if="form.tpl_category == 'tree'" :sm="8" :xs="24">
-            <el-form-item label="树编码字段">
+          <el-col :sm="8" :xs="24">
+            <el-form-item>
+              <template #label>
+                <gen-edit-tip
+                  tip="分配到指定菜单下，例如：系统管理"
+                  label="上级菜单"
+                />
+              </template>
+              <menu-select v-model="form.parentMenuId" />
+            </el-form-item>
+          </el-col>
+          <el-col v-if="form.genType == '1'" :span="24">
+            <el-form-item>
+              <template #label>
+                <gen-edit-tip
+                  tip="填写磁盘绝对路径，若不填写，则生成到当前 Web 项目下"
+                  label="自定义路径"
+                />
+              </template>
+              <el-input
+                clearable
+                v-model="form.genPath"
+                placeholder="请输入自定义路径"
+              >
+                <template #append>
+                  <ele-dropdown
+                    :items="[
+                      { title: '恢复默认的生成基础路径', command: 'reset' }
+                    ]"
+                    placement="bottom-end"
+                    :popper-options="{
+                      strategy: 'fixed',
+                      modifiers: [
+                        { name: 'offset', options: { offset: [12, 12] } }
+                      ]
+                    }"
+                    @command="handleDropClick"
+                  >
+                    <div style="cursor: pointer">
+                      <span>最近路径快速选择</span>
+                      <el-icon :size="12" style="margin: 0 -4px 0 2px">
+                        <ArrowDown />
+                      </el-icon>
+                    </div>
+                  </ele-dropdown>
+                </template>
+              </el-input>
+            </el-form-item>
+          </el-col>
+          <el-col v-if="form.tplCategory == 'tree'" :span="24">
+            <el-divider content-position="left">其它信息</el-divider>
+          </el-col>
+          <el-col v-if="form.tplCategory == 'tree'" :sm="8" :xs="24">
+            <el-form-item>
+              <template #label>
+                <gen-edit-tip
+                  tip="树显示的编码字段名，如：dept_id"
+                  label="树编码字段"
+                />
+              </template>
               <column-select
                 :data="cols"
-                v-model="form.tree_code"
+                v-model="form.treeCode"
                 placeholder="请选择树编码字段"
               />
             </el-form-item>
           </el-col>
-          <el-col v-if="form.tpl_category == 'tree'" :sm="8" :xs="24">
-            <el-form-item label="树父编码字段">
+          <el-col v-if="form.tplCategory == 'tree'" :sm="8" :xs="24">
+            <el-form-item>
+              <template #label>
+                <gen-edit-tip
+                  tip="树显示的父编码字段名，如：parent_Id"
+                  label="树父编码字段"
+                />
+              </template>
               <column-select
                 :data="cols"
-                v-model="form.tree_parent_code"
+                v-model="form.treeParentCode"
                 placeholder="请选择树父编码字段"
               />
             </el-form-item>
           </el-col>
-          <el-col v-if="form.tpl_category == 'tree'" :sm="8" :xs="24">
-            <el-form-item label="树名称字段">
+          <el-col v-if="form.tplCategory == 'tree'" :sm="8" :xs="24">
+            <el-form-item>
+              <template #label>
+                <gen-edit-tip
+                  tip="树节点的显示名称字段名，如：dept_name"
+                  label="树名称字段"
+                />
+              </template>
               <column-select
                 :data="cols"
-                v-model="form.tree_name"
+                v-model="form.treeName"
                 placeholder="请选择树名称字段"
               />
             </el-form-item>
           </el-col>
-          <el-col v-if="form.tpl_category == 'sub'" :sm="8" :xs="24">
+          <el-col v-if="form.tplCategory == 'sub'" :span="24">
+            <el-divider content-position="left">关联信息</el-divider>
+          </el-col>
+          <el-col v-if="form.tplCategory == 'sub'" :sm="8" :xs="24">
             <el-form-item label="关联子表的表名">
               <el-select
                 clearable
-                v-model="form.sub_table_name"
+                v-model="form.subTableName"
                 placeholder="请选择关联子表的表名"
                 class="ele-fluid"
+                :popper-options="{ strategy: 'fixed' }"
               >
                 <el-option
                   v-for="item in tables"
-                  :key="item.table_name"
-                  :value="item.table_name"
-                  :label="`${item.table_name}: ${item.table_comment}`"
+                  :key="item.tableName"
+                  :value="item.tableName"
+                  :label="`${item.tableName}: ${item.tableComment}`"
                 />
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col v-if="form.tpl_category == 'sub'" :sm="8" :xs="24">
+          <el-col v-if="form.tplCategory == 'sub'" :sm="8" :xs="24">
             <el-form-item label="子表关联的外键名">
               <el-select
                 clearable
-                v-model="form.sub_table_fk_name"
+                v-model="form.subTableFkName"
                 placeholder="请选择子表关联的外键名"
                 class="ele-fluid"
+                :popper-options="{ strategy: 'fixed' }"
               >
                 <el-option
                   v-for="item in tableCols"
@@ -183,23 +296,7 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item v-if="form.gen_type == '1'" label="自定义路径">
-          <el-input
-            clearable
-            :maxlength="200"
-            v-model="form.gen_path"
-            placeholder="请输入自定义路径"
-          />
-        </el-form-item>
-        <el-form-item label="备注">
-          <el-input
-            :rows="2"
-            type="textarea"
-            :maxlength="200"
-            v-model="form.remark"
-            placeholder="请输入备注"
-          />
-        </el-form-item>
+        <el-divider content-position="left">字段信息</el-divider>
         <sticky-table class="form-table" :table-style="{ minWidth: '1280px' }">
           <template #colgroup>
             <col width="38px" />
@@ -256,9 +353,10 @@
                   style="margin-bottom: 0"
                 >
                   <el-select
-                    v-model="row.java_type"
+                    v-model="row.javaType"
                     placeholder="请选择"
                     class="ele-fluid"
+                    :popper-options="{ strategy: 'fixed' }"
                   >
                     <el-option label="Long" value="Long" />
                     <el-option label="String" value="String" />
@@ -273,7 +371,7 @@
               <td>
                 <el-form-item
                   label-width="0px"
-                  :prop="'columns.' + index + '.java_field'"
+                  :prop="'columns.' + index + '.javaField'"
                   :rules="{
                     required: true,
                     message: '请输入Java属性',
@@ -283,7 +381,7 @@
                   class="form-error-popper"
                   style="margin-bottom: 0"
                 >
-                  <el-input v-model="row.java_field" placeholder="请输入" />
+                  <el-input v-model="row.javaField" placeholder="请输入" />
                 </el-form-item>
               </td>
               <td>
@@ -293,9 +391,9 @@
                   style="margin-bottom: 0"
                 >
                   <el-checkbox
-                    v-model="row.is_insert"
-                    true-label="1"
-                    false-label="0"
+                    v-model="row.isInsert"
+                    true-value="1"
+                    false-value="0"
                   />
                 </el-form-item>
               </td>
@@ -306,9 +404,9 @@
                   style="margin-bottom: 0"
                 >
                   <el-checkbox
-                    v-model="row.is_edit"
-                    true-label="1"
-                    false-label="0"
+                    v-model="row.isEdit"
+                    true-value="1"
+                    false-value="0"
                   />
                 </el-form-item>
               </td>
@@ -319,9 +417,9 @@
                   style="margin-bottom: 0"
                 >
                   <el-checkbox
-                    v-model="row.is_list"
-                    true-label="1"
-                    false-label="0"
+                    v-model="row.isList"
+                    true-value="1"
+                    false-value="0"
                   />
                 </el-form-item>
               </td>
@@ -332,9 +430,9 @@
                   style="margin-bottom: 0"
                 >
                   <el-checkbox
-                    v-model="row.is_query"
-                    true-label="1"
-                    false-label="0"
+                    v-model="row.isQuery"
+                    true-value="1"
+                    false-value="0"
                   />
                 </el-form-item>
               </td>
@@ -345,9 +443,10 @@
                   style="margin-bottom: 0"
                 >
                   <el-select
-                    v-model="row.query_type"
+                    v-model="row.queryType"
                     placeholder="请选择"
                     class="ele-fluid"
+                    :popper-options="{ strategy: 'fixed' }"
                   >
                     <el-option label="=" value="EQ" />
                     <el-option label="!=" value="NE" />
@@ -367,9 +466,9 @@
                   style="margin-bottom: 0"
                 >
                   <el-checkbox
-                    v-model="row.is_required"
-                    true-label="1"
-                    false-label="0"
+                    v-model="row.isRequired"
+                    true-value="1"
+                    false-value="0"
                   />
                 </el-form-item>
               </td>
@@ -380,9 +479,10 @@
                   style="margin-bottom: 0"
                 >
                   <el-select
-                    v-model="row.html_type"
+                    v-model="row.htmlType"
                     placeholder="请选择"
                     class="ele-fluid"
+                    :popper-options="{ strategy: 'fixed' }"
                   >
                     <el-option label="文本框" value="input" />
                     <el-option label="文本域" value="textarea" />
@@ -404,15 +504,16 @@
                 >
                   <el-select
                     clearable
-                    v-model="row.dict_type"
+                    v-model="row.dictType"
                     placeholder="请选择"
                     class="ele-fluid"
+                    :popper-options="{ strategy: 'fixed' }"
                   >
                     <el-option
                       v-for="item in dictOptions"
-                      :key="item.dict_type"
-                      :value="item.dict_type"
-                      :label="`${item.dict_name}(${item.dict_type})`"
+                      :key="item.dictType"
+                      :value="item.dictType"
+                      :label="`${item.dictName}(${item.dictType})`"
                     />
                   </el-select>
                 </el-form-item>
@@ -424,11 +525,11 @@
     </ele-loading>
     <template #footer>
       <div style="flex: 1; text-align: left">
-        <ele-text v-if="validMsg" type="danger" :icon="CircleClose">
+        <ele-text v-if="validMsg" type="danger" :icon="CloseCircleOutlined">
           <span>{{ validMsg }}</span>
         </ele-text>
       </div>
-      <el-button @click="updateModelValue(false)">取消</el-button>
+      <el-button @click="handleCancel">取消</el-button>
       <el-button type="primary" :loading="loading" @click="save">
         保存
       </el-button>
@@ -437,24 +538,26 @@
 </template>
 
 <script setup>
-  import { ref, reactive, watch, computed } from 'vue';
-  import { CircleClose } from '@element-plus/icons-vue';
+  import { ref, reactive, computed } from 'vue';
   import { EleMessage } from 'ele-admin-plus/es';
+  import { CloseCircleOutlined, ArrowDown } from '@/components/icons';
   import { useFormData } from '@/utils/use-form-data';
   import MenuSelect from '@/views/system/menu/components/menu-select.vue';
   import ColumnSelect from './column-select.vue';
   import StickyTable from './sticky-table.vue';
+  import GenEditTip from './gen-edit-tip.vue';
   import { listDicts } from '@/api/system/dict';
   import { getGenTable, updateGen } from '@/api/tool/gen';
 
-  const emit = defineEmits(['done', 'update:modelValue']);
-
   const props = defineProps({
-    /** 弹窗是否打开 */
-    modelValue: Boolean,
     /** 修改回显数据 */
     data: Object
   });
+
+  const emit = defineEmits(['done']);
+
+  /** 弹窗是否打开 */
+  const visible = defineModel({ type: Boolean });
 
   /** 字段下拉数据 */
   const cols = ref([]);
@@ -464,11 +567,11 @@
 
   /** 选中的表字段下拉数据 */
   const tableCols = computed(() => {
-    const name = form.sub_table_name;
+    const name = form.subTableName;
     if (!name) {
       return [];
     }
-    return tables.value.find((t) => t.table_name == name)?.columns ?? [];
+    return tables.value.find((t) => t.tableName == name)?.columns ?? [];
   });
 
   /** 字典类型下拉数据 */
@@ -484,32 +587,32 @@
   const formRef = ref(null);
 
   /** 表单数据 */
-  const { form, resetFields, assignFields } = useFormData({
-    table_id: void 0,
-    table_name: '',
-    table_comment: '',
-    function_author: '',
-    class_name: '',
-    function_name: '',
-    business_name: '',
-    module_name: '',
-    package_name: '',
-    parent_menuId: void 0,
-    tpl_category: 'crud',
-    gen_type: '0',
-    gen_path: '/',
-    tree_code: void 0,
-    tree_parent_code: void 0,
-    tree_name: void 0,
-    sub_table_name: void 0,
-    sub_table_fk_name: void 0,
+  const [form, resetFields, assignFields] = useFormData({
+    tableId: void 0,
+    tableName: '',
+    tableComment: '',
+    functionAuthor: '',
+    className: '',
+    functionName: '',
+    businessName: '',
+    moduleName: '',
+    packageName: '',
+    parentMenuId: void 0,
+    tplCategory: 'crud',
+    genType: '0',
+    genPath: '/',
+    treeCode: void 0,
+    treeParentCode: void 0,
+    treeName: void 0,
+    subTableName: void 0,
+    subTableFkName: void 0,
     remark: '',
     columns: []
   });
 
   /** 表单验证规则 */
   const rules = reactive({
-    table_name: [
+    tableName: [
       {
         required: true,
         message: '请输入表名称',
@@ -517,7 +620,7 @@
         trigger: 'blur'
       }
     ],
-    table_comment: [
+    tableComment: [
       {
         required: true,
         message: '请输入表描述',
@@ -525,7 +628,7 @@
         trigger: 'blur'
       }
     ],
-    function_author: [
+    functionAuthor: [
       {
         required: true,
         message: '请输入作者',
@@ -533,7 +636,7 @@
         trigger: 'blur'
       }
     ],
-    class_name: [
+    className: [
       {
         required: true,
         message: '请输入实体类名称',
@@ -541,7 +644,7 @@
         trigger: 'blur'
       }
     ],
-    function_name: [
+    functionName: [
       {
         required: true,
         message: '请输入生成功能名',
@@ -549,7 +652,7 @@
         trigger: 'blur'
       }
     ],
-    business_name: [
+    businessName: [
       {
         required: true,
         message: '请输入生成业务名',
@@ -557,7 +660,7 @@
         trigger: 'blur'
       }
     ],
-    module_name: [
+    moduleName: [
       {
         required: true,
         message: '请输入生成模块名',
@@ -565,7 +668,7 @@
         trigger: 'blur'
       }
     ],
-    package_name: [
+    packageName: [
       {
         required: true,
         message: '请输入生成包路径',
@@ -573,18 +676,23 @@
         trigger: 'blur'
       }
     ],
-    tpl_category: [
+    tplCategory: [
       {
         required: true,
         message: '请选择生成模板',
         type: 'string',
-        trigger: 'blur'
+        trigger: 'change'
       }
     ]
   });
 
   /** 表单验证失败提示信息 */
   const validMsg = ref('');
+
+  /** 关闭弹窗 */
+  const handleCancel = () => {
+    visible.value = false;
+  };
 
   /** 保存编辑 */
   const save = () => {
@@ -599,16 +707,16 @@
       updateGen({
         ...form,
         params: {
-          tree_code: form.tree_code,
-          tree_name: form.tree_name,
-          tree_parent_code: form.tree_parent_code,
-          parent_menuId: form.parent_menuId
+          treeCode: form.treeCode,
+          treeName: form.treeName,
+          treeParentCode: form.treeParentCode,
+          parentMenuId: form.parentMenuId
         }
       })
         .then((msg) => {
           loading.value = false;
           EleMessage.success(msg);
-          updateModelValue(false);
+          handleCancel();
           emit('done');
         })
         .catch((e) => {
@@ -618,20 +726,21 @@
     });
   };
 
-  /** 更新modelValue */
-  const updateModelValue = (value) => {
-    emit('update:modelValue', value);
-  };
-
   /** 查询回显数据 */
-  const onOpened = () => {
-    if (!props.data?.table_id) {
+  const handleOpened = () => {
+    if (!props.data?.tableId) {
       return;
     }
     initLoading.value = true;
-    getGenTable(props.data.table_id)
+    getGenTable(props.data.tableId)
       .then((res) => {
-        assignFields(res.info);
+        assignFields({
+          ...res.info,
+          parentMenuId:
+            res.info.parentMenuId == null || res.info.parentMenuId === ''
+              ? void 0
+              : Number(res.info.parentMenuId)
+        });
         cols.value = res.info.columns;
         tables.value = res.tables;
         initLoading.value = false;
@@ -642,16 +751,19 @@
       });
   };
 
-  watch(
-    () => props.modelValue,
-    (modelValue) => {
-      if (!modelValue) {
-        resetFields();
-        formRef.value?.clearValidate?.();
-        validMsg.value = '';
-      }
+  /** 弹窗关闭事件 */
+  const handleClosed = () => {
+    resetFields();
+    formRef.value?.clearValidate?.();
+    validMsg.value = '';
+  };
+
+  /** 最近路径快速选择 */
+  const handleDropClick = (command) => {
+    if (command === 'reset') {
+      form.genPath = '/';
     }
-  );
+  };
 
   // 查询字典类型下拉数据
   listDicts()
@@ -664,6 +776,21 @@
 </script>
 
 <style lang="scss" scoped>
+  .form-box :deep(.el-form-item__label) {
+    white-space: nowrap;
+  }
+
+  .form-box :deep(.el-divider--horizontal) {
+    margin: 22px 0 28px 0;
+
+    .el-divider__text {
+      padding: 0 12px;
+      font-size: 15px;
+      font-weight: bold;
+      background: var(--el-bg-color-overlay);
+    }
+  }
+
   /* 表单验证气泡形式 */
   .form-table :deep(table) {
     table-layout: fixed;

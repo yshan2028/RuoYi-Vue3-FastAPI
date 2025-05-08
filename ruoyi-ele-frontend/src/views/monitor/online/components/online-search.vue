@@ -1,7 +1,7 @@
 <!-- 搜索表单 -->
 <template>
   <ele-card :body-style="{ paddingBottom: '2px' }">
-    <el-form label-width="72px" @keyup.enter="search">
+    <el-form label-width="72px" @keyup.enter="search" @submit.prevent="">
       <el-row :gutter="8">
         <el-col :lg="6" :md="8" :sm="12" :xs="24">
           <el-form-item label="登录地址">
@@ -16,7 +16,7 @@
           <el-form-item label="登录名称">
             <el-input
               clearable
-              v-model.trim="form.user_name"
+              v-model.trim="form.userName"
               placeholder="请输入"
             />
           </el-form-item>
@@ -38,14 +38,14 @@
   const emit = defineEmits(['search']);
 
   /** 表单数据 */
-  const { form, resetFields } = useFormData({
+  const [form, resetFields] = useFormData({
     ipaddr: '',
-    user_name: ''
+    userName: ''
   });
 
   /** 搜索 */
   const search = () => {
-    emit('search', form);
+    emit('search', { ...form });
   };
 
   /**  重置 */

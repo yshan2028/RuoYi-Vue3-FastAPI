@@ -1,5 +1,5 @@
 import request from '@/utils/request';
-import { download, toFormData } from '@/utils/common';
+import { download, toFormData, checkDownloadRes } from '@/utils/common';
 
 /**
  * 分页查询角色
@@ -44,14 +44,12 @@ export async function removeRole(id) {
   }
   return Promise.reject(new Error(res.data.msg));
 }
+
 /**
- * 修改角色状态
+ * 批量删除角色
  */
-export async function updateRoleStatus(role_id, status) {
-  const res = await request.put('/system/role/changeStatus', {
-    role_id,
-    status
-  });
+export async function removeRoles(ids) {
+  const res = await request.delete('/system/role/' + ids.join());
   if (res.data.code === 200) {
     return res.data.msg;
   }
@@ -59,10 +57,13 @@ export async function updateRoleStatus(role_id, status) {
 }
 
 /**
- * 批量删除角色
+ * 修改角色状态
  */
-export async function removeRoles(ids) {
-  const res = await request.delete('/system/role/' + ids.join());
+export async function updateRoleStatus(roleId, status) {
+  const res = await request.put('/system/role/changeStatus', {
+    roleId,
+    status
+  });
   if (res.data.code === 200) {
     return res.data.msg;
   }
@@ -79,7 +80,8 @@ export async function exportRoles(params) {
     data: toFormData(params),
     responseType: 'blob'
   });
-  download(res.data, `role_${new Date().getTime()}.xlsx`);
+  await checkDownloadRes(res);
+  download(res.data, `role_${Date.now()}.xlsx`);
 }
 
 /**
@@ -162,11 +164,8 @@ export async function removeRoleUser(data) {
 /**
  * 批量取消角色用户
  */
-export async function removeRoleUsers(params) {
-  const res = await request.put(
-    '/system/role/authUser/cancelAll',
-    toFormData(params)
-  );
+export async function removeRoleUsers(data) {
+  const res = await request.put('/system/role/authUser/cancelAll', data);
   if (res.data.code === 200) {
     return res.data.msg;
   }
@@ -189,11 +188,8 @@ export async function listUnallocatedUsers(params) {
 /**
  * 添加角色用户
  */
-export async function addRoleUsers(params) {
-  const res = await request.put(
-    '/system/role/authUser/selectAll',
-    toFormData(params)
-  );
+export async function addRoleUsers(data) {
+  const res = await request.put('/system/role/authUser/selectAll', data);
   if (res.data.code === 200) {
     return res.data.msg;
   }
