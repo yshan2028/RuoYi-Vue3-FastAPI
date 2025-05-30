@@ -1,3 +1,19 @@
+# !/usr/bin/python3
+# -*- coding: utf-8 -*-
+"""
+@Author         :  liuyue <yshan2028@gmail.com>
+@Version        :  V1.0.0
+------------------------------------
+@File           :  config/get_db.py
+@Description    :  
+@CreateTime     :  2025/05/30 22:33
+@Project        :  RuoYi-Vue3-FastAPI
+@Repository     :  https://github.com/yshan2028/RuoYi-Vue3-FastAPI
+@Software       :  
+------------------------------------
+@ModifyTime     :  2025/05/30 22:43
+"""
+
 from config.database import async_engine, AsyncSessionLocal, Base
 from utils.log_util import logger
 
