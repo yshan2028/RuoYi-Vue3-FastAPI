@@ -1,8 +1,8 @@
 APScheduler==3.10.1
 colorama==0.4.6
-dnspython==2.3.0
+dnspython==2.6.1
 loguru==0.7.0
-pymongo==4.3.3
+pymongo==4.6.3
 pytz==2023.3
 six==1.16.0
 tzdata==2023.3
